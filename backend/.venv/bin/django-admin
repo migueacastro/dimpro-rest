@@ -1,4 +1,4 @@
-#!/workspaces/dimpro-rest/backend/.venv/bin/python3
+#!/home/miguel/Desktop/repositories/dimpro-rest/backend/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

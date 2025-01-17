@@ -38,12 +38,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "dimpro",
-    "rest_framework_simplejwt"
+    "rest_framework_simplejwt",
+    "corsheaders", # Agregue corsheaders
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -140,3 +142,10 @@ AUTH_USER_MODEL = "dimpro.User"
 CSRF_TRUSTED_ORIGINS = ["https://bd2c7731-eea7-47d1-8886-dd8133157689-00-hnezs8zhtojv.spock.replit.dev:8000"]
 
 TOKEN_DURATION = timedelta(days=90) 
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000"
+]
+
+CORS_ALLOW_CREDENTIALS = True
