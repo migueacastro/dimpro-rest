@@ -22,7 +22,7 @@
         const data = await response.json();
         if (response.ok) {
             const token = data?.token;
-            Cookies.set('token', token, {expires: 365});
+            Cookies.set('token', token, {expires: 365, secure: true});
             goto("/");
         } else {
             errors = data;
