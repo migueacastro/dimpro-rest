@@ -14,7 +14,6 @@
     let password = "";
 
     async function handleLogin() {
-        
         let formData = {
             "email": email,
             "password":password
