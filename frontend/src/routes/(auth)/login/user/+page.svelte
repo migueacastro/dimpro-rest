@@ -8,6 +8,7 @@
         email: any;
         password: any;
     }
+    
     let errors: FormErrors = {email: null, password: null};
 
     let email = "";

@@ -19,7 +19,7 @@ router.register(r'staff', StaffViewSet, basename="staff")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("login", UserLoginView.as_view()),
+    path("login/", UserLoginView.as_view()),
     path("user", UserProfileView.as_view()),
     path("register", UserRegistrationView.as_view()),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
