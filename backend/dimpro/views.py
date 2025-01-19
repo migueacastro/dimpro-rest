@@ -1,4 +1,4 @@
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -73,6 +73,41 @@ class UserLoginView(TokenObtainPairView):
     return Response(login_serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST)
 
+
+
+class StaffOnlyLoginView(TokenObtainPairView):
+  serializer_class = CustomTokenObtainPairSerializer
+  permission_classes = (AllowAny, )
+
+  def post(self, request, *args, **kwargs):
+    email = request.data.get("email", None)
+    password = request.data.get("password", None)
+
+    if not password:
+      raise AuthenticationFailed({"password": ["This field is required"]})
+    elif not email:
+      raise AuthenticationFailed({"email": ["This field is required"]})
+
+    user_instance = authenticate(email=email, password=password)
+    if not user_instance:
+      raise AuthenticationFailed({"password": ["Invalid credentials"]})
+
+    if not (user_instance.is_staff or user_instance.is_superuser):
+      raise PermissionDenied({"email": ["You do not have permission to perform this action"]})
+
+    login_serializer = self.serializer_class(data=request.data)
+    if login_serializer.is_valid():
+      user_serializer = UserSerializer(user_instance)
+      return Response(
+          {
+              "token": login_serializer.validated_data.get("access"),
+              "refresh-token": login_serializer.validated_data.get("refresh"),
+              "user": user_serializer.data,
+              "message": "Successfull login"
+          },
+          status=status.HTTP_200_OK)
+    return Response(login_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(APIView):
   permission_classes = (IsAuthenticated, )
