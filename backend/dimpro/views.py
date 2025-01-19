@@ -31,7 +31,7 @@ class UserRegistrationView(APIView
 
       if password != confirmPassword:
         raise AuthenticationFailed(
-            {"confirmPassword": ["Passwords do not match"]})
+            {"confirmPassword": ["Las contraseñas no coinciden."]})
 
       new_user = serializer.save()
       if new_user:
@@ -50,14 +50,14 @@ class UserLoginView(TokenObtainPairView):
     email = request.data.get("email", None)
     password = request.data.get("password", None)
 
-    if not password:
-      raise AuthenticationFailed({"password": ["This field is required"]})
-    elif not email:
-      raise AuthenticationFailed({"email": ["This field is required"]})
+    if not email:
+      raise AuthenticationFailed({"email": ["Este campo no puede estar vacio."]})
+    elif not password:
+      raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
     if not user_instance:
-      raise AuthenticationFailed({"password": ["Invalid credentials"]})
+      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
@@ -83,17 +83,17 @@ class StaffOnlyLoginView(TokenObtainPairView):
     email = request.data.get("email", None)
     password = request.data.get("password", None)
 
-    if not password:
-      raise AuthenticationFailed({"password": ["This field is required"]})
-    elif not email:
-      raise AuthenticationFailed({"email": ["This field is required"]})
+    if not email:
+      raise AuthenticationFailed({"email": ["Este campo no puede estar vacio."]})
+    elif not password:
+      raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
     if not user_instance:
-      raise AuthenticationFailed({"password": ["Invalid credentials"]})
+      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     if not (user_instance.is_staff or user_instance.is_superuser):
-      raise PermissionDenied({"email": ["You do not have permission to perform this action"]})
+      raise PermissionDenied({"email": ["Usted no posee los permisos requeridos para realizar esta acción"]})
 
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
