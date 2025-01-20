@@ -23,7 +23,10 @@ async function handleLogin() {
     if (response.ok) {
         const token = data?.token;
         Cookies.set('token', token, {expires: 365, secure: true});
-        goto("/");
+        
+        
+        await goto("/");
+        window.location.reload();
     } else {
         errors = data;
     }

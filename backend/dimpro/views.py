@@ -59,6 +59,9 @@ class UserLoginView(TokenObtainPairView):
     if not user_instance:
       raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
+    if user_instance.is_staff:
+      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
+
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
       user_serializer = UserSerializer(user_instance)
@@ -93,7 +96,7 @@ class StaffOnlyLoginView(TokenObtainPairView):
       raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     if not (user_instance.is_staff or user_instance.is_superuser):
-      raise PermissionDenied({"email": ["Usted no posee los permisos requeridos para realizar esta acción"]})
+      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
