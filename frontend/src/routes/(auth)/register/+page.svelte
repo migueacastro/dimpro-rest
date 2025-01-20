@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { apiURL } from '$lib/api_url';
 	import { fetchRegister, fetchLogin } from '$lib/auth';
+	import { FormErrors } from '$lib/FormErrors';
 	import Cookies from 'js-cookie';
+
+	const camps = new FormErrors();
 
 	interface FormErrors {
 		email: any;
@@ -10,6 +12,7 @@
 		name: any;
 		confirmPassword: any;
 	}
+
 	let errors: FormErrors = { email: null, password: null, confirmPassword: null, name: null };
 
 	let email = '';
@@ -17,33 +20,17 @@
 	let password = '';
 	let confirmPassword = '';
 
-	async function handleLogin() {
-		let formData = {
-			email: email,
-			password: password
-		};
-		const response = await fetchLogin(formData);
-		const data = await response.json();
-		if (response.ok) {
-			const token = data?.token;
-			Cookies.set('token', token, { expires: 365, secure: true });
-			goto('/');
-		} else {
-			errors = data;
-		}
+	function validateCamps() {
+		return (
+			camps.validateEmail(email) && camps.validatePasswords(password, confirmPassword)
+		);
 	}
 
-	// async function handleRegister() {
-	// 	let formData = {
-	// 		email: email,
-	// 		name: name,
-	// 		password: password,
-	// 		confirmPassword: confirmPassword
-	// 	};
-	// 	fetchRegister(formData);
-	// 	handleLogin();
-	// }
 	async function handleRegister() {
+		if (!validateCamps()) {
+			goto('/register');
+			return null;
+		}
 		let formData = {
 			email: email,
 			name: name,
@@ -51,7 +38,7 @@
 			confirmPassword: confirmPassword
 		};
 		await fetchRegister(formData);
-        const response = await fetchLogin(formData)
+		const response = await fetchLogin(formData);
 		const data = await response.json();
 		if (response.ok) {
 			const token = data?.token;
@@ -87,6 +74,14 @@
 
 		<input class="input my-2" title="Email" type="text" placeholder="Email" bind:value={email} />
 
+		{#if email.length > 0}
+			{#if !camps.validateEmail(email)}
+				<div class="card variant-ghost-error p-2 text-sm text-left">
+					{camps.NotValidEmail}
+				</div>
+			{/if}
+		{/if}
+
 		{#if errors.email}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
@@ -113,6 +108,21 @@
 				</ul>
 			</div>
 		{/if}
+		{#if password.length > 0}
+			{#if password.length <= 5}
+				<div class="card variant-ghost-error p-2 text-sm text-left">
+					{camps.shortPass}
+				</div>
+			{:else if !camps.hasNumbers(password)}
+				<div class="card variant-ghost-error p-2 text-sm text-left">
+					{camps.NotNumbers}
+				</div>
+			{:else if !camps.hasUpperCase(password)}
+				<div class="card variant-ghost-error p-2 text-sm text-left">
+					{camps.NotUpperCase}
+				</div>
+			{/if}
+		{/if}
 
 		<input
 			class="input my-2"
@@ -121,6 +131,13 @@
 			placeholder="Repita su Contraseña"
 			bind:value={confirmPassword}
 		/>
+		{#if confirmPassword.length > 0}
+			{#if password !== confirmPassword}
+				<div class="card variant-ghost-error p-2 text-sm text-left">
+					{camps.NotMatchingPass}
+				</div>
+			{/if}
+		{/if}
 		{#if errors.confirmPassword}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
