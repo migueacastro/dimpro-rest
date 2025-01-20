@@ -2,7 +2,7 @@
     import { LightSwitch } from "@skeletonlabs/skeleton";
 </script>
 
-<!-- modificado de 6 a 3.75 porque el formulario de registro sobresalia la pantalla -->
+<!-- cambios: mt de 2.5 y my a auto -->
 <div class="h-full w-full shadow-xl"> 
     <div class="flex justify-end mx-[2rem] mt-[2rem]">
         <LightSwitch/>

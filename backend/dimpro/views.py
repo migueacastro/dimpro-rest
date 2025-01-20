@@ -1,4 +1,4 @@
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -31,7 +31,7 @@ class UserRegistrationView(APIView
 
       if password != confirmPassword:
         raise AuthenticationFailed(
-            {"confirmPassword": ["Passwords do not match"]})
+            {"confirmPassword": ["Las contraseñas no coinciden."]})
 
       new_user = serializer.save()
       if new_user:
@@ -50,14 +50,14 @@ class UserLoginView(TokenObtainPairView):
     email = request.data.get("email", None)
     password = request.data.get("password", None)
 
-    if not password:
-      raise AuthenticationFailed({"password": ["This field is required"]})
-    elif not email:
-      raise AuthenticationFailed({"email": ["This field is required"]})
+    if not email:
+      raise AuthenticationFailed({"email": ["Este campo no puede estar vacio."]})
+    elif not password:
+      raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
     if not user_instance:
-      raise AuthenticationFailed({"password": ["Invalid credentials"]})
+      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
@@ -73,6 +73,41 @@ class UserLoginView(TokenObtainPairView):
     return Response(login_serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST)
 
+
+
+class StaffOnlyLoginView(TokenObtainPairView):
+  serializer_class = CustomTokenObtainPairSerializer
+  permission_classes = (AllowAny, )
+
+  def post(self, request, *args, **kwargs):
+    email = request.data.get("email", None)
+    password = request.data.get("password", None)
+
+    if not email:
+      raise AuthenticationFailed({"email": ["Este campo no puede estar vacio."]})
+    elif not password:
+      raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
+
+    user_instance = authenticate(email=email, password=password)
+    if not user_instance:
+      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
+
+    if not (user_instance.is_staff or user_instance.is_superuser):
+      raise PermissionDenied({"email": ["Usted no posee los permisos requeridos para realizar esta acción"]})
+
+    login_serializer = self.serializer_class(data=request.data)
+    if login_serializer.is_valid():
+      user_serializer = UserSerializer(user_instance)
+      return Response(
+          {
+              "token": login_serializer.validated_data.get("access"),
+              "refresh-token": login_serializer.validated_data.get("refresh"),
+              "user": user_serializer.data,
+              "message": "Successfull login"
+          },
+          status=status.HTTP_200_OK)
+    return Response(login_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(APIView):
   permission_classes = (IsAuthenticated, )
