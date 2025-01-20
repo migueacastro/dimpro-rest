@@ -4,7 +4,7 @@
 	import { FormErrors } from '$lib/FormErrors';
 	import Cookies from 'js-cookie';
 
-	const camps = new FormErrors();
+	const fields = new FormErrors();
 
 	interface FormErrors {
 		email: any;
@@ -19,16 +19,19 @@
 	let name = '';
 	let password = '';
 	let confirmPassword = '';
-
-	function validateCamps() {
-		return (
-			camps.validateEmail(email) && camps.validatePasswords(password, confirmPassword)
-		);
+	let validatedFields: Boolean = false;
+	function validateFields() {
+		let valid: Boolean = false;
+		valid = fields.validateEmail(email) && fields.validatePasswords(password, confirmPassword)
+		validatedFields = valid;
+		return valid;
 	}
 
 	async function handleRegister() {
-		if (!validateCamps()) {
+		if (!validateFields()) {
+			
 			goto('/register');
+			window.location.reload()
 			return null;
 		}
 		let formData = {
@@ -43,7 +46,9 @@
 		if (response.ok) {
 			const token = data?.token;
 			Cookies.set('token', token, { expires: 365, secure: true });
-			goto('/');
+			
+			await goto('/');
+			window.location.reload()
 		} else {
 			errors = data;
 		}
@@ -60,7 +65,7 @@
 	<form>
 		<h3 class="text-4xl mb-[2rem]">Regístre su usuario</h3>
 
-		<input class="input my-2" title="Nombre" type="text" placeholder="Usuario" bind:value={name} />
+		<input class="input my-2" title="Nombre" type="text" placeholder="Usuario" bind:value={name} on:input={validateFields}/>
 
 		{#if errors.name}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -72,12 +77,12 @@
 			</div>
 		{/if}
 
-		<input class="input my-2" title="Email" type="text" placeholder="Email" bind:value={email} />
+		<input class="input my-2" title="Email" type="text" placeholder="Email" bind:value={email} on:input={validateFields} />
 
 		{#if email.length > 0}
-			{#if !camps.validateEmail(email)}
+			{#if !fields.validateEmail(email)}
 				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{camps.NotValidEmail}
+					{fields.NotValidEmail}
 				</div>
 			{/if}
 		{/if}
@@ -98,6 +103,7 @@
 			type="password"
 			placeholder="Contraseña"
 			bind:value={password}
+			on:input={validateFields}
 		/>
 		{#if errors.password}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -111,15 +117,15 @@
 		{#if password.length > 0}
 			{#if password.length <= 5}
 				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{camps.shortPass}
+					{fields.shortPass}
 				</div>
-			{:else if !camps.hasNumbers(password)}
+			{:else if !fields.hasNumbers(password)}
 				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{camps.NotNumbers}
+					{fields.NotNumbers}
 				</div>
-			{:else if !camps.hasUpperCase(password)}
+			{:else if !fields.hasUpperCase(password)}
 				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{camps.NotUpperCase}
+					{fields.NotUpperCase}
 				</div>
 			{/if}
 		{/if}
@@ -130,11 +136,12 @@
 			type="password"
 			placeholder="Repita su Contraseña"
 			bind:value={confirmPassword}
+			on:input={validateFields}
 		/>
 		{#if confirmPassword.length > 0}
 			{#if password !== confirmPassword}
 				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{camps.NotMatchingPass}
+					{fields.NotMatchingPass}
 				</div>
 			{/if}
 		{/if}
@@ -149,7 +156,10 @@
 		{/if}
 		<button
 			class="btn btn-xl variant-filled-primary my-2 w-full shadow-xl"
-			on:click={handleRegister}>Registrarse</button
+			on:click={handleRegister}
+			disabled={!validatedFields}
+			>Registrarse</button
+			
 		>
 		<p class="mt-4">
 			¿Ya posees una cuenta? <a class="anchor no-underline" href="/login/user">Inicie sesión</a>
