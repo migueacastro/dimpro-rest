@@ -13,7 +13,7 @@
     const modalStore = getModalStore();
     onMount(async () => {
         await authenticate();
-        if (!$user?.id) {
+        if (!user) {
             await goto("/");
         }
     });
@@ -22,7 +22,7 @@
 <!-- TODO: Drawer / Cajon para navegacion en movil -->
 
 
-<div class="h-screen animate-show flex flex-col overflow-auto">
+<div class="h-screen animate-show flex flex-col overflow-auto w-full">
     <!-- NAVBAR -->
     <div class="lg:ml-auto w-full lg:w-[calc(100%-5rem)] variant-soft-tertiary shadow-lg text-primary-500">
         <Toast/>
@@ -45,7 +45,7 @@
                 </div>
                 <div class="w-1/3 pt-[1rem] pr-[1rem] lg:pr-[2rem] flex flex-row justify-end">
                     <div class="lg:text-xl text-md capitalize text-end font-bold">
-                        <div>{$user?.name.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
+                        <div>{$user?.name?.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
                     </div>
                     <div class="hidden lg:flex w-auto ml-4"><LightSwitch/></div>
                 </div>

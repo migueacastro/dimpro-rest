@@ -5,7 +5,7 @@
 	import { goto } from "$app/navigation";
 	onMount(async () => {
 		let token = Cookies.get('token');
-		if (token) {
+		if ($user) {
 			goto("/dashboard")
 		} else {
 			goto("/start")

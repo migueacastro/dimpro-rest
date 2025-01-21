@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { apiURL } from '$lib/api_url';
-	import { fetchStaff } from '$lib/auth';
+	import { authenticate, fetchStaff } from '$lib/auth';
 	import Cookies from 'js-cookie';
 
 	interface FormErrors {
@@ -24,9 +24,9 @@
 			const token = data?.token;
 			Cookies.set('token', token, { expires: 365, secure: true });
 			
+			await authenticate();
+			goto("/");
 			
-			await goto('/');
-			window.location.reload();
 		} else {
 			errors = data;
 		}
