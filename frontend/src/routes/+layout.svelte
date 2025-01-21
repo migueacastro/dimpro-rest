@@ -1,22 +1,24 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { AppShell, AppBar, ProgressRadial } from '@skeletonlabs/skeleton';
-
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
-	import { onMount } from 'svelte';
+	import { setInitialClassState, storePopup } from '@skeletonlabs/skeleton';
+	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 	import { authenticate } from '$lib/auth';
 	import { user } from '../stores/stores';
-	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+	import { onMount } from 'svelte';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import '@fortawesome/fontawesome-free/css/all.min.css';
+	import { initializeStores } from '@skeletonlabs/skeleton';
 
+	initializeStores();
+	$: loaded = false;
 
-    let loaded = false;
-    onMount(async () => {
-        let userData = await authenticate();
-        user.set(userData);
-        setTimeout(()=> loaded = true, 1000);
-    })
+	onMount(async () => {
+		let userData = await authenticate();
+		user.set(userData);
+		setTimeout(()=> loaded = true, 1000);
+	});
 </script>
 {#if !(loaded)}
     <div class="flex justify-center mt-[15rem]">
@@ -25,8 +27,9 @@
         </div>
     </div>
 {/if}
-<div class="flex h-full" class:hidden={!loaded}>
-    
+<div class="flex h-full w-full" class:hidden={!loaded}>
     <slot/>
 </div>
 
+
+<style lang="postcss" global></style>

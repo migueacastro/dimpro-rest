@@ -3,6 +3,7 @@ import { goto } from "$app/navigation";
 import { apiURL } from "$lib/api_url";
 import { fetchLogin } from "$lib/auth";
 import Cookies from 'js-cookie';
+import { authenticate } from "$lib/auth";
 
 interface FormErrors {
     email: any;
@@ -23,10 +24,8 @@ async function handleLogin() {
     if (response.ok) {
         const token = data?.token;
         Cookies.set('token', token, {expires: 365, secure: true});
-        
-        
-        await goto("/");
-        window.location.reload();
+        await authenticate();
+        goto('/');
     } else {
         errors = data;
     }

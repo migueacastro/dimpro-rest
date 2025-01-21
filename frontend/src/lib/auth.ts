@@ -1,6 +1,7 @@
 import { apiURL } from './api_url';
 import Cookies from 'js-cookie';
 import { goto } from '$app/navigation';
+import { user } from '../stores/stores';
 
 
 // Simplificar la solicitud http al iniciar sesión
@@ -56,10 +57,13 @@ export async function authenticate() {
         });
         const data = await response.json()
         if (response.ok) {
+            user.set(data);
             return data;
         }
-
+        
         Cookies.remove('token');
-        return null;
+        
     }
+    user.set(null);
+    return null;
 }

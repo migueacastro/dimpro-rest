@@ -3,6 +3,7 @@
 	import { fetchRegister, fetchLogin } from '$lib/auth';
 	import { FormErrors } from '$lib/FormErrors';
 	import Cookies from 'js-cookie';
+	import { authenticate } from '$lib/auth';
 
 	const fields = new FormErrors();
 
@@ -46,9 +47,8 @@
 		if (response.ok) {
 			const token = data?.token;
 			Cookies.set('token', token, { expires: 365, secure: true });
-			
-			await goto('/');
-			window.location.reload()
+			await authenticate();
+			goto('/');
 		} else {
 			errors = data;
 		}
