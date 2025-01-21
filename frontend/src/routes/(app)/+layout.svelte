@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getDrawerStore, AppBar, getModalStore, Toast, LightSwitch } from "@skeletonlabs/skeleton";
+    import { getDrawerStore, AppBar, getModalStore, Toast, LightSwitch, Modal, Drawer } from "@skeletonlabs/skeleton";
     let expandedSideBar = false;
     import logo from "$lib/assets/logodimpro.svg" 
     import logolight from "$lib/assets/logodimprolight.svg"
@@ -9,16 +9,60 @@
     import { user } from "../../stores/stores";
 	import { goto } from "$app/navigation";
     let expandedDrawer = false;
+    const drawerStore = getDrawerStore();
+    const layoutDrawerSettings = {'id': 'layoutDrawer'} // Settings for oppening drawer
     
     const modalStore = getModalStore();
+
+    function hideDrawer() {
+        expandedDrawer = false;
+        setTimeout(drawerStore.close, 100);
+    }
+
     onMount(async () => {
-        if (!user) {
+        await authenticate();
+        if (!$user) {
+            
             await goto("/");
         }
     });
 </script>
 
-<!-- TODO: Drawer / Cajon para navegacion en movil -->
+
+
+
+<Modal height="h-auto" regionBody="h-auto overflow-hidden"></Modal>
+
+<!-- MOBILE DRAWER -->
+<Drawer position="top" height="h-[97%] overflow-hidden">
+    {#if $drawerStore.id === 'layoutDrawer'} <!-- Drawer is always open once the drawerStore loads, depending on the id, it will show different things -->
+        <nav class="list-nav m-2 text-center">
+            <button on:click={() => { // Button that activates this drawer section
+                expandedDrawer = false;
+                setTimeout(drawerStore.close, 400); // close drawer after 400ms so that animation works fine
+            }}>
+                <i class="fa-solid fa-arrow-up h2"></i>
+            </button>
+            
+            <ul class="my-2 mx-auto">
+                <li>
+                    <a href="/dashboard" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+                        Inicio
+                    </a>
+                </li>
+                <li>
+                    <div class="w-fit my-2 mx-auto flex flex-row">
+                        <p class="mr-6">Tema </p><LightSwitch></LightSwitch>
+                    </div>
+                    
+                </li>
+            </ul>
+
+
+        </nav>
+    {/if}
+</Drawer>
+<!-- END MOBILE DRAWER-->
 
 
 <div class="h-screen animate-show flex flex-col overflow-auto w-full">
@@ -29,21 +73,26 @@
         class:hide-navbar={expandedDrawer} class="w-full mx-auto"
         >
             <div class="flex pb-[1rem]">
-                <div class="lg:hidden block w-1/3 pt-[1rem] pl-[1rem] lg:pl-[2rem]">
-                    <i class="fa-solid fa-bars text-xl"></i>
+                <div class="lg:hidden block w-1/3 pt-[1rem] pl-[1rem] lg:pl-[2rem] ">
+                    <button on:click={() => {
+                        expandedDrawer = true;
+                        setTimeout(() => drawerStore.open(layoutDrawerSettings), 400);
+                    }}>
+                        <i class="fa-solid fa-bars text-xl md:text-3xl"></i>
+                    </button>
                 </div>
-                <div class="lg:ml-[45%] w-1/3 text-center lg:text-start pt-[1rem]">
-                    <div class="lg:hidden">
-                        <a href="/dashboard" class="flex dark:hidden">
+                <div class="lg:ml-[45%] w-1/3 text-center lg:text-start pt-[1rem] md:ml-[5%]">
+                    <div class="lg:hidden mx-auto">
+                        <a href="/dashboard" class="flex dark:hidden md:h-[2rem]  md:ml-[5%]">
                             <img src={logo} alt="">
                         </a>
-                        <a href="/dashboard" class="hidden dark:flex">
+                        <a href="/dashboard" class="hidden dark:flex  md:h-[2rem]  md:ml-[5%]">
                             <img src={logolight} alt="">
                         </a>
                     </div>
                 </div>
                 <div class="w-1/3 pt-[1rem] pr-[1rem] lg:pr-[2rem] flex flex-row justify-end">
-                    <div class="lg:text-xl text-md capitalize text-end font-bold">
+                    <div class="lg:text-xl text-md capitalize text-end font-bold md:text-xl md:flex md:align-middle">
                         <div>{$user?.name?.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
                     </div>
                     <div class="hidden lg:flex w-auto ml-4"><LightSwitch/></div>
@@ -51,7 +100,7 @@
             </div>
         </header>
     </div>
-    <!-- MOBILE NAVBAR -->
+    <!-- END NAVBAR -->
 
     <!-- SIDEBAR -->
     <aside class="lg:block lg:fixed card w-20 h-screen ease-linear 
