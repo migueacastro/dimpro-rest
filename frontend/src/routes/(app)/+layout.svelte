@@ -12,7 +12,6 @@
     
     const modalStore = getModalStore();
     onMount(async () => {
-        await authenticate();
         if (!user) {
             await goto("/");
         }

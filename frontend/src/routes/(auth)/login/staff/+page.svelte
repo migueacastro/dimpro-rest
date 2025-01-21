@@ -23,7 +23,6 @@
 		if (response.ok) {
 			const token = data?.token;
 			Cookies.set('token', token, { expires: 365, secure: true });
-			
 			await authenticate();
 			goto("/");
 			
