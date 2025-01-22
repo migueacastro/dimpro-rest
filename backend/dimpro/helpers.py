@@ -2,7 +2,6 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.mixins import Response
 from rest_framework import permissions
-from serializers import UserNestedSerializer
 
 
 
