@@ -10,7 +10,7 @@
 	import { goto } from "$app/navigation";
     let expandedDrawer = false;
     const drawerStore = getDrawerStore();
-    const layoutDrawerSettings = {'id': 'layoutDrawer'} // Settings for oppening drawer
+    const layoutDrawerSettings = {'id': 'layoutDrawer', 'bgDrawer': 'variant-filled-primary dark:variant-filled-surface'} // Settings for oppening drawer
     
     const modalStore = getModalStore();
 
