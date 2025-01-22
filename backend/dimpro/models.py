@@ -1,11 +1,8 @@
-from typing import Any
 from django.contrib.auth.models import UserManager, AbstractBaseUser, PermissionsMixin, timezone
-from django.contrib.auth.hashers import check_password
 from django.db import models
-from django.db.models import Count
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-import datetime
+
 # Create your models here.
 class CustomUserManager(UserManager): 
     def _create_user(self, email, password, phonenumber, **extra_fields):
@@ -45,7 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=255, blank=True, default='')
     phoneregex = RegexValidator(regex=r"^\+?58?\d{11,15}$")
     phonenumber = models.CharField(
-        validators=[phoneregex], max_length=17, blank=True, null=True
+        validators=[phoneregex], max_length=17, blank=True, null=True # Usar este campo. el regex ya esta en los validadores xd
     )
     active = models.BooleanField(default=True) # lo modifique para que se adapte al SafeViewSet
     is_superuser = models.BooleanField(default=False)
@@ -115,7 +112,7 @@ class Contact(models.Model):
 
 # TODO: viewset para Order
 class Order(models.Model):
-    user_email = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', null=True)
     status = models.CharField(max_length=16,choices= [
         ('preparado', 'Preparado'),
         ('pendiente', 'Pendiente')
@@ -141,7 +138,7 @@ class Order_Product(models.Model):
     id = models.AutoField(primary_key=True)
     order =  models.ForeignKey(Order, on_delete=models.CASCADE, related_name='orders')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
-    price = models.DecimalField(max_digits=7,decimal_places=2, default=0)
+    dprice = models.DecimalField(max_digits=7,decimal_places=2, default=0)
     cost = models.DecimalField(max_digits=7,decimal_places=2, default=0)
     quantity = models.IntegerField(validators = [
         MinValueValidator(1)

@@ -8,7 +8,7 @@ from rest_framework import status
 from django.db.models import Q
 from dimpro.serializers import *
 from dimpro.models import *
-from dimpro.helpers import SafeViewSet
+from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission
 
 # Create your views here.
 
@@ -124,11 +124,15 @@ class UserProfileView(APIView):
 
 
 class UserViewSet(SafeViewSet):
-  permission_classes = (IsAuthenticated, )
+  permission_classes = (IsAuthenticated, IsStaff)
   serializer_class = UserSerializer
   queryset = User.objects.filter(active=True, is_staff=False)
-  superuser_only = False
-  staff_get_required = True
+
+  def retrieve(self, request, *args, **kwargs): 
+    # list, create, update, partial_update retrive, destroy son los metodos de 
+    # Viewsets. Retrieve nos servira para recuperar un solo registro
+    object_instance = self.get_object()
+    return Response(UserNestedSerializer(object_instance).data)
 
 
 class StaffViewSet(SafeViewSet):
@@ -144,14 +148,32 @@ class StaffViewSet(SafeViewSet):
 
 class ProductViewSet(SafeViewSet):
   serializer_class = ProductSerializer
-  queryset = Product.objects.filter(active=True)
+  permission_classes = (IsAuthenticated, UserReadOnlyPermission)
+  queryset = Product.objects.filter(active=True) # Aqui no por ejemplo
 
 
 class ContactViewSet(SafeViewSet):
-  serializer_class = ContacSerializer
+  serializer_class = ContactSerializer
+  permission_classes = (IsAuthenticated, UserReadOnlyPermission)
   queryset = Contact.objects.filter(active=True)
 
 
-class OrderViewSet(SafeViewSet):
-  serializer_class = OrderSerializer
+class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProducts
+  serializer_class = OrderSerializer 
+  permission_classes = (IsAuthenticated, )
+  # No hay que preocuparse por lecturas indebidas, 
+  # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
+  # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
   queryset = Order.objects.filter(active=True)
+
+
+class WelcomeStaffView(APIView):
+  def get(self, request, format=None):
+    serializer = WelcomeStaffSerializer() # El serializador solito agarra los registros, usara UserSerializer
+    return Response(serializer.data)
+  
+class WelcomeSuperUserView(APIView):
+  def get(self, request, format=None):
+    serializer = WelcomeSuperUserSerializer() # El serializador solito agarra los registros, usara UserSerializer
+    return Response(serializer.data)
+  
