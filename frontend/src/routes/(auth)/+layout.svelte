@@ -8,7 +8,7 @@
         <LightSwitch/>
         <!-- TODO: Arreglar modo oscuro -->
     </div>
-    <div class="mx-auto my-[3.75rem] card p-[3rem] max-w-[45rem] text-center dark:variant-ghost-surface variant-outline-tertiary shadow-xl">
+    <div class="mx-auto my-[1.5rem] card p-[3rem] max-w-[45rem] text-center dark:variant-ghost-surface variant-outline-tertiary shadow-xl">
         <slot/>
     </div>
 </div>

@@ -16,14 +16,14 @@ class SafeViewSet(viewsets.ModelViewSet):
   
 
 class IsStaff(permissions.BasePermission):
-    message = "Not enough permissions"
+    message = "No posee los permisos necesarios"
     def has_permission(self, request, view):
       if not request.user.is_staff:
           return False
       return True
 
 class UserReadOnlyPermission(permissions.BasePermission):
-    message = "Not enough permissions"
+    message = "No posee los permisos necesarios"
     def has_permission(self, request, view):
       allowed_methods = ["GET"]
       if (not request.user.is_staff and request.method in allowed_methods) or request.user.is_staff:
