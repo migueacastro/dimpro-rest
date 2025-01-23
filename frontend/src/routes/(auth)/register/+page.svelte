@@ -12,34 +12,45 @@
 		password: any;
 		name: any;
 		confirmPassword: any;
+		phoneNumber: any;
 	}
 
-	let errors: FormErrors = { email: null, password: null, confirmPassword: null, name: null };
+	let errors: FormErrors = {
+		email: null,
+		password: null,
+		confirmPassword: null,
+		name: null,
+		phoneNumber: null
+	};
 
 	let email = '';
 	let name = '';
 	let password = '';
 	let confirmPassword = '';
+	let phoneNumber = '';
 	let validatedFields: Boolean = false;
 	function validateFields() {
 		let valid: Boolean = false;
-		valid = fields.validateEmail(email) && fields.validatePasswords(password, confirmPassword)
+		valid =
+			fields.validateEmail(email) &&
+			fields.validatePhoneNumber(phoneNumber) &&
+			fields.validatePasswords(password, confirmPassword);
 		validatedFields = valid;
 		return valid;
 	}
 
 	async function handleRegister() {
 		if (!validateFields()) {
-			
 			goto('/register');
-			window.location.reload()
+			window.location.reload();
 			return null;
 		}
 		let formData = {
 			email: email,
 			name: name,
 			password: password,
-			confirmPassword: confirmPassword
+			confirmPassword: confirmPassword,
+			phoneNumber: phoneNumber
 		};
 		await fetchRegister(formData);
 		const response = await fetchLogin(formData);
@@ -65,7 +76,14 @@
 	<form>
 		<h3 class="text-4xl mb-[2rem]">Regístre su usuario</h3>
 
-		<input class="input my-2" title="Nombre" type="text" placeholder="Usuario" bind:value={name} on:input={validateFields}/>
+		<input
+			class="input my-2"
+			title="Nombre"
+			type="text"
+			placeholder="Usuario"
+			bind:value={name}
+			on:input={validateFields}
+		/>
 
 		{#if errors.name}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -77,7 +95,14 @@
 			</div>
 		{/if}
 
-		<input class="input my-2" title="Email" type="text" placeholder="Email" bind:value={email} on:input={validateFields} />
+		<input
+			class="input my-2"
+			title="Email"
+			type="text"
+			placeholder="Email"
+			bind:value={email}
+			on:input={validateFields}
+		/>
 
 		{#if email.length > 0}
 			{#if !fields.validateEmail(email)}
@@ -132,7 +157,7 @@
 
 		<input
 			class="input my-2"
-			title="RepContraseña"
+			title="Repetir Contraseña"
 			type="password"
 			placeholder="Repita su Contraseña"
 			bind:value={confirmPassword}
@@ -154,12 +179,34 @@
 				</ul>
 			</div>
 		{/if}
+		<input
+			class="input my-2"
+			title="telefono"
+			type="text"
+			placeholder="Número de telefono"
+			bind:value={phoneNumber}
+			on:input={validateFields}
+		/>
+		{#if phoneNumber.length > 0}
+			{#if !fields.validatePhoneNumber(phoneNumber)}
+				<div class="card variant-ghost-error p-2 text-sm text-left">
+					{fields.NotValidPhone}
+				</div>
+			{/if}
+		{/if}
+		{#if errors.phoneNumber}
+			<div class="card variant-ghost-error p-2 text-sm text-left">
+				<ul>
+					{#each errors?.phoneNumber as error}
+						<li>{error}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 		<button
 			class="btn btn-xl variant-filled-primary my-2 w-full shadow-xl"
 			on:click={handleRegister}
-			disabled={!validatedFields}
-			>Registrarse</button
-			
+			disabled={!validatedFields}>Registrarse</button
 		>
 		<p class="mt-4">
 			¿Ya posees una cuenta? <a class="anchor no-underline" href="/login/user">Inicie sesión</a>

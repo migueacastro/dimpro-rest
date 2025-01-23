@@ -24,8 +24,7 @@
 			const token = data?.token;
 			Cookies.set('token', token, { expires: 365, secure: true });
 			await authenticate();
-			goto("/");
-			
+			goto('/');
 		} else {
 			errors = data;
 		}
@@ -53,7 +52,13 @@
 			</div>
 		{/if}
 
-		<input class="input my-2" title="Contraseña" type="password" placeholder="Contraseña" bind:value={password}/>
+		<input
+			class="input my-2"
+			title="Contraseña"
+			type="password"
+			placeholder="Contraseña"
+			bind:value={password}
+		/>
 
 		{#if errors.password}
 			<div class="card variant-ghost-error p-2 text-sm text-left">

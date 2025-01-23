@@ -12,11 +12,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
   confirmPassword = serializers.CharField(write_only=True, style={"input_type":"password"}, min_length=8, max_length=100)
   class Meta:
     model = get_user_model() 
-    fields = ['email', 'name', 'password', 'confirmPassword']
+    fields = ['email', 'name', 'password', 'confirmPassword','phonenumber']
 
   def create(self, validated_data):
     user_password = validated_data.get('password', None)
-    user_instance = self.Meta.model(email = validated_data.get('email'), name = validated_data.get('name'))
+    user_instance = self.Meta.model(email = validated_data.get('email'), name = validated_data.get('name'), phonenumber = validated_data.get('phonenumber'))
     user_instance.set_password(user_password)
     user_instance.save()
     return user_instance
@@ -35,11 +35,11 @@ class UserSerializer(serializers.ModelSerializer): # TODO: Agregar campo de nume
   confirmPassword = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
   class Meta:
     model = get_user_model() 
-    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'is_staff', 'is_superuser']
+    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'is_staff', 'is_superuser']
 
   def create(self, validated_data):
     user_password = validated_data.get('password', None) 
-    user_instance = self.Meta.model(email= validated_data.get('email'), name = validated_data.get('name')) 
+    user_instance = self.Meta.model(email= validated_data.get('email'), name = validated_data.get('name'), phonenumber = validated_data.get('phonenumber')) 
     user_instance.set_password(user_password) 
     user_instance.is_staff = validated_data.get('is_staff', False)
     user_instance.is_superuser = validated_data.get('is_superuser', False)
@@ -51,6 +51,7 @@ class UserSerializer(serializers.ModelSerializer): # TODO: Agregar campo de nume
     instance.set_password(user_password)
     instance.email = validated_data.get('email', instance.email)
     instance.name = validated_data.get('name', instance.name) 
+    instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
     instance.is_staff = validated_data.get('is_staff', instance.is_staff)
     instance.is_superuser = validated_data.get('is_superuser',instance.is_superuser)
     instance.save()
@@ -84,6 +85,10 @@ class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden 
     list_products = Order_Product.objects.filter(active=True, order=obj.id)
     return OrderProductSerializer(list_products, many=True).data
 
+class AlegraUserSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = AlegraUser
+    fields = ['email','token', 'active']
 
 class WelcomeStaffSerializer(serializers.Serializer): # No es un modelo, es un simple Serializer
   orders = serializers.SerializerMethodField()
@@ -112,7 +117,7 @@ class UserNestedSerializer(UserSerializer):
   orders = serializers.SerializerMethodField(read_only=True) # fiuh, no era necesario el WritableNestedSerializer
   class Meta:
     get_user_model()
-    ['id', 'email', 'name', 'password', 'confirmPassword', 'is_staff', 'is_superuser', 'orders']
+    ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'is_staff', 'is_superuser', 'orders']
 
   def get_orders(self, obj):
     list_orders = Order.objects.filter(active=True, user=obj.id)

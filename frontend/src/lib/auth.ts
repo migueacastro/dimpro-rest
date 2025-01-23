@@ -1,7 +1,7 @@
 import { apiURL } from './api_url';
 import Cookies from 'js-cookie';
 import { goto } from '$app/navigation';
-import { user } from '../stores/stores';
+import { user, users } from '../stores/stores';
 
 
 // Simplificar la solicitud http al iniciar sesión
@@ -46,7 +46,6 @@ export async function fetchRegister(data: any) {
 export async function authenticate() {
     const url = apiURL + "user";
     const token = Cookies.get("token");
-    // console.log(token);
     if (token) {
         const response = await window.fetch(url, {
             method: 'GET',
@@ -65,5 +64,29 @@ export async function authenticate() {
         
     }
     user.set(null);
+    return null;
+}
+
+export async function fetchUsers() {
+    const url = apiURL + "users";
+    const token = Cookies.get("token");
+    if (token) {
+        const response = await window.fetch(url, {
+            method: 'GET',
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        const data = await response.json()
+        if (response.ok) {
+            users.set(data);
+            return data;
+        }
+        
+        Cookies.remove('token');
+        
+    }
+    users.set(null);
     return null;
 }

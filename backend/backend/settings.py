@@ -141,7 +141,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "dimpro.User"
 CSRF_TRUSTED_ORIGINS = [
     "https://bd2c7731-eea7-47d1-8886-dd8133157689-00-hnezs8zhtojv.spock.replit.dev:8000",
-    "https://probable-invention-4jqwr4x46jpxfjwvp-5173.app.github.dev", #Joel: temporal, por github 
+    "https://sturdy-memory-7v7pxqgqw7qq3wpjj-5173.app.github.dev", #Joel: temporal, por github 
     ]
 
 TOKEN_DURATION = timedelta(days=90) 
@@ -150,7 +150,7 @@ TOKEN_DURATION = timedelta(days=90)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
-    "https://probable-invention-4jqwr4x46jpxfjwvp-5173.app.github.dev", #Joel: temporal, por github 
+    "https://sturdy-memory-7v7pxqgqw7qq3wpjj-5173.app.github.dev", #Joel: temporal, por github 
 ]
 
 CORS_ALLOW_CREDENTIALS = True

@@ -56,10 +56,7 @@ class UserLoginView(TokenObtainPairView):
       raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
-    if not user_instance:
-      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
-
-    if user_instance.is_staff:
+    if not user_instance or user_instance.is_staff:
       raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
@@ -92,10 +89,7 @@ class StaffOnlyLoginView(TokenObtainPairView):
       raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
-    if not user_instance:
-      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
-
-    if not (user_instance.is_staff or user_instance.is_superuser):
+    if (not user_instance) or not (user_instance.is_staff or user_instance.is_superuser):
       raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
@@ -118,7 +112,7 @@ class UserProfileView(APIView):
   def get(self, request):
     user = request.user
     if not user:
-      raise AuthenticationFailed({"message": "Unauthorized"})
+      raise AuthenticationFailed({"message": "Acceso no Autorizado."})
     user_serializer = UserSerializer(user)
     return Response(user_serializer.data)
 
@@ -166,6 +160,10 @@ class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProduc
   # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
   queryset = Order.objects.filter(active=True)
 
+class AlegraUserViewSet(SafeViewSet):
+  serializer_class = AlegraUserSerializer
+  permission_classes = (IsAdminUser,)
+  queryset = AlegraUser.objects.filter(active=True)
 
 class WelcomeStaffView(APIView):
   def get(self, request, format=None):

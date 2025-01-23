@@ -101,6 +101,7 @@ class Image(models.Model):
 class AlegraUser(models.Model):
     email = models.CharField(max_length=128)
     token = models.CharField(max_length=256)
+    active = models.BooleanField(null = False, default=True) 
 
 
 class Contact(models.Model): 
