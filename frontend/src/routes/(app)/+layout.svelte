@@ -263,5 +263,7 @@
 		</a>
 	</aside>
 	<!-- END SIDEBAR -->
-	<slot />
+  <div class="m-[3rem] ml-[8rem]">
+	  <slot />
+  </div>
 </div>
