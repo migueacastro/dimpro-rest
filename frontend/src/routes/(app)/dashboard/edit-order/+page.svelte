@@ -4,13 +4,14 @@
   // whatever just blablabla   
   
   interface Item {
-    id:Number;
+    id:number;
     item:String;
     reference:String;
-    quantity:Number;
-    availability:Number;
-    price:Number;
-    cost:Number
+    quantity:number;
+    availability:number;
+    price:number;
+    cost:number;
+    index:number;
   }
 
   let items: Array<Item> = [
@@ -45,17 +46,23 @@
     //items.push(newRow); // You see? this just updates the content, not the value
   }
 
-  function removeRow(index:Number) {
-    let target = items.findIndex(item => item.index = index);
-    items.slice(target,1);
-    items = items;
-    //items.splice(index,1); // this would work well if instead of id, it would be the current index inside of the items array
-  } 
+  function removeRow(index:Number) { 
   
+    items = items.filter(item => item.index !== index);
+    updateIndex(); //items.splice(index,1); // this would work well if instead of id, it would be the current index inside of the items array 
+  } 
+
+  function updateIndex() {
+    items.forEach((item, index) => {
+      item.index = index;
+    })
+  }
+
+
   // id does not depend on the table, it merely depends on the item
 </script>
 
-
+ 
 
 <h1 class="h2 my-4">
   Editar Orden
@@ -77,10 +84,10 @@
       </tr>
 		</thead>
 		<tbody>
-			{#each items as row, i}
+			{#each items as row}
 				<tr>
 					<td>{row.id}</td>
-					<td>{row.name}</td>
+					<td>{row.item}</td>
 					<td>{row.reference}</td>
 					<td>{row.quantity}</td>
 
@@ -88,12 +95,12 @@
 					<td>{row.price}</td>
 					<td>{row.cost}</td>
           <td class="flex flex-row">
-            <button class="btn variant-filled" onclick={() => removeRow(row.index)}>
+            <button class="btn variant-filled" on:click={() => removeRow(row.index)}>
               <i class="fa-solid fa-trash"></i>
             </button>
-            <buttton class="btn ml-2 variant-filled" on:click={addRow}>
+            <button class="btn ml-2 variant-filled" on:click={addRow} >
               <i class="fa-solid fa-plus"></i>
-            </buttton>
+            </button>
           </td>
 				</tr>
 			{/each}
