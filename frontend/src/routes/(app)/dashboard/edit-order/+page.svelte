@@ -13,7 +13,7 @@
     availability:number;
     price:number;
     cost:number;
-    index:number
+    index:number;
   }
 
   let items: Array<Item> = [
@@ -48,16 +48,23 @@
   }
 
   function removeRow(index:number) {
-    let target = items.findIndex(item => item.index === index);
-    items = items.filter((_, index) => index !== target)
-    items = [...items];
+    items = items.filter((item) => item.index !== index)
+    updateIndex();
     //items.splice(index,1); // this would work well if instead of id, it would be the current index inside of the items array
   } 
   
+ 
+  function updateIndex() {
+    items.forEach((item, index) => {
+      item.index = index;
+    })
+  }
+
+
   // id does not depend on the table, it merely depends on the item
 </script>
 
-
+ 
 
 <h1 class="h2 my-4">
   Editar Orden
@@ -79,7 +86,7 @@
       </tr>
 		</thead>
 		<tbody>
-			{#each items as row, i}
+			{#each items as row}
 				<tr>
 					<td>{row.id}</td>
 					<td>{row.item}</td>
@@ -93,7 +100,7 @@
             <button class="btn variant-filled" on:click={() => removeRow(row.index)}>
               <i class="fa-solid fa-trash"></i>
             </button>
-            <button class="btn ml-2 variant-filled" on:click={addRow}>
+            <button class="btn ml-2 variant-filled" on:click={addRow} >
               <i class="fa-solid fa-plus"></i>
             </button>
           </td>
