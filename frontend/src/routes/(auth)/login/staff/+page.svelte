@@ -1,3 +1,4 @@
+<title>Inicio Sesión</title>
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { apiURL } from '$lib/api_url';

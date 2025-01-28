@@ -1,3 +1,4 @@
+<title>Registrar Usuario</title>
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { fetchRegister, fetchLogin } from '$lib/auth';
