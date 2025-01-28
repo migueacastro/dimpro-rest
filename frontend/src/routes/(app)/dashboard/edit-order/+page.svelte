@@ -1,3 +1,5 @@
+<title>Editar Ordenes</title>
+
 <script lang="ts">
   // fuck yeah, fuck yeah
   // whatever I'll go this way
@@ -29,29 +31,29 @@
 
   function addRow() {
   // carefull here, reactiviy works this way
-    let lastIndex = items.slice(-1)[0].index + 1;
+    let index = items[items.length - 1].index + 1;
     let newRow = {
-      'id': 1,
+      'id': 7,
       'item': 'Bombillo',
-      'reference': 'BOMTL20',  
+      'reference': 'AAA',  
       'quantity': 200,
       'availability': 5104,
       'price': 6.5,
       'cost': 245.4,
-      'index': lastIndex
+      'index': index
     };
-    console.log(lastIndex);
     
     items = [...items,newRow]; // Here the array value is changed to another array with different  content
     //items.push(newRow); // You see? this just updates the content, not the value
   }
 
-  function removeRow(index:Number) { 
-  
-    items = items.filter(item => item.index !== index);
-    updateIndex(); //items.splice(index,1); // this would work well if instead of id, it would be the current index inside of the items array 
+  function removeRow(index:number) {
+    items = items.filter((item) => item.index !== index)
+    updateIndex();
+    //items.splice(index,1); // this would work well if instead of id, it would be the current index inside of the items array
   } 
-
+  
+ 
   function updateIndex() {
     items.forEach((item, index) => {
       item.index = index;

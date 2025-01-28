@@ -1,3 +1,4 @@
+<title>Dimpro Iluminación</title>
 <script>
 	import { user } from '../../../stores/stores';
 </script>

@@ -1,3 +1,4 @@
+<title>??NO DEFINIDO??</title>
 <script lang="ts">
     import logo from '$lib/assets/logodimpro.svg';
 </script>
