@@ -1,5 +1,6 @@
 from django.contrib import admin
 from dimpro.models import *
+from auditlog.models import LogEntry
 #
 # Register your models here.
 class ProductAdmin(admin.ModelAdmin): # Esto es para ver detalladamente la lista
@@ -16,4 +17,5 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Product, ProductAdmin)
+# admin.site.register(LogEntry)
 admin.site.register(Contact) # Esto es para ver solo los registros por el id, no muestra detalles a simple vista

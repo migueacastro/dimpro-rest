@@ -1,3 +1,5 @@
+from auditlog.models import LogEntry
+from django.contrib.admin.options import get_content_type_for_model
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
@@ -9,7 +11,7 @@ from django.db.models import Q
 from dimpro.serializers import *
 from dimpro.models import *
 from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission
-
+from django.utils.translation import gettext as _
 # Create your views here.
 
 
@@ -35,6 +37,14 @@ class UserRegistrationView(APIView
 
       new_user = serializer.save()
       if new_user:
+
+        LogEntry.objects.create(
+            content_type=get_content_type_for_model(User),
+            action=LogEntry.Action.CREATE,
+            changes_text="User registered",
+            object_pk=new_user.id,
+            object_id=new_user.id,
+        ) 
         user_instance = User.objects.get(
             email=serializer.validated_data.get("email"))
         return Response(status=status.HTTP_201_CREATED)
@@ -62,6 +72,13 @@ class UserLoginView(TokenObtainPairView):
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
       user_serializer = UserSerializer(user_instance)
+      LogEntry.objects.create(
+        content_type=get_content_type_for_model(User),
+        action=LogEntry.Action.UPDATE,
+        changes_text="User logged in",
+        object_pk=user_instance.id,
+        object_id=user_instance.id,
+      ) 
       return Response(
           {
               "token": login_serializer.validated_data.get("access"),
@@ -73,6 +90,17 @@ class UserLoginView(TokenObtainPairView):
     return Response(login_serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST)
 
+class UserLogoutView(APIView): # You might add this request into the Logout function inside svelte, just a fetch, doesnt have to return anything, although perhaps at somepoint we will use refresh-token to logout all users that are using a specific token, for avoiding a very risky vulnerability of JWT. 
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, *args, **kwargs):
+      user_instance = request.user
+      LogEntry.objects.create(
+        content_type=get_content_type_for_model(User),
+        action=LogEntry.Action.UPDATE,
+        changes_text="User logged out",
+        object_pk=user_instance.id,
+        object_id=user_instance.id,
+      ) 
 
 
 class StaffOnlyLoginView(TokenObtainPairView):
@@ -94,6 +122,13 @@ class StaffOnlyLoginView(TokenObtainPairView):
 
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
+      LogEntry.objects.create(
+        content_type=get_content_type_for_model(User),
+        action=LogEntry.Action.UPDATE,
+        changes_text="User logged in",
+        object_pk=user_instance.id,
+        object_id=user_instance.id,
+      ) 
       user_serializer = UserSerializer(user_instance)
       return Response(
           {

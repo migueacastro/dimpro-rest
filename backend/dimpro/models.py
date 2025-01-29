@@ -1,7 +1,7 @@
 from django.contrib.auth.models import UserManager, AbstractBaseUser, PermissionsMixin, Group, timezone
 from django.db import models
 from django.core.validators import MinValueValidator, RegexValidator
-
+from auditlog.registry import auditlog
 # Create your models here.
 class CustomUserManager(UserManager): 
     def _create_user(self, email, password, phonenumber, **extra_fields):
@@ -83,6 +83,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_superuser(self):
         return User.objects.get(id=self.id).groups.filter(name="admin").exists()
 
+auditlog.register(User, exclude_fields=["password"]) #adding this will log the model
+
 class Product(models.Model): 
     item = models.CharField(max_length=64, unique=False)
     active = models.BooleanField(null = False, default=True) 
@@ -106,16 +108,18 @@ class Product(models.Model):
             'prices': self.prices,
             'available_quantity': self.available_quantity
         }
+auditlog.register(Product)
 
 class Image(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     url = models.CharField(max_length=256)
+auditlog.register(Image)
 
 class AlegraUser(models.Model):
     email = models.CharField(max_length=128)
     token = models.CharField(max_length=256)
     active = models.BooleanField(null = False, default=True) 
-
+auditlog.register(AlegraUser)
 
 class Contact(models.Model): 
     name = models.CharField(max_length=128)
@@ -123,6 +127,7 @@ class Contact(models.Model):
     active = models.BooleanField(null = False, default=True)
     def __str__(self):
         return str(self.id)
+auditlog.register(Contact)
 
 # TODO: viewset para Order
 class Order(models.Model):
@@ -141,12 +146,13 @@ class Order(models.Model):
 
     def __str__(self):
         return str(self.id)
+auditlog.register(Order)
 
 
 class PriceType(models.Model):
     name = models.CharField(max_length = 128)
     default = models.BooleanField(default=False)
-
+auditlog.register(PriceType)
 
 class Order_Product(models.Model):
     id = models.AutoField(primary_key=True)
@@ -159,11 +165,15 @@ class Order_Product(models.Model):
     ])
     def __str__(self):
         return str(self.id)
+auditlog.register(Order_Product)
+
 
 class Note(models.Model):
     note = models.TextField()
     name = models.CharField(max_length=128)
     date = models.DateTimeField(auto_now_add=True)
+auditlog.register(Note)
+
 
 class Receivable(models.Model):
     active = models.BooleanField(default=False)
@@ -172,3 +182,5 @@ class Receivable(models.Model):
     total = models.DecimalField(max_digits=7, decimal_places=2)
     date = models.DateField(auto_now_add=False)
     number = models.CharField(max_length=128, blank=True, null=True)
+auditlog.register(Receivable)
+

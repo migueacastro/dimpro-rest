@@ -1,8 +1,6 @@
 from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import AuthenticationFailed
-from dimpro.helpers import add_to_group
 from dimpro.models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
@@ -133,3 +131,6 @@ class UserNestedSerializer(UserSerializer):
     list_orders = Order.objects.filter(active=True, user=obj.id)
     return OrderSerializer(list_orders, many=True).data # Para esta vista, quiero omitir lo campos de productos, 
   
+
+class LogSerializer(serializers.ModelSerializer):
+    pass
