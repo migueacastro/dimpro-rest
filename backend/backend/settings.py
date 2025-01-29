@@ -121,9 +121,9 @@ SIMPLE_JWT = {
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "es" # Very important for error handling messages 
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Caracas" # Very important for avoiding future issues
 
 USE_I18N = True
 

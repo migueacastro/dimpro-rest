@@ -1,7 +1,6 @@
-from django.contrib.auth.models import UserManager, AbstractBaseUser, PermissionsMixin, timezone
+from django.contrib.auth.models import UserManager, AbstractBaseUser, PermissionsMixin, Group, timezone
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 
 # Create your models here.
 class CustomUserManager(UserManager): 
@@ -14,26 +13,34 @@ class CustomUserManager(UserManager):
         user.set_password(password)
         user.phonenumber = phonenumber
         user.save(using=self._db)
-
-        return user
+        return user # I dont know why this method is here, but it isnt bothering anyone, so it stays. It's django's primitive _create user iirc
     
     def create_user(self, email=None, password=None, phonenumber=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
-        extra_fields.setdefault('is_operator', False)
-        return self._create_user(email, password, phonenumber, **extra_fields)
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        user_group, created = Group.objects.get_or_create(name="user")        
+        user.groups.add(user_group)
+        return user
 
     def create_superuser(self, email=None, password=None, phonenumber=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_operator', True)
-        return self._create_user(email, password, phonenumber,**extra_fields)
+        user = self.create_user(email, password, phonenumber,**extra_fields)
+        staff_group, created = Group.objects.get_or_create(name="staff")
+        superuser_group, created = Group.objects.get_or_create(name="admin") # it lacked staff group
+        user_group, created = Group.objects.get_or_create(name="user")        
+        user.groups.add(superuser_group)
+        user.groups.add(staff_group)
+        user.groups.add(user_group)
+        return user
 
     def create_staff(self, email=None, password=None, phonenumber=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', False)
-        extra_fields.setdefault('is_operator', False)
-        return self._create_user(email, password, phonenumber,**extra_fields)
+        user = self.create_user(email, password, phonenumber,**extra_fields)
+        staff_group, created = Group.objects.get_or_create(name="staff")
+        user_group, created = Group.objects.get_or_create(name="user")        
+        user.groups.add(staff_group)
+        user.groups.add(user_group)
+        return user
 
 class User(AbstractBaseUser, PermissionsMixin): 
     id = models.AutoField(primary_key=True)
@@ -45,9 +52,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         validators=[phoneregex], max_length=17, blank=True, null=True # Usar este campo. el regex ya esta en los validadores xd
     )
     active = models.BooleanField(default=True) # lo modifique para que se adapte al SafeViewSet
-    is_superuser = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
-    is_operator = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(blank=True, null=True)
 
@@ -68,7 +72,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.name or self.email.split('@')[0]
 
     def user_orders(self):
-        return Order.objects.filter(user_email=self.id).count()
+        return Order.objects.filter(user_email=self.email).count()
+
+    # Properties used only during admin interface
+    @property
+    def is_staff(self):
+        return User.objects.get(id=self.id).groups.filter(name="staff").exists()
+
+    @property
+    def is_superuser(self):
+        return User.objects.get(id=self.id).groups.filter(name="admin").exists()
 
 class Product(models.Model): 
     item = models.CharField(max_length=64, unique=False)

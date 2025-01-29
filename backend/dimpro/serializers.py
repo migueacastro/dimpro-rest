@@ -1,8 +1,11 @@
+from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
+from rest_framework.exceptions import AuthenticationFailed
+from dimpro.helpers import add_to_group
 from dimpro.models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from drf_writable_nested.serializers import WritableNestedModelSerializer
+from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
   pass
@@ -16,8 +19,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
   def create(self, validated_data):
     user_password = validated_data.get('password', None)
-    user_instance = self.Meta.model(email = validated_data.get('email'), name = validated_data.get('name'), phonenumber = validated_data.get('phonenumber'))
+    user_instance = User.objects.create(**validated_data)
     user_instance.set_password(user_password)
+
+    user_group = Group.objects.get(name="user")
+    user_instance.groups.add(user_group)
+
     user_instance.save()
     return user_instance
 
@@ -29,35 +36,46 @@ class UserLoginSerializer(serializers.ModelSerializer):
   class Meta:
     model = get_user_model()
     fields = ["email", "password"]
-  
-class UserSerializer(serializers.ModelSerializer): # TODO: Agregar campo de numero telefonico en el front y backend, si para ti xd
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'name']
+ 
+
+class UserSerializer(serializers.ModelSerializer):  
   password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
   confirmPassword = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
+  group_objects = serializers.SerializerMethodField(read_only=True)
   class Meta:
     model = get_user_model() 
-    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'is_staff', 'is_superuser']
+    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups', 'group_objects']
 
   def create(self, validated_data):
-    user_password = validated_data.get('password', None) 
-    user_instance = self.Meta.model(email= validated_data.get('email'), name = validated_data.get('name'), phonenumber = validated_data.get('phonenumber')) 
-    user_instance.set_password(user_password) 
-    user_instance.is_staff = validated_data.get('is_staff', False)
-    user_instance.is_superuser = validated_data.get('is_superuser', False)
+    user_password = validated_data.get('password', None)
+     # Removes group form validated_data
+    validated_data.pop('confirmPassword')
+    
+    user_groups = validated_data.pop('groups')
+    user_instance = User.objects.create(**validated_data) # Creates user with all the validated_data
+    user_instance.groups.set(user_groups)
     user_instance.save()
     return user_instance
 
-  def update(self, instance, validated_data): 
-    user_password = validated_data.get('password', None) 
-    instance.set_password(user_password)
-    instance.email = validated_data.get('email', instance.email)
-    instance.name = validated_data.get('name', instance.name) 
-    instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber)
-    instance.is_staff = validated_data.get('is_staff', instance.is_staff)
-    instance.is_superuser = validated_data.get('is_superuser',instance.is_superuser)
+  def update(self, instance, validated_data):
+
+        # pycrap goofy ahh twoliner code , i hope i dont forget to erase these comments so that beslith does not see them, and i truly hope Beslith will read this
+    user_groups = validated_data.pop('groups', None)
+    validated_data.pop('confirmPassword')
+    self.update(instance, validated_data)
+    instance.groups.set(user_groups)
     instance.save()
     return instance 
     
-  
+  def get_group_objects(self, obj):
+    return GroupSerializer(obj.groups.all(), many=True).data
+
 class ProductSerializer(serializers.ModelSerializer):
   class Meta:
     model = Product

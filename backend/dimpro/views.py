@@ -56,7 +56,7 @@ class UserLoginView(TokenObtainPairView):
       raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
-    if not user_instance or user_instance.is_staff:
+    if not user_instance.groups.filter(name="user").exists():
       raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
@@ -89,7 +89,7 @@ class StaffOnlyLoginView(TokenObtainPairView):
       raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
-    if (not user_instance) or not (user_instance.is_staff or user_instance.is_superuser):
+    if (not user_instance) or not (user_instance.groups.filter(name="staff").exists()):
       raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
@@ -120,11 +120,9 @@ class UserProfileView(APIView):
 class UserViewSet(SafeViewSet):
   permission_classes = (IsAuthenticated, IsStaff)
   serializer_class = UserSerializer
-  queryset = User.objects.filter(active=True, is_staff=False)
+  queryset = User.objects.filter(active=True).exclude(groups__name="staff") # If this line does not work i will nuke Copilot
 
   def retrieve(self, request, *args, **kwargs): 
-    # list, create, update, partial_update retrive, destroy son los metodos de 
-    # Viewsets. Retrieve nos servira para recuperar un solo registro
     object_instance = self.get_object()
     return Response(UserNestedSerializer(object_instance).data)
 
@@ -132,8 +130,7 @@ class UserViewSet(SafeViewSet):
 class StaffViewSet(SafeViewSet):
   permission_classes = (IsAdminUser, )
   serializer_class = UserSerializer
-  queryset = User.objects.filter(Q(is_superuser=True) | Q(is_staff=True),
-                                 active=True)
+  queryset = User.objects.filter(groups__name="staff", active=True)
   superuser_only = True
 
 
