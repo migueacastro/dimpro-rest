@@ -47,7 +47,6 @@ class GroupSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):  
   password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
   confirmPassword = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
-  group_objects = serializers.SerializerMethodField(read_only=True)
   class Meta:
     model = get_user_model() 
     fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups', 'group_objects']
@@ -72,9 +71,10 @@ class UserSerializer(serializers.ModelSerializer):
     instance.groups.set(user_groups)
     instance.save()
     return instance 
-    
-  def get_group_objects(self, obj):
-    return GroupSerializer(obj.groups.all(), many=True).data
+
+  def to_representation(self, instance):
+    self.fields['groups'] = GroupSerializer(many = True)
+    return super().to_representation(instance)
 
 class ProductSerializer(serializers.ModelSerializer):
   class Meta:
