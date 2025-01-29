@@ -18,13 +18,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     fields = ['email', 'name', 'password', 'confirmPassword','phonenumber']
 
   def create(self, validated_data):
-    user_password = validated_data.get('password', None)
-    user_instance = User.objects.create(**validated_data)
-    user_instance.set_password(user_password)
-
-    user_group = Group.objects.get(name="user")
-    user_instance.groups.add(user_group)
-
+    validated_data.pop('confirmPassword', None) # This field is validated, but wont be used for user creation
+    user_instance = User.objects.create_user(**validated_data)
     user_instance.save()
     return user_instance
 
@@ -55,7 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
     validated_data.pop('confirmPassword')
     
     user_groups = validated_data.pop('groups')
-    user_instance = User.objects.create(**validated_data) 
+    user_instance = User.objects.create_user(**validated_data) 
     user_instance.groups.set(user_groups)
     user_instance.save()
     return user_instance
