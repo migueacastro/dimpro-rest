@@ -52,19 +52,16 @@ class UserSerializer(serializers.ModelSerializer):
     fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups', 'group_objects']
 
   def create(self, validated_data):
-    user_password = validated_data.get('password', None)
-     # Removes group form validated_data
     validated_data.pop('confirmPassword')
     
     user_groups = validated_data.pop('groups')
-    user_instance = User.objects.create(**validated_data) # Creates user with all the validated_data
+    user_instance = User.objects.create(**validated_data) 
     user_instance.groups.set(user_groups)
     user_instance.save()
     return user_instance
 
   def update(self, instance, validated_data):
 
-        # pycrap goofy ahh twoliner code , i hope i dont forget to erase these comments so that beslith does not see them, and i truly hope Beslith will read this
     user_groups = validated_data.pop('groups', None)
     validated_data.pop('confirmPassword')
     self.update(instance, validated_data)
