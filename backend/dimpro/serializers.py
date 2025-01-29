@@ -1,8 +1,6 @@
 from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import AuthenticationFailed
-from dimpro.helpers import add_to_group
 from dimpro.models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
@@ -18,13 +16,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     fields = ['email', 'name', 'password', 'confirmPassword','phonenumber']
 
   def create(self, validated_data):
-    user_password = validated_data.get('password', None)
-    user_instance = User.objects.create(**validated_data)
-    user_instance.set_password(user_password)
-
-    user_group = Group.objects.get(name="user")
-    user_instance.groups.add(user_group)
-
+    validated_data.pop('confirmPassword', None) # This field is validated, but wont be used for user creation
+    user_instance = User.objects.create_user(**validated_data)
     user_instance.save()
     return user_instance
 
@@ -55,7 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
     validated_data.pop('confirmPassword')
     
     user_groups = validated_data.pop('groups')
-    user_instance = User.objects.create(**validated_data) 
+    user_instance = User.objects.create_user(**validated_data) 
     user_instance.groups.set(user_groups)
     user_instance.save()
     return user_instance
@@ -138,3 +131,6 @@ class UserNestedSerializer(UserSerializer):
     list_orders = Order.objects.filter(active=True, user=obj.id)
     return OrderSerializer(list_orders, many=True).data # Para esta vista, quiero omitir lo campos de productos, 
   
+
+class LogSerializer(serializers.ModelSerializer):
+    pass
