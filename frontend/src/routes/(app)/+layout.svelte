@@ -76,14 +76,14 @@
 						Inventario
 					</a>
 				</li>
-				{#if $user?.is_staff || $user?.is_superuser}
+				{#if $user?.groups[1]?.name==="staff" || $user?.groups[0]?.name==="admin"}
 					<li>
 						<a href="/users" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 							Usuarios
 						</a>
 					</li>
 				{/if}
-				{#if $user?.is_superuser}
+				{#if $user?.groups[0]?.name==="admin"}
 					<li>
 						<a href="/settings" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 							Configuración
@@ -216,7 +216,7 @@
 			</div>
 		</a>
 
-		{#if $user?.is_staff || $user?.is_superuser}
+		{#if $user?.groups[1]?.name==="staff" || $user?.groups[0]?.name==="admin"}
 			<a href="/users">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
@@ -232,7 +232,7 @@
 			</a>
 		{/if}
 
-		{#if $user?.is_superuser}
+		{#if  $user?.groups[0]?.name==="admin"}
 			<a href="/settings">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-gear h3 w-20"></i>
