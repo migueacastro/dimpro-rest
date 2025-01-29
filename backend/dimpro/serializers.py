@@ -49,7 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
   confirmPassword = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
   class Meta:
     model = get_user_model() 
-    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups', 'group_objects']
+    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups']
 
   def create(self, validated_data):
     validated_data.pop('confirmPassword')

@@ -1,9 +1,6 @@
 <title>Editar Ordenes</title>
 
 <script lang="ts">
-  // fuck yeah, fuck yeah
-  // whatever I'll go this way
-  // whatever just blablabla   
   
   interface Item {
     id:number;
