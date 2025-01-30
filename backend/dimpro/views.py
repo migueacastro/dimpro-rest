@@ -26,6 +26,7 @@ class UserRegistrationView(APIView
     serializer = self.serializer_class(data=request.data)
 
     if serializer.is_valid():
+      print("llegó aquí")
       password = serializer.validated_data.get("password", None)
       confirmPassword = serializer.validated_data.get("confirmPassword", None)
 

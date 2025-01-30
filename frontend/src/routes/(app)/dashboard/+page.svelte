@@ -3,7 +3,7 @@
 	import { user } from '../../../stores/stores';
 </script>
 
-{#if $user?.groups[1]?.name==="staff" || $user?.groups[0]?.name==="admin"}
+{#if $user?.groups[0]?.name==="staff" || $user?.groups[0]?.name==="admin"}
 	<div class="lg:flex lg:flex-row ">
 		<a class="block card card-hover lg:p-[3.75rem] p-[1.5rem] mx-auto lg:my-auto my-5 dark:variant-filled-surface variant-filled-tertiary" href="history">
 			<div class="flex flex-row">

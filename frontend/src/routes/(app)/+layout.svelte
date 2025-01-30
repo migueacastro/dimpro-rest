@@ -76,7 +76,7 @@
 						Inventario
 					</a>
 				</li>
-				{#if $user?.groups[1]?.name==="staff" || $user?.groups[0]?.name==="admin"}
+				{#if $user?.groups[0]?.name==="staff" || $user?.groups[0]?.name==="admin"}
 					<li>
 						<a href="/users" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 							Usuarios
@@ -216,7 +216,7 @@
 			</div>
 		</a>
 
-		{#if $user?.groups[1]?.name==="staff" || $user?.groups[0]?.name==="admin"}
+		{#if $user?.groups[0]?.name==="staff" || $user?.groups[0]?.name==="admin"}
 			<a href="/users">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
