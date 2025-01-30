@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     "dimpro",
     "rest_framework_simplejwt",
     "corsheaders", # Agregue corsheaders
+    "auditlog"
 ]
 
 MIDDLEWARE = [
+    "auditlog.middleware.AuditlogMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
