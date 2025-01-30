@@ -26,7 +26,6 @@ class UserRegistrationView(APIView
       self, request
   ):  # En registration solo manejaremos post, los demas quedaran como metodo no permitido
     serializer = self.serializer_class(data=request.data)
-
     if serializer.is_valid():
       password = serializer.validated_data.get("password", None)
       confirmPassword = serializer.validated_data.get("confirmPassword", None)
@@ -92,7 +91,7 @@ class UserLoginView(TokenObtainPairView):
 
 class UserLogoutView(APIView): # You might add this request into the Logout function inside svelte, just a fetch, doesnt have to return anything, although perhaps at somepoint we will use refresh-token to logout all users that are using a specific token, for avoiding a very risky vulnerability of JWT. 
     permission_classes = (IsAuthenticated,)
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
       user_instance = request.user
       LogEntry.objects.create(
         content_type=get_content_type_for_model(User),
@@ -100,7 +99,8 @@ class UserLogoutView(APIView): # You might add this request into the Logout func
         changes_text="User logged out",
         object_pk=user_instance.id,
         object_id=user_instance.id,
-      ) 
+      )
+      return Response(status=status.HTTP_200_OK)
 
 
 class StaffOnlyLoginView(TokenObtainPairView):
