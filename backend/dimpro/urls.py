@@ -20,6 +20,7 @@ router.register(r'staff', StaffViewSet, basename="staff")
 urlpatterns = [
     path("", include(router.urls)),
     path("login", UserLoginView.as_view()),
+    path("logout", UserLogoutView.as_view()),
     path("login/staff", StaffOnlyLoginView.as_view()),
     path("user", UserProfileView.as_view()),
     path("register", UserRegistrationView.as_view()),

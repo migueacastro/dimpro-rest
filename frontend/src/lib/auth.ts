@@ -17,6 +17,19 @@ export async function fetchLogin(data: any) {
     return response;
 } 
 
+export async function fetchLogout() { 
+    const url = apiURL + "logout";
+    const token = Cookies.get("token");
+    await window.fetch(url, {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    });
+} 
+
+
 export async function fetchStaff(data: any) { 
     const url = apiURL + "login/staff";
     const response = await window.fetch(url, {
