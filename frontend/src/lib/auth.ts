@@ -103,3 +103,26 @@ export async function fetchUsers() {
     users.set(null);
     return null;
 }
+
+export function checkStaffGroup(user: any) {
+  if (!user.groups) {
+    return false;
+  }
+  for (let group of user?.groups) {
+    if (group?.name === "staff") {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function checkAdminGroup(user: any) {
+  if (!user.groups) {
+    return false;  
+  }
+  for (let group of user?.groups) {
+    if (group?.name === "admin") {
+      return true;
+    }
+  }
+}
