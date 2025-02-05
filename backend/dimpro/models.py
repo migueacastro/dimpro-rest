@@ -149,10 +149,10 @@ class Order(models.Model):
 auditlog.register(Order)
 
 
-class PriceType(models.Model):
-    name = models.CharField(max_length = 128)
-    default = models.BooleanField(default=False)
-auditlog.register(PriceType)
+# class PriceType(models.Model):
+#     name = models.CharField(max_length = 128)
+#     default = models.BooleanField(default=False)
+# auditlog.register(PriceType)
 
 class Order_Product(models.Model):
     id = models.AutoField(primary_key=True)
@@ -174,13 +174,23 @@ class Note(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 auditlog.register(Note)
 
+class ExchangeCurrency(models.Model):
+    iso_code = models.CharField(max_length=10)
+    name = models.CharField(max_length=32)
 
-class Receivable(models.Model):
-    active = models.BooleanField(default=False)
-    seller = models.CharField(max_length=128, blank=True, null=True)
-    client = models.CharField(max_length=128, blank=True, null=True)
-    total = models.DecimalField(max_digits=7, decimal_places=2)
-    date = models.DateField(auto_now_add=False)
-    number = models.CharField(max_length=128, blank=True, null=True)
-auditlog.register(Receivable)
 
+class ExchangeRate(models.Model):
+    from_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_from_currency")
+    to_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_to_currency")
+    datetime = models.DateTimeField(auto_now_add=True)
+    rate = models.FloatField(null=False, blank= False)
+
+# class Receivable(models.Model):
+#     active = models.BooleanField(default=False)
+#     seller = models.CharField(max_length=128, blank=True, null=True)
+#     client = models.CharField(max_length=128, blank=True, null=True)
+#     total = models.DecimalField(max_digits=7, decimal_places=2)
+#     date = models.DateField(auto_now_add=False)
+#     number = models.CharField(max_length=128, blank=True, null=True)
+# auditlog.register(Receivable)
+#
