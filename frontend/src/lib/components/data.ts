@@ -1,16 +1,19 @@
-export async function getData(endpoint: string) {
-    const response = await fetch(endpoint, {
-		method: 'GET',
-		headers: {
-			"ngrok-skip-browser-warning": "69420"
-		}
-	});
+import Cookies from "js-cookie";
+export async function getData(endpoint: string): Promise<any> {
+	const token = Cookies.get("token");
+    const response = await window.fetch(endpoint, {
+        method: 'GET',
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    });
 
     const data = await response.json();
     return data;
 }
 
-export default [
+/*export default [
 	{ id: 1, first_name: 'Tobie', last_name: 'Vint', email: 'tvint0@fotki.com' },
 	{ id: 2, first_name: 'Zacharias', last_name: 'Cerman', email: 'zcerman1@sciencedirect.com' },
 	{ id: 3, first_name: 'Gérianna', last_name: 'Bunn', email: 'gbunn2@foxnews.com' },
@@ -236,4 +239,4 @@ export default [
 	{ id: 173, first_name: 'Zack', last_name: 'Ketteman', email: 'zketteman4s@reverbnation.com' },
 	{ id: 174, first_name: 'Clemence', last_name: 'Philpots', email: 'cphilpots4t@about.com' },
 	{ id: 175, first_name: 'Yehudi', last_name: 'Bater', email: 'ybater4u@themeforest.net' }
-];
+];*/
