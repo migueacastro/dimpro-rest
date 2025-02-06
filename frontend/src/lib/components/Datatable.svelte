@@ -1,4 +1,6 @@
 <script>
+	// @ts-nocheck
+
 	//Import local datatable components
 	import ThSort from '$lib/components/ThSort.svelte';
 	import ThFilter from '$lib/components/ThFilter.svelte';
@@ -8,14 +10,24 @@
 	import Pagination from '$lib/components/Pagination.svelte';
 
 	//Load local data
-	import data from '$lib/components/data.ts';
+	import { getData } from '$lib/components/data.ts';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
+	import { onMount } from 'svelte';
 
 	//Init data handler - CLIENT
-	const handler = new DataHandler(data, { rowsPerPage: 5 });
-	const rows = handler.getRows();
+	let data = [{}];
+	export let endpoint;
+	export let fields;
+	let handler = new DataHandler(data, { rowsPerPage: 5 });
+	let rows = handler.getRows();
+
+	onMount(async () => {
+		data = await getData(endpoint);
+		handler = new DataHandler(data, { rowsPerPage: 5 });
+		rows = handler.getRows();
+	});
 </script>
 
 <div class=" overflow-x-auto space-y-4">
@@ -28,22 +40,22 @@
 	<table class="table table-hover table-compact w-full table-auto">
 		<thead>
 			<tr>
-				<ThSort {handler} orderBy="first_name">First name</ThSort>
-				<ThSort {handler} orderBy="last_name">Last name</ThSort>
-				<ThSort {handler} orderBy="email">Email</ThSort>
+				{#each fields as field}
+					<ThSort {handler} orderBy={field}>{field}</ThSort>
+				{/each}
 			</tr>
 			<tr>
-				<ThFilter {handler} filterBy="first_name" />
-				<ThFilter {handler} filterBy="last_name" />
-				<ThFilter {handler} filterBy="email" />
+				{#each fields as field}
+					<ThFilter {handler} filterBy={field} />
+				{/each}
 			</tr>
 		</thead>
 		<tbody>
 			{#each $rows as row}
 				<tr>
-					<td>{row.first_name}</td>
-					<td>{row.last_name}</td>
-					<td>{row.email}</td>
+					{#each fields as field}
+						<td>{row[field]}</td>
+					{/each}
 				</tr>
 			{/each}
 		</tbody>
