@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     "dimpro",
     "rest_framework_simplejwt",
     "corsheaders", # Agregue corsheaders
-    "auditlog"
+    "auditlog",
+    "django_q"
 ]
 
 MIDDLEWARE = [
@@ -163,3 +164,15 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+
+# silly me, i forgot it was more simple, and the orm option is just to save the logs of the task info, options were to use external db, or just use the db where the models are saved
+Q_CLUSTER = {
+    'name': 'dimprocluster',
+    'orm': 'default',  # should use django's ORM and database as a broker.
+    'workers': 4,
+    'timeout': 30,
+    'retry': 60,
+    'queue_limit': 50,
+    'bulk': 10,
+}
