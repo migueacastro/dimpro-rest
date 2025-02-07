@@ -264,7 +264,7 @@
 		</a>
 	</aside>
 	<!-- END SIDEBAR -->
-  <div class="m-[3rem] ml-[8rem]">
+  <div class="m-[2rem] lg:m-[3rem] lg:ml-[8rem]">
 	  <slot />
   </div>
 </div>
