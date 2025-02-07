@@ -42,6 +42,18 @@ class CustomUserManager(UserManager):
         user.groups.add(user_group)
         return user
 
+
+class ExchangeCurrency(models.Model):
+    iso_code = models.CharField(max_length=10)
+    name = models.CharField(max_length=32)
+
+
+class ExchangeRate(models.Model):
+    from_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_from_currency")
+    to_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_to_currency")
+    datetime = models.DateTimeField(auto_now_add=True)
+    rate = models.FloatField(null=False, blank= False)
+
 class User(AbstractBaseUser, PermissionsMixin): 
     id = models.AutoField(primary_key=True)
     email = models.EmailField(blank=True, default='', unique=True)
@@ -136,6 +148,7 @@ class Order(models.Model):
         ('preparado', 'Preparado'),
         ('pendiente', 'Pendiente')
     ])
+    exchange_rate = models.ForeignKey(ExchangeRate, on_delete=models.DO_NOTHING, null=True, blank=True)
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name='orders', null=True)
     date = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=7, decimal_places=2)
@@ -174,16 +187,6 @@ class Note(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 auditlog.register(Note)
 
-class ExchangeCurrency(models.Model):
-    iso_code = models.CharField(max_length=10)
-    name = models.CharField(max_length=32)
-
-
-class ExchangeRate(models.Model):
-    from_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_from_currency")
-    to_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_to_currency")
-    datetime = models.DateTimeField(auto_now_add=True)
-    rate = models.FloatField(null=False, blank= False)
 
 # class Receivable(models.Model):
 #     active = models.BooleanField(default=False)

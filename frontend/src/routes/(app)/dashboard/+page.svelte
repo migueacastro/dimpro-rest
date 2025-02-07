@@ -8,20 +8,20 @@
 
 {#if checkStaffGroup($user) }
 	<div class="lg:flex lg:flex-row mb-[1rem]">
-		<a class="block card card-hover lg:p-[3.75rem] p-[1.5rem] ml-[1rem] mr-[7rem]  my-5 dark:variant-filled-surface variant-filled-tertiary" href="history">
-			<div class="flex flex-row">
+    <a class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[50%]  lg:mr-[1rem]  my-5 dark:variant-filled-surface variant-filled-tertiary" href="history">
+      <div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 				<p class="font-bold h4">Historial de Pedidos</p>
 				<i class="fa-solid fa-box h3 ml-5" />
 			</div>
 		</a>
-		<a class="block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 mr-[7rem] dark:variant-filled-surface variant-filled-tertiary" href="sellers">
-			<div class="flex flex-row">
+    <a class=" block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 lg:w-[30%] lg:mr-[1rem] dark:variant-filled-surface variant-filled-tertiary" href="sellers">
+			<div class="flex flex-row justify-center items-center lg:h-auto h-[2rem]">
 				<p class="font-bold h4">Vendedores</p>
 				<i class="fa-solid fa-users h3 ml-5" />
 			</div>
 		</a>
-		<a class="block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 dark:variant-filled-surface variant-filled-tertiary" href="user">
-			<div class="flex flex-row">
+    <a class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[20%] my-5 dark:variant-filled-surface variant-filled-tertiary" href="user">
+      <div class="flex flex-row justify-center lg:h-auto h-[2rem]">
 				<p class="font-bold h4">Empleado</p>
 				<i class="fa-solid fa-user h3 ml-5" />
 			</div>

@@ -1,6 +1,5 @@
 from django.contrib import admin
 from dimpro.models import *
-from auditlog.models import LogEntry
 #
 # Register your models here.
 class ProductAdmin(admin.ModelAdmin): # Esto es para ver detalladamente la lista
