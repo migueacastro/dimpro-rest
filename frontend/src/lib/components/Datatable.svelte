@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	// @ts-nocheck
 
 	//Import local datatable components
@@ -20,6 +20,7 @@
 	let data = [{}];
 	export let endpoint;
 	export let fields;
+	export let editable;
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
@@ -56,6 +57,16 @@
 					{#each fields as field}
 						<td>{row[field]}</td>
 					{/each}
+					{#if editable}
+						<td class="flex flex-row">
+							<button class="btn variant-filled">
+								<i class="fa-solid fa-trash"></i>
+							</button>
+							<button class="btn ml-2 variant-filled">
+								<i class="fa-solid fa-plus"></i>
+							</button>
+						</td>
+					{/if}
 				</tr>
 			{/each}
 		</tbody>
