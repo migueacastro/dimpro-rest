@@ -16,7 +16,7 @@
 	import { authenticate } from '$lib/auth';
 	import { user } from '../../stores/stores';
 	import { goto } from '$app/navigation';
-  import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
+	import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
 	let expandedDrawer = false;
 	const drawerStore = getDrawerStore();
 	const layoutDrawerSettings = {
@@ -63,7 +63,11 @@
 					</a>
 				</li>
 				<li>
-					<a href="/add" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a
+						href="/dashboard/add-order"
+						class="w-fit my-2 mx-auto h4 font-bold"
+						on:click={hideDrawer}
+					>
 						Crear Pedido
 					</a>
 				</li>
@@ -77,14 +81,18 @@
 						Inventario
 					</a>
 				</li>
-				{#if checkStaffGroup($user) }
+				{#if checkStaffGroup($user)}
 					<li>
-						<a href="/users" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+						<a
+							href="/dashboard/users"
+							class="w-fit my-2 mx-auto h4 font-bold"
+							on:click={hideDrawer}
+						>
 							Usuarios
 						</a>
 					</li>
 				{/if}
-				{#if checkAdminGroup($user) }
+				{#if checkAdminGroup($user)}
 					<li>
 						<a href="/settings" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 							Configuración
@@ -177,7 +185,7 @@
 
 		<hr class="w-[80%] mx-auto my-2" />
 
-		<a href="/add">
+		<a href="/dashboard/add-order">
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-plus h3 w-20"></i>
 				<p
@@ -217,7 +225,7 @@
 			</div>
 		</a>
 
-		{#if checkStaffGroup($user) }
+		{#if checkStaffGroup($user)}
 			<a href="/users">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
@@ -233,7 +241,7 @@
 			</a>
 		{/if}
 
-		{#if checkAdminGroup($user) }
+		{#if checkAdminGroup($user)}
 			<a href="/settings">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-gear h3 w-20"></i>
@@ -264,7 +272,8 @@
 		</a>
 	</aside>
 	<!-- END SIDEBAR -->
-  <div class="m-[2rem] lg:m-[3rem] lg:ml-[8rem]">
-	  <slot />
-  </div>
+	<div class="m-[2rem] lg:m-[3rem] lg:ml-[8rem]">
+		<slot />
+	</div>
+	<Toast />
 </div>

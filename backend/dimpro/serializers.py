@@ -71,6 +71,11 @@ class ProductSerializer(serializers.ModelSerializer):
     model = Product
     fields = ['id', 'item','details','reference','available_quantity'] 
 
+class PriceTypeSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = PriceType
+    fields = ['id', 'name', 'default']
+
 class ContactSerializer(serializers.ModelSerializer):
   class Meta:
     model = Contact 
@@ -82,16 +87,24 @@ class OrderProductSerializer(WritableNestedModelSerializer): # Se crea completo,
     model = Order_Product
     fields = ['product', 'price', 'quantity', 'cost', 'order']
 
-
-class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden productos, cada producto no es obligatorio
-  products = serializers.SerializerMethodField()
+class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden productos, cada producto no es obligatorio   
+  total = serializers.FloatField(required=False)
+  pricetype = serializers.IntegerField(required=False);
+  date = serializers.DateTimeField(read_only=True)
+  products = serializers.SerializerMethodField(required=False)    
   class Meta:
     model = Order
     fields = ['id','status','contact','date','total','pricetype', 'products', 'user']
 
   def get_products(self, obj):
     list_products = Order_Product.objects.filter(active=True, order=obj.id)
-    return OrderProductSerializer(list_products, many=True).data
+    if list_products:
+        return OrderProductSerializer(list_products, many=True).data
+    return [];
+
+  def to_representation(self, instance):
+    self.fields['pricetype'] = PriceTypeSerializer();
+    return super().to_representation(instance)
 
 class AlegraUserSerializer(serializers.ModelSerializer):
   class Meta:

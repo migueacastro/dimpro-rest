@@ -142,6 +142,12 @@ class Contact(models.Model):
 auditlog.register(Contact)
 
 # TODO: viewset para Order
+class PriceType(models.Model):
+    name = models.CharField(max_length = 128)
+    default = models.BooleanField(default=False)
+    active= models.BooleanField(default=True)
+auditlog.register(PriceType)
+
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', null=True)
     status = models.CharField(max_length=16,choices= [
@@ -151,8 +157,8 @@ class Order(models.Model):
     exchange_rate = models.ForeignKey(ExchangeRate, on_delete=models.DO_NOTHING, null=True, blank=True)
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name='orders', null=True)
     date = models.DateTimeField(auto_now_add=True)
-    total = models.DecimalField(max_digits=7, decimal_places=2)
-    pricetype = models.CharField(max_length=128, null=True)
+    total = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    pricetype = models.ForeignKey(PriceType, blank=True, null=True, on_delete=models.DO_NOTHING)
     active = models.BooleanField(null = False, default=True)
     def product_categories(self):
         return Order_Product.objects.filter(order_id=self.id).count()
@@ -162,20 +168,17 @@ class Order(models.Model):
 auditlog.register(Order)
 
 
-# class PriceType(models.Model):
-#     name = models.CharField(max_length = 128)
-#     default = models.BooleanField(default=False)
-# auditlog.register(PriceType)
 
 class Order_Product(models.Model):
     id = models.AutoField(primary_key=True)
     order =  models.ForeignKey(Order, on_delete=models.CASCADE, related_name='orders')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
-    dprice = models.DecimalField(max_digits=7,decimal_places=2, default=0)
+    price = models.DecimalField(max_digits=7,decimal_places=2, default=0)
     cost = models.DecimalField(max_digits=7,decimal_places=2, default=0)
     quantity = models.IntegerField(validators = [
         MinValueValidator(1)
     ])
+    active = models.BooleanField(default=True, blank=False, null=False)
     def __str__(self):
         return str(self.id)
 auditlog.register(Order_Product)
