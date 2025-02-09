@@ -1,4 +1,4 @@
-<title>Editar Pedidos</title>
+<title>Editar Ordenes</title>
 
 <script lang="ts">
   

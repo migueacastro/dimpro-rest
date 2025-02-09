@@ -72,7 +72,11 @@
 					</a>
 				</li>
 				<li>
-					<a href="/orders" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a
+						href="/dashboard/edit-order"
+						class="w-fit my-2 mx-auto h4 font-bold"
+						on:click={hideDrawer}
+					>
 						Pedidos
 					</a>
 				</li>
@@ -198,7 +202,7 @@
 				</p>
 			</div>
 		</a>
-		<a href="/orders">
+		<a href="/dashboard/edit-order">
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-box h3 w-20"></i>
 				<p

@@ -40,7 +40,6 @@
 		}
 	}
 </script>
-
 <h1 class="h2 my-4">Crear Pedido</h1>
 <div class="flex flex-col w-1/2 max-w-md">
 	<label for="select-contact" class="text-md my-2">Cliente</label>
