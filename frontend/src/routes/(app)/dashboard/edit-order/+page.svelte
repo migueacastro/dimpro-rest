@@ -64,7 +64,7 @@
  
 
 <h1 class="h2 my-4">
-  Editar Orden
+  Editar Pedido
 </h1>
 <!-- Responsive Container (recommended) -->
 <div class="table-container">
