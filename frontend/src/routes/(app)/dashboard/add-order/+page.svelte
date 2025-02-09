@@ -18,7 +18,7 @@ function createOrder() {
 
 }
 </script>
-
+<title>Crear Pedido</title>
 <h1 class="h2 my-4">
   Crear Pedido
 </h1>

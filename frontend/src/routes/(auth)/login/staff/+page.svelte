@@ -1,4 +1,3 @@
-<title>Inicio Sesión</title>
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { apiURL } from '$lib/api_url';
@@ -30,7 +29,15 @@
 			errors = data;
 		}
 	}
+	let showPassword = false;
+	function togglePasswordVisibility() {
+		showPassword = !showPassword;
+	}
+	let inputType = 'password';
+	$: inputType = showPassword ? 'text' : 'password';
 </script>
+
+<title>Inicio Sesión</title>
 
 <div class="flex flex-col">
 	<ol class="breadcrumb mb-[3rem]">
@@ -53,13 +60,33 @@
 			</div>
 		{/if}
 
-		<input
-			class="input my-2"
-			title="Contraseña"
-			type="password"
-			placeholder="Contraseña"
-			bind:value={password}
-		/>
+		{#if showPassword}
+			<input
+				class="input my-2"
+				title="Contraseña"
+				type="text"
+				placeholder="Contraseña"
+				bind:value={password}
+			/>
+		{:else}
+			<input
+				class="input my-2"
+				title="Contraseña"
+				type="password"
+				placeholder="Contraseña"
+				bind:value={password}
+			/>
+		{/if}
+		<div class="flex justify-start gap-3 ml-2">
+			{#if !showPassword}
+				<i class="fa-regular fa-eye"></i>
+			{:else}
+				<i class="fa-regular fa-eye-slash"></i>
+			{/if}
+			<button type="button" on:click={togglePasswordVisibility}>
+				{showPassword ? 'Ocultar' : 'Mostrar'} Contraseña
+			</button>
+		</div>
 
 		{#if errors.password}
 			<div class="card variant-ghost-error p-2 text-sm text-left">

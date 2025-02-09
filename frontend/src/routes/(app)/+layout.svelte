@@ -63,12 +63,12 @@
 					</a>
 				</li>
 				<li>
-					<a href="/add" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a href="/dashboard/add-order" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 						Crear Pedido
 					</a>
 				</li>
 				<li>
-					<a href="/orders" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a href="/dashboard/edit-order" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 						Pedidos
 					</a>
 				</li>
@@ -79,7 +79,7 @@
 				</li>
 				{#if checkStaffGroup($user) }
 					<li>
-						<a href="/users" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+						<a href="/dashboard/users" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 							Usuarios
 						</a>
 					</li>
@@ -177,7 +177,7 @@
 
 		<hr class="w-[80%] mx-auto my-2" />
 
-		<a href="/add">
+		<a href="/dashboard/add-order">
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-plus h3 w-20"></i>
 				<p
@@ -190,7 +190,7 @@
 				</p>
 			</div>
 		</a>
-		<a href="/orders">
+		<a href="/dashboard/edit-order">
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-box h3 w-20"></i>
 				<p
@@ -218,7 +218,7 @@
 		</a>
 
 		{#if checkStaffGroup($user) }
-			<a href="/users">
+			<a href="/dashboard/users">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
 					<p
