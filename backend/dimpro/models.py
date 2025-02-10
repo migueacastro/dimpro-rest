@@ -144,7 +144,6 @@ auditlog.register(Contact)
 # TODO: viewset para Order
 class PriceType(models.Model):
     name = models.CharField(max_length = 128)
-    default = models.BooleanField(default=False)
     active= models.BooleanField(default=True)
 auditlog.register(PriceType)
 

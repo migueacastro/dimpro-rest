@@ -91,10 +91,14 @@ class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden 
   total = serializers.FloatField(required=False)
   pricetype = serializers.IntegerField(required=False);
   date = serializers.DateTimeField(read_only=True)
-  products = serializers.SerializerMethodField(required=False)    
+  products = serializers.SerializerMethodField(required=False)   
+  user_name = serializers.SerializerMethodField(read_only=True)
+  contact_name = serializers.SerializerMethodField(read_only=True)
+  product_count = serializers.SerializerMethodField(read_only=True)
+  date_format = serializers.SerializerMethodField(read_only=True)
   class Meta:
     model = Order
-    fields = ['id','status','contact','date','total','pricetype', 'products', 'user']
+    fields = ['id','status','contact','date','total','pricetype', 'products', 'user', 'user_name', 'contact_name', 'product_count', 'date_format']
 
   def get_products(self, obj):
     list_products = Order_Product.objects.filter(active=True, order=obj.id)
@@ -102,8 +106,21 @@ class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden 
         return OrderProductSerializer(list_products, many=True).data
     return [];
 
+  def get_user_name(self, obj):
+    return obj.user.name
+    
+  def get_contact_name(self,obj):
+    return obj.contact.name
+
+  def get_date_format(self,obj):
+    return obj.date.strftime('%Y/%m/%d %H:%M')
+
+  def get_product_count(self,obj):
+    return Order_Product.objects.filter(active=True, order=obj.id).count()
+
   def to_representation(self, instance):
     self.fields['pricetype'] = PriceTypeSerializer();
+    self.fields['user'] = UserSerializer();
     return super().to_representation(instance)
 
 class AlegraUserSerializer(serializers.ModelSerializer):
@@ -136,14 +153,18 @@ class WelcomeSuperUserSerializer(WelcomeStaffSerializer): # Hereda WelcomeStaffS
 
 class UserNestedSerializer(UserSerializer):
   orders = serializers.SerializerMethodField(read_only=True) # fiuh, no era necesario el WritableNestedSerializer
+  date_joined_format = serializers.SerializerMethodField(read_only=True)
+  last_login_format = serializers.SerializerMethodField(read_only=True) 
   class Meta:
-    get_user_model()
-    ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'is_staff', 'is_superuser', 'orders']
+    model = get_user_model()
+    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'is_staff', 'is_superuser', 'orders', 'date_joined_format', 'last_login_format']
 
   def get_orders(self, obj):
     list_orders = Order.objects.filter(active=True, user=obj.id)
     return OrderSerializer(list_orders, many=True).data # Para esta vista, quiero omitir lo campos de productos, 
-  
-
+  def get_date_joined_format(self,obj):
+        return obj.date_joined.strftime('%Y/%m/%d %H:%M') if obj.date_joined else ''
+  def get_last_login_format(self, obj):
+    return obj.last_login.strftime('%Y/%m/%d %H:%M') if obj.last_login else 'Ninguno'
 class LogSerializer(serializers.ModelSerializer):
     pass

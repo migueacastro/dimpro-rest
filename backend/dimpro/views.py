@@ -177,7 +177,6 @@ class ProductViewSet(SafeViewSet):
   permission_classes = (IsAuthenticated, UserReadOnlyPermission)
   queryset = Product.objects.filter(active=True) # Aqui no por ejemplo
 
-
 class ContactViewSet(SafeViewSet):
   serializer_class = ContactSerializer
   permission_classes = (IsAuthenticated, UserReadOnlyPermission)

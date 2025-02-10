@@ -11,7 +11,7 @@
 	<div class="lg:flex lg:flex-row mb-[1rem]">
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[50%] lg:mr-[1rem] my-5 dark:variant-filled-surface variant-filled-tertiary"
-			href="history"
+			href="/dashboard/orders"
 		>
 			<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 				<p class="font-bold h4">Historial de Pedidos</p>
@@ -20,7 +20,7 @@
 		</a>
 		<a
 			class=" block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 lg:w-[30%] lg:mr-[1rem] dark:variant-filled-surface variant-filled-tertiary"
-			href="sellers"
+			href="/dashboard/users"
 		>
 			<div class="flex flex-row justify-center items-center lg:h-auto h-[2rem]">
 				<p class="font-bold h4">Vendedores</p>
@@ -29,7 +29,7 @@
 		</a>
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[20%] my-5 dark:variant-filled-surface variant-filled-tertiary"
-			href="user"
+			href="#"
 		>
 			<div class="flex flex-row justify-center lg:h-auto h-[2rem]">
 				<p class="font-bold h4">Empleado</p>
@@ -38,7 +38,11 @@
 		</a>
 	</div>
 	<div>
-		<Datatable editable={false} endpoint={`${apiURL}users`} fields={['name', 'email']} />
+		<Datatable
+			editable={false}
+			endpoint={'orders'}
+			fields={['id', 'user_name', 'contact_name', 'product_count', 'status', 'date_format']}
+		/>
 	</div>
 {:else}
 	<div class="lg:flex lg:flex-row ml-[3.5rem] mt-5">

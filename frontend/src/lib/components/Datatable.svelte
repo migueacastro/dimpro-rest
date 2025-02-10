@@ -19,15 +19,21 @@
 
 	//Init data handler - CLIENT
 	let data = [{}];
-	export let endpoint;
-	export let fields;
-	export let editable;
+	export let endpoint: any;
+	export let fields: any;
+	export let editable: any;
+	export let use_array: any = false;
+	export let source_data: any;
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
 	onMount(async () => {
-		data = await getData(apiURL + endpoint);
-		handler = new DataHandler(data, { rowsPerPage: 5 });
+		if (endpoint) {
+			data = await getData(apiURL + endpoint);
+			handler = new DataHandler(data, { rowsPerPage: 5 });
+		} else {
+			handler = new DataHandler(source_data, { rowsPerPage: 5 });
+		}
 		rows = handler.getRows();
 	});
 </script>
@@ -60,11 +66,11 @@
 		</thead>
 		<tbody>
 			{#each $rows as row}
-				{#if editable}
-					<tr on:click={() => goto('/dashboard/' + endpoint + '/' + row['id'])}>
-						{#each fields as field}
-							<td>{row[field]}</td>
-						{/each}
+				<tr on:click={() => goto('/dashboard/' + endpoint + '/' + row['id'])}>
+					{#each fields as field}
+						<td class="capitalize">{row[field]}</td>
+					{/each}
+					{#if editable}
 						<td class="flex flex-row">
 							<button class="btn variant-filled">
 								<i class="fa-solid fa-trash"></i>
@@ -73,14 +79,8 @@
 								<i class="fa-solid fa-plus"></i>
 							</button>
 						</td>
-					</tr>
-				{:else}
-					<td>
-						{#each fields as field}
-							<td>{row[field]}</td>
-						{/each}
-					</td>
-				{/if}
+					{/if}
+				</tr>
 			{/each}
 		</tbody>
 	</table>

@@ -73,7 +73,7 @@
 				</li>
 				<li>
 					<a
-						href="/dashboard/edit-order"
+						href="/dashboard/orders"
 						class="w-fit my-2 mx-auto h4 font-bold"
 						on:click={hideDrawer}
 					>

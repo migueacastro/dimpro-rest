@@ -1,18 +1,39 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import Datatable from '$lib/components/Datatable.svelte';
+	import { getData } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { fetchUsers } from '../../../../../lib/auth';
-	const userId = parseInt($page.params.id);
-	let data = [{}];
-	let user = { id: '', name: '', email: '' };
+	export let data: any;
+	import { goto } from '$app/navigation';
+	let user: any;
+
 	onMount(async () => {
-		const data = await fetchUsers();
-		user = data.find((value: any) => value['id'] === userId);
+		let response = await getData('users/' + data?.id);
+		user = await response.json();
 	});
 </script>
 
-{#if user}
-	<h1>{user['email']}</h1>
-{:else}
-	<h1>usuario inexistente</h1>
-{/if}
+<div class="flex flex-col">
+	<div class="flex flex-row">
+		<div class="card p-[3rem] w-full mb-[2rem] mr-[2rem]">
+			<div class="flex flex-col">
+				<h4 class="h4 capitalize my-2">{user?.name}</h4>
+				<h4 class="h4 capitalize my-2">{user?.email}</h4>
+				<h4 class="h4 capitalize my-2">{user?.phonenumber}</h4>
+			</div>
+		</div>
+		<div class="card p-[3rem] w-full mb-[2rem]">
+			<div class="flex flex-col">
+				<h4 class="h4 my-2">Se unió en: {user?.date_joined_format}</h4>
+				<h4 class="h4 my-2">Último inicio de sesión: {user?.last_login_format}</h4>
+			</div>
+		</div>
+	</div>
+	<div class="flex flex-row justify-between mb-[2rem]">
+		<h2 class="h2">Pedidos: {user?.orders?.length}</h2>
+	</div>
+	<Datatable
+		use_array={true}
+		source_data={user?.orders}
+		fields={['id', 'item', 'reference', 'quantity', 'price', 'cost']}
+	/>
+</div>
