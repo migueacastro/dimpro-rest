@@ -8,13 +8,14 @@
 	import RowsPerPage from '$lib/components/RowsPerPage.svelte';
 	import RowCount from '$lib/components/RowCount.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
-
+	import { goto } from '$app/navigation';
 	//Load local data
 	import { getData } from '$lib/components/data.ts';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
 	import { onMount } from 'svelte';
+	import { apiURL } from '$lib/api_url';
 
 	//Init data handler - CLIENT
 	let data = [{}];
@@ -25,7 +26,7 @@
 	let rows = handler.getRows();
 
 	onMount(async () => {
-		data = await getData(endpoint);
+		data = await getData(apiURL + endpoint);
 		handler = new DataHandler(data, { rowsPerPage: 5 });
 		rows = handler.getRows();
 	});
@@ -44,20 +45,26 @@
 				{#each fields as field}
 					<ThSort {handler} orderBy={field}>{field}</ThSort>
 				{/each}
+				{#if editable}
+					<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
+				{/if}
 			</tr>
 			<tr>
 				{#each fields as field}
 					<ThFilter {handler} filterBy={field} />
 				{/each}
+				{#if editable}
+					<ThFilter {handler} filterBy={fields[0]} />
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
 			{#each $rows as row}
-				<tr>
-					{#each fields as field}
-						<td>{row[field]}</td>
-					{/each}
-					{#if editable}
+				{#if editable}
+					<tr on:click={() => goto('/dashboard/' + endpoint + '/' + row['id'])}>
+						{#each fields as field}
+							<td>{row[field]}</td>
+						{/each}
 						<td class="flex flex-row">
 							<button class="btn variant-filled">
 								<i class="fa-solid fa-trash"></i>
@@ -66,8 +73,14 @@
 								<i class="fa-solid fa-plus"></i>
 							</button>
 						</td>
-					{/if}
-				</tr>
+					</tr>
+				{:else}
+					<td>
+						{#each fields as field}
+							<td>{row[field]}</td>
+						{/each}
+					</td>
+				{/if}
 			{/each}
 		</tbody>
 	</table>
