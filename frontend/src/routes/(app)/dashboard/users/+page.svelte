@@ -1,5 +1,5 @@
 <script>
     import Datatable from '$lib/components/Datatable.svelte';
-    import { apiURL } from '$lib/api_url';
   </script>
-<Datatable editable={true} endpoint={`${apiURL}users`} fields={["name","email","phonenumber"]}/>
+<h1 class="h2 my-4">Usuarios</h1>
+<Datatable editable={true} endpoint={"users"} fields={["name","email","phonenumber"]}/>

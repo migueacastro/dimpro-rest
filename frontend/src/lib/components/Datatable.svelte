@@ -8,25 +8,32 @@
 	import RowsPerPage from '$lib/components/RowsPerPage.svelte';
 	import RowCount from '$lib/components/RowCount.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
-
+	import { goto } from '$app/navigation';
 	//Load local data
 	import { getData } from '$lib/components/data.ts';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
 	import { onMount } from 'svelte';
+	import { apiURL } from '$lib/api_url';
 
 	//Init data handler - CLIENT
 	let data = [{}];
-	export let endpoint;
-	export let fields;
-	export let editable;
+	export let endpoint: any;
+	export let fields: any;
+	export let editable: any;
+	export let use_array: any = false;
+	export let source_data: any;
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
 	onMount(async () => {
-		data = await getData(endpoint);
-		handler = new DataHandler(data, { rowsPerPage: 5 });
+		if (endpoint) {
+			data = await getData(apiURL + endpoint);
+			handler = new DataHandler(data, { rowsPerPage: 5 });
+		} else {
+			handler = new DataHandler(source_data, { rowsPerPage: 5 });
+		}
 		rows = handler.getRows();
 	});
 </script>
@@ -44,18 +51,24 @@
 				{#each fields as field}
 					<ThSort {handler} orderBy={field}>{field}</ThSort>
 				{/each}
+				{#if editable}
+					<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
+				{/if}
 			</tr>
 			<tr>
 				{#each fields as field}
 					<ThFilter {handler} filterBy={field} />
 				{/each}
+				{#if editable}
+					<ThFilter {handler} filterBy={fields[0]} />
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
 			{#each $rows as row}
-				<tr>
+				<tr on:click={() => goto('/dashboard/' + endpoint + '/' + row['id'])}>
 					{#each fields as field}
-						<td>{row[field]}</td>
+						<td class="capitalize">{row[field]}</td>
 					{/each}
 					{#if editable}
 						<td class="flex flex-row">

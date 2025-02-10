@@ -16,7 +16,7 @@
 	import { authenticate } from '$lib/auth';
 	import { user } from '../../stores/stores';
 	import { goto } from '$app/navigation';
-  import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
+	import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
 	let expandedDrawer = false;
 	const drawerStore = getDrawerStore();
 	const layoutDrawerSettings = {
@@ -63,30 +63,42 @@
 					</a>
 				</li>
 				<li>
-					<a href="/dashboard/add-order" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a
+						href="/dashboard/add-order"
+						class="w-fit my-2 mx-auto h4 font-bold"
+						on:click={hideDrawer}
+					>
 						Crear Pedido
 					</a>
 				</li>
 				<li>
-					<a href="/dashboard/edit-order" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a
+						href="/dashboard/orders"
+						class="w-fit my-2 mx-auto h4 font-bold"
+						on:click={hideDrawer}
+					>
 						Pedidos
 					</a>
 				</li>
 				<li>
-					<a href="/inventory" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a href="/dashboard/inventory" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 						Inventario
 					</a>
 				</li>
-				{#if checkStaffGroup($user) }
+				{#if checkStaffGroup($user)}
 					<li>
-						<a href="/dashboard/users" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+						<a
+							href="/dashboard/users"
+							class="w-fit my-2 mx-auto h4 font-bold"
+							on:click={hideDrawer}
+						>
 							Usuarios
 						</a>
 					</li>
 				{/if}
-				{#if checkAdminGroup($user) }
+				{#if checkAdminGroup($user)}
 					<li>
-						<a href="/settings" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+						<a href="/dashboard/settings" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 							Configuración
 						</a>
 					</li>
@@ -190,7 +202,7 @@
 				</p>
 			</div>
 		</a>
-		<a href="/dashboard/edit-order">
+		<a href="/dashboard/orders">
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-box h3 w-20"></i>
 				<p
@@ -203,7 +215,7 @@
 				</p>
 			</div>
 		</a>
-		<a href="/inventory">
+		<a href="/dashboard/inventory">
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-boxes-stacked h3 w-20"></i>
 				<p
@@ -217,7 +229,7 @@
 			</div>
 		</a>
 
-		{#if checkStaffGroup($user) }
+		{#if checkStaffGroup($user)}
 			<a href="/dashboard/users">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
@@ -233,8 +245,8 @@
 			</a>
 		{/if}
 
-		{#if checkAdminGroup($user) }
-			<a href="/settings">
+		{#if checkAdminGroup($user)}
+			<a href="/dashboard/settings">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-gear h3 w-20"></i>
 					<p
@@ -264,7 +276,8 @@
 		</a>
 	</aside>
 	<!-- END SIDEBAR -->
-  <div class="m-[2rem] lg:m-[3rem] lg:ml-[8rem]">
-	  <slot />
-  </div>
+	<div class="m-[2rem] lg:m-[3rem] lg:ml-[8rem]">
+		<slot />
+	</div>
+	<Toast />
 </div>
