@@ -64,7 +64,7 @@
 			errors = data;
 		}
 	}
-	
+
 	let showPassword = false;
 	function togglePasswordVisibility() {
 		showPassword = !showPassword;
@@ -158,9 +158,13 @@
 		{/if}
 		<div class="flex justify-start gap-3 ml-2">
 			{#if !showPassword}
-				<i class="fa-regular fa-eye"></i>
+				<button type="button" on:click={togglePasswordVisibility}
+					><i class="fa-regular fa-eye"></i></button
+				>
 			{:else}
-				<i class="fa-regular fa-eye-slash"></i>
+				<button type="button" on:click={togglePasswordVisibility}
+					><i class="fa-regular fa-eye-slash"></i></button
+				>
 			{/if}
 			<button type="button" on:click={togglePasswordVisibility}>
 				{showPassword ? 'Ocultar' : 'Mostrar'} Contraseña
@@ -211,15 +215,19 @@
 			/>
 		{/if}
 		<div class="flex justify-start gap-3 ml-2">
-		{#if !showRepPassword}
-			<i class="fa-regular fa-eye"></i>
-		{:else}
-			<i class="fa-regular fa-eye-slash"></i>
-		{/if}
-		<button type="button" on:click={toggleRepPasswordVisibility}>
-			{showRepPassword ? 'Ocultar' : 'Mostrar'} Contraseña
-		</button>
-	</div>
+			{#if !showRepPassword}
+				<button type="button" on:click={toggleRepPasswordVisibility}
+					><i class="fa-regular fa-eye"></i></button
+				>
+			{:else}
+				<button type="button" on:click={toggleRepPasswordVisibility}
+					><i class="fa-regular fa-eye-slash"></i></button
+				>
+			{/if}
+			<button type="button" on:click={toggleRepPasswordVisibility}>
+				{showRepPassword ? 'Ocultar' : 'Mostrar'} Contraseña
+			</button>
+		</div>
 		{#if confirmPassword.length > 0}
 			{#if password !== confirmPassword}
 				<div class="card variant-ghost-error p-2 text-sm text-left">

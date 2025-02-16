@@ -6,5 +6,5 @@
 <Datatable
 	editable={false}
 	endpoint={'orders'}
-	fields={['id', 'user_name', 'contact_name', 'product_count', 'status', 'date_format']}
+	fields={['ID', 'Usuario', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
 />
