@@ -29,7 +29,7 @@
 		</a>
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[20%] my-5 dark:variant-filled-surface variant-filled-tertiary"
-			href="#"
+			href="/"
 		>
 			<div class="flex flex-row justify-center lg:h-auto h-[2rem]">
 				<p class="font-bold h4">Empleado</p>
@@ -41,7 +41,7 @@
 		<Datatable
 			editable={false}
 			endpoint={'orders'}
-			fields={['id', 'user_name', 'contact_name', 'product_count', 'status', 'date_format']}
+			fields={['ID', 'Usuario', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
 		/>
 	</div>
 {:else}

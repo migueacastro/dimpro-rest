@@ -79,9 +79,13 @@
 		{/if}
 		<div class="flex justify-start gap-3 ml-2">
 			{#if !showPassword}
-				<i class="fa-regular fa-eye"></i>
+				<button type="button" on:click={togglePasswordVisibility}
+					><i class="fa-regular fa-eye"></i></button
+				>
 			{:else}
-				<i class="fa-regular fa-eye-slash"></i>
+				<button type="button" on:click={togglePasswordVisibility}
+					><i class="fa-regular fa-eye-slash"></i></button
+				>
 			{/if}
 			<button type="button" on:click={togglePasswordVisibility}>
 				{showPassword ? 'Ocultar' : 'Mostrar'} Contraseña
