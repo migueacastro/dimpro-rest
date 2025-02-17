@@ -7,6 +7,9 @@
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
+	import { getData } from '$lib/utils.ts';
+	import { onMount } from 'svelte';
+
 	const toastStore = getToastStore();
 	const successSettings: ToastSettings = {
 		message: 'Pedido creado exitosamente'
@@ -21,10 +24,7 @@
 	};
 	let inputContact: string = '';
 	let selectedContactId: number;
-	let contactList: AutocompleteOption<number, string>[] = [
-		{ label: 'Cliente 1', value: 1 },
-		{ label: 'Cliente 2', value: 2 }
-	];
+	let contactList: AutocompleteOption<number, string>[] = [];
 	async function createOrder() {
 		const response = await postData('orders', {
 			contact: selectedContactId,
@@ -39,7 +39,15 @@
 			toastStore.trigger(errorSettings);
 		}
 	}
+	onMount(async () => {
+		let response = await getData('contacts');
+		let contacts = await response.json();
+		contactList = contacts.map((contact: any) => {
+			return { label: contact.name, value: contact.id };
+		});
+	});
 </script>
+
 <h1 class="h2 my-4">Crear Pedido</h1>
 <div class="flex flex-col w-1/2 max-w-md">
 	<label for="select-contact" class="text-md my-2">Cliente</label>
