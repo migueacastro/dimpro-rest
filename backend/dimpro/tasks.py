@@ -1,8 +1,12 @@
 from .models import *
 from alegra.client import Client as c
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.utils import IntegrityError
+from django.db import transaction
 import base64
+
+
+EXCLUDED_PRICETYPE_NAMES = ['EPA']
+
 
 def encodeduser():
     alegra_user = AlegraUser.objects.get(id=1)
@@ -12,117 +16,121 @@ def encodeduser():
     return encoded_string
 
 def updatedb():
-    # TODO: Adapt updatedb here
-
-    def add_contact(name):
-        instance, created = Contact.objects.update_or_create(name=name, active=True)
-        return instance
-    def add_data(product_id, item, details, reference, available_quantity, prices):
-        instance, created = Product.objects.update_or_create(id=product_id, item=item, details=details, reference=reference, available_quantity=available_quantity, prices=prices, active=True)
-        return instance
-
     alegra_user = AlegraUser.objects.get(id=1)
     client = c(alegra_user.email, alegra_user.token)
 
-    items = []
+    with transaction.atomic():
+        update_products(client)
+        update_contacts(client)
 
-    i = 0
-    while (True):
-        
-        dictu = client.list_items(start=(30 * i), order="ASC")
-        if not dictu:
-            break
-        items = items + dictu
-        i += 1
-    
-    productsArray = Product.objects.all()
-    for item in productsArray:
-        item.active = False
-        item.save()
+
+def update_products(client):
+    items = fetch_all_items(client)
+    deactivate_all_products()
 
     for row in items:
-        id = row['id']
-        item = row['name']
-        details = row['description']
-        reference = row['reference']
-        
-        prices = []
-        for price_dict in row['price']:
-            if price_dict['name'] != 'EPA':
-                prices.append({price_dict['name']: price_dict['price']})
-        try:
-            available_quantity = row['inventory']
-            available_quantity = available_quantity['warehouses'][0]
-            available_quantity = available_quantity['availableQuantity']
-        except KeyError:
-            available_quantity = 0
-        
-        
-        active = False if available_quantity == 0 or row['price'][0]['price'] == 0 else True
-        
-        
-        # Add the current prices of Alegra
-        if row['name'] == 'BOMBILLO LED 12W':
-            # Deactivate all prices
-            for object in PriceType.objects.all():
-                object.active = False
-                object.save()
-            for i in range(len(row["price"])):
-                # Check if the price is from EPA
-                if row['price'][i]['name'] == 'EPA':
-                    continue
+        process_product(row)
 
-                name = row['price'][i]['name']
-                try:
-                    PriceType.objects.update_or_create(id=i, name=name, active=True)
-                except Exception:
-                    continue
-        try:
-            selecteditem = Product.objects.get(reference=reference)
-            selecteditem.item = item
-            
-            try:
-                selecteditem.details = details
-            except Product.IntegrityError as e:
-                continue
-        
-            selecteditem.reference = reference
-            selecteditem.available_quantity = available_quantity
-            selecteditem.prices = prices
-            selecteditem.active = active
-            selecteditem.save()
-        except ObjectDoesNotExist:
-            try:
-                add_data(id, item, details, reference, available_quantity, prices)
-                
-            except IntegrityError as e:
-                continue
-
-    contacts = []
-    
-    i = 0
-    while (True):
-        
-        dictu = client.list_contacts(start=(30 * i), order="ASC")
-        if not dictu:
-            break
-        contacts = contacts + dictu
-        i += 1
+def update_contacts(client):
+    contacts = fetch_all_contacts(client)
     
     for row in contacts:
-        name = row['name']
+        process_contact(row)
 
-        # Check if contact is in alegra db
-        list_contacts = Contact.objects.all()
-        for contact in list_contacts:
-            if not contact in row:
-                row['active'] = False
-            row['active'] = False
 
-        try:
-            selectedcontact = Contact.objects.get(name=name)
-        except ObjectDoesNotExist:
-            try:
-                add_contact(name) 
-            except Exception as e:
-                continue
+def fetch_all_items(client):
+    items = []
+    i = 0
+    while True:
+        dictu = client.list_items(start=(30*i), order='ASC')
+        if not dictu:
+            break
+        items.extend(dictu)
+        i += 1
+    return items
+
+
+def fetch_all_contacts(client):
+    contacts = []
+    i = 0
+    while True:
+        dictu = client.list_contacts(start=(30*i), order='ASC')
+        if not dictu:
+            break
+        contacts.extend(dictu)
+        i += 1
+    return contacts
+
+
+def deactivate_all_products():
+    Product.objects.all().update(active=False)
+
+
+def process_product(row):
+    id = row['id']
+    item = row['name']
+    details = row.get('description', '')
+    reference = row.get('reference', '')
+    prices = extract_prices(row.get('price', []))
+    available_quantity = extract_available_quantity(row.get('inventory', {}))
+
+    active = available_quantity > 0 and row['price'][0]['price'] > 0
+    if item == 'BOMBILLO LED 12W':
+        update_price_types(row['price'])
+
+    update_or_create_product(id, item, details, reference, available_quantity, prices, active)
+
+
+def extract_prices(price_list):
+    return [{price_dict['name']: price_dict['price']} for price_dict in price_list if price_dict['name'] not in EXCLUDED_PRICETYPE_NAMES]
+   
+
+def extract_available_quantity(inventory):
+    try:
+        return inventory['warehouses'][0]['availableQuantity']
+    except KeyError:
+        return 0
+
+
+def update_price_types(price_list):
+    PriceType.objects.all().update(active=False)
+    for price_dict in price_list:
+        if price_dict['name'] in EXCLUDED_PRICETYPE_NAMES:
+            continue
+        name = price_dict['name']
+        PriceType.objects.update_or_create(
+            name=name,  # Usar 'name' como clave única
+            defaults={'active': True}
+        )
+
+
+def update_or_create_product(product_id, item, details, reference, available_quantity, prices, active):
+    try:
+        product = Product.objects.get(reference=reference)
+        product.item = item
+        product.details = details
+        product.reference = reference
+        product.available_quantity = available_quantity
+        product.prices = prices
+        product.active = active
+        product.save()
+    except ObjectDoesNotExist:
+        Product.objects.update_or_create(
+            id=product_id,
+            defaults={
+                'item': item,
+                'details': details,
+                'reference': reference,
+                'available_quantity': available_quantity,
+                'prices': prices,
+                'active': active
+            }
+        )
+
+def process_contact(row):
+    name = row['name']
+    Contact.objects.update_or_create(name=name, defaults={'active': True})
+        
+
+
+
