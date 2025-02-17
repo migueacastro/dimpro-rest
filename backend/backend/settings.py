@@ -171,7 +171,7 @@ Q_CLUSTER = {
     'name': 'dimprocluster',
     'orm': 'default',  # should use django's ORM and database as a broker.
     'workers': 4,
-    'timeout': 30,
+    'timeout': 500,
     'retry': 60,
     'queue_limit': 50,
     'bulk': 10,

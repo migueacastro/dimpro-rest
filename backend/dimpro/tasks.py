@@ -71,8 +71,10 @@ def updatedb():
                     continue
 
                 name = row['price'][i]['name']
-                PriceType.objects.create(id=i, name=name)
-        
+                try:
+                    PriceType.objects.create(id=i, name=name)
+                except Exception:
+                    continue
         try:
             selecteditem = Product.objects.get(reference=reference)
             selecteditem.item = item
