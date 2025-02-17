@@ -69,7 +69,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
   class Meta:
     model = Product
-    fields = ['id', 'item','details','reference','available_quantity'] 
+    fields = ['id', 'item','details','reference','available_quantity', 'prices'] 
 
 class PriceTypeSerializer(serializers.ModelSerializer):
   class Meta:
@@ -110,7 +110,9 @@ class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden 
     return obj.user.name
     
   def get_contact_name(self,obj):
-    return obj.contact.name
+        if obj.contact:
+            return obj.contact.name
+        return 'Ninguno'
 
   def get_date_format(self,obj):
     return obj.date.strftime('%Y/%m/%d %H:%M')

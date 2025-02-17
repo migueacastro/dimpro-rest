@@ -65,7 +65,9 @@ class UserLoginView(TokenObtainPairView):
       raise AuthenticationFailed({"password": ["Este campo no puede estar vacio."]})
 
     user_instance = authenticate(email=email, password=password)
-    if not user_instance.groups.filter(name="user").exists():
+    if not user_instance:
+      raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
+    if not user_instance.groups.filter(name="user").exists() or user_instance.groups.filter(name__in=["admin", "staff"]).count() > 0:
       raise AuthenticationFailed({"password": ["Correo o contraseña incorrectos o invalidos."]})
 
     login_serializer = self.serializer_class(data=request.data)
