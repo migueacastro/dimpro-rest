@@ -15,10 +15,10 @@ def updatedb():
     # TODO: Adapt updatedb here
 
     def add_contact(name):
-        instance, created = Contact.objects.get_or_create(name=name)
+        instance, created = Contact.objects.update_or_create(name=name, active=True)
         return instance
     def add_data(product_id, item, details, reference, available_quantity, prices):
-        instance, created = Product.objects.get_or_create(id=product_id, item=item, details=details, reference=reference, available_quantity=available_quantity, prices=prices)
+        instance, created = Product.objects.update_or_create(id=product_id, item=item, details=details, reference=reference, available_quantity=available_quantity, prices=prices, active=True)
         return instance
 
     alegra_user = AlegraUser.objects.get(id=1)
@@ -63,8 +63,10 @@ def updatedb():
         
         # Add the current prices of Alegra
         if row['name'] == 'BOMBILLO LED 12W':
-            # Delete all prices
-            PriceType.objects.all().delete()
+            # Deactivate all prices
+            for object in PriceType.objects.all():
+                object.active = False
+                object.save()
             for i in range(len(row["price"])):
                 # Check if the price is from EPA
                 if row['price'][i]['name'] == 'EPA':
@@ -72,7 +74,7 @@ def updatedb():
 
                 name = row['price'][i]['name']
                 try:
-                    PriceType.objects.create(id=i, name=name)
+                    PriceType.objects.update_or_create(id=i, name=name, active=True)
                 except Exception:
                     continue
         try:
