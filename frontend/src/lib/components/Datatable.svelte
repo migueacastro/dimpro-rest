@@ -19,11 +19,17 @@
 
 	//Init data handler - CLIENT
 	let data = [{}];
-	export let endpoint: any;
-	export let fields: any;
-	export let editable: any;
-	export let use_array: any = false;
-	export let source_data: any;
+	export let endpoint: any = null;
+	export let fields: any = [];
+	export let editable: any = false;
+	export let source_data: any = null;
+	export let headings: any = [];
+
+	// List to use inside each heading so that it can access the Title and the field name to access the object attribute
+	let combinedHeadingsList = headings.map((heading: any, index: any) => {
+		return { heading: heading, field: fields[index] };
+	});
+
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
@@ -48,8 +54,8 @@
 	<table class="table table-hover table-compact w-full table-auto">
 		<thead>
 			<tr>
-				{#each fields as field}
-					<ThSort {handler} orderBy={field}>{field}</ThSort>
+				{#each combinedHeadingsList as item}
+					<ThSort {handler} orderBy={item?.field}>{item?.heading}</ThSort>
 				{/each}
 				{#if editable}
 					<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { DataHandler } from '@vincjo/datatables';
 	export let handler: DataHandler;
-	const rowsPerPage = handler.getRowsPerPage();
+	$: rowsPerPage = handler.getRowsPerPage();
 	const options = [5, 10, 20, 50, 100];
 </script>
 
 <aside class="flex place-items-center">
-	Mostrar
+	Show
 	<select class="select ml-2" bind:value={$rowsPerPage}>
 		{#each options as option}
 			<option value={option}>

@@ -41,7 +41,8 @@
 		<Datatable
 			editable={false}
 			endpoint={'orders'}
-			fields={['ID', 'Usuario', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
+			headings={['ID', 'Usuario', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
+			fields={['id', 'user_name', 'contact_name', 'product_count', 'status', 'date_format']}
 		/>
 	</div>
 {:else}
