@@ -53,8 +53,8 @@
 		</div>
 	</div>
 	<Datatable
-		use_array={true}
 		source_data={order?.products}
+		headings={['ID', 'Item', 'Referencia', 'Cantidad', 'Precio', 'Costo']}
 		fields={['id', 'item', 'reference', 'quantity', 'price', 'cost']}
 	/>
 </div>

@@ -20,7 +20,7 @@
 	let contactAutoCompleteList: any = [{}];
 	export let data;
 
-	let items: any = [
+	$: items = [
 		{
 			id: null,
 			item: '',
@@ -29,7 +29,9 @@
 			availability: null,
 			price: null,
 			cost: null,
-			index: 0
+			item_label: '',
+			index: 0,
+			search_error: false
 		}
 	];
 
@@ -53,33 +55,31 @@
 			removeProductFromBlacklist(row.item);
 		}
 		row.item = null;
-		row.item_label = '';
+		row.search_error = true;
 	}
 	function loadRowItemValues(row: any, id: any) {
 		let item_object = products.find((product: any) => product.id === id);
-		if (item_object) {
-			row.id = item_object.id;
-			row.availability = item_object.available_quantity;
-			row.item = item_object.id;
-			row.item_label = item_object.item;
-			row.price = Object.values(item_object.prices[0])[0];
-			/*row.price =
+		row.id = item_object.id;
+		row.availability = item_object.available_quantity;
+		row.item = item_object.id;
+		row.item_label = item_object.item;
+		row.price = Object.values(item_object.prices[0])[0];
+		/*row.price =
 				item_object.prices[0].key; */ /*product_object.prices.find((pricetype: any) => {
       pricetype.trim() === selectedPriceType.label;
     }*/
-			row.quantity = 1;
-
-			calculateCost(row);
-			addProductToBlacklist(row.item);
-		} else {
-			unloadRowItemValues(row);
-		}
+		row.quantity = 1;
+		row.search_error = false;
+		calculateCost(row);
+		addProductToBlacklist(row.item);
 	}
+
+	function checkError(row: any) {}
 
 	function addRow() {
 		// carefull here, reactiviy works this way
 		let index = items[items.length - 1].index + 1;
-		let newRow = {
+		let newRow: any = {
 			id: null,
 			item: '',
 			reference: '',
@@ -87,7 +87,9 @@
 			availability: null,
 			price: null,
 			cost: null,
-			index: index
+			item_label: '',
+			index: index,
+			search_error: false
 		};
 
 		items = [...items, newRow]; // Here the array value is changed to another array with different  content
@@ -116,6 +118,21 @@
 	function updateIndex() {
 		items.forEach((item: any, index: any) => {
 			item.index = index;
+		});
+	}
+
+	function checkErrors(row: any) {
+		if (listAutocompleteOptions(row.item_label).length < 1) {
+			return true;
+		}
+		return false;
+	}
+
+	function listAutocompleteOptions(input: string) {
+		return productAutoCompleteList.map((item: any) => {
+			if (item.label.includes(input)) {
+				return item;
+			}
 		});
 	}
 
@@ -171,21 +188,12 @@
 					<td>
 						<input
 							class="input autocomplete my-2"
+							class:input-error={row.search_error}
 							type="search"
 							name="autocomplete-search"
 							bind:value={row.item_label}
 							placeholder="Buscar..."
 							use:popup={popupSettings}
-							on:change={(e) => {
-								//row.item_label = e.detail.label;
-								//row.item = e.detail.value;
-								let idToPass = findItemByName(row)?.id;
-								if (!idToPass) {
-									row.item_label = '';
-									return;
-								}
-								loadRowItemValues(row, idToPass);
-							}}
 						/>
 						<div data-popup="popupAutocomplete" class="max-w-md w-full card">
 							<Autocomplete
