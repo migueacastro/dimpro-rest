@@ -35,7 +35,7 @@
 
 	onMount(async () => {
 		if (endpoint) {
-			data = await getData(apiURL + endpoint);
+			data = await getData(endpoint);
 			handler = new DataHandler(data, { rowsPerPage: 5 });
 		} else {
 			handler = new DataHandler(source_data, { rowsPerPage: 5 });
