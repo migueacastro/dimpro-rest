@@ -4,15 +4,16 @@
 	import { onMount } from 'svelte';
 	import { getData } from '$lib/components/data';
 	import { formData } from '$lib/components/formData';
+	import { fetchData } from '$lib/utils.ts';
 
 	export let fields = [{ type: null, value: null, name: null, label: null }];
-	export let method = '';
 	export let endpoint = '';
 	export let edit = false;
 	let id = $page.params.id;
 	async function isEditable() {
 		if (edit) {
-			let data = await getData(endpoint);
+			let response = await fetchData(endpoint, 'GET');
+			let data = await response.json();
 			let value = data.filter((values: { id: string }) => values.id == id);
 			for (let i = 0; i < fields.length; i++) {
 				fields[i].value = value[0][`${fields[i].name}`];
@@ -24,7 +25,9 @@
 		fields.forEach((field) => {
 			body[field.name] = field.value;
 		});
-		let response = await formData(endpoint, body, method);
+		let response = await fetchData(endpoint, body, edit ? 'PATCH' : 'POST');
+		let data = await response.json();
+		// TODO: Handle success, and errors
 	}
 
 	onMount(async () => {

@@ -10,7 +10,7 @@
 	import Pagination from '$lib/components/Pagination.svelte';
 	import { goto } from '$app/navigation';
 	//Load local data
-	import { getData } from '$lib/components/data.ts';
+	import { fetchData } from '$lib/utils.ts';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
@@ -35,7 +35,8 @@
 
 	onMount(async () => {
 		if (endpoint) {
-			data = await getData(endpoint);
+			let response = await fetchData(endpoint, 'GET');
+			data = await response.json();
 			handler = new DataHandler(data, { rowsPerPage: 5 });
 		} else {
 			handler = new DataHandler(source_data, { rowsPerPage: 5 });
