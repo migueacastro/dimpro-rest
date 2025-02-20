@@ -2,7 +2,7 @@
 	import { popup } from '@skeletonlabs/skeleton';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 	import { Autocomplete } from '@skeletonlabs/skeleton';
-	import { postData } from '$lib/utils.ts';
+	import { fetchData } from '$lib/utils.ts';
 	import { user } from '../../../../stores/stores';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
@@ -26,7 +26,7 @@
 	let selectedContactId: number;
 	let contactList: AutocompleteOption<number, string>[] = [];
 	async function createOrder() {
-		const response = await postData('orders', {
+		const response = await fetchData('orders', 'POST', {
 			contact: selectedContactId,
 			user: $user?.id,
 			status: 'pendiente'
@@ -40,7 +40,7 @@
 		}
 	}
 	onMount(async () => {
-		let response = await getData('contacts');
+		let response = await fetchData('contacts', 'GET');
 		let contacts = await response.json();
 		contactList = contacts.map((contact: any) => {
 			return { label: contact.name, value: contact.id };

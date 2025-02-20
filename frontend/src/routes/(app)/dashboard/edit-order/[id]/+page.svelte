@@ -2,22 +2,16 @@
 	import { checkAdminGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
 	import { user } from '../../../../../stores/stores';
-	import { getData } from '$lib/utils.js';
+	import { fetchData } from '$lib/utils.ts';
 	import { Autocomplete } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
-	import type { PopupSettings } from '@skeletonlabs/skeleton';
-	let popupSettings: PopupSettings = {
-		event: 'focus-click',
-		target: 'popupAutocomplete',
-		placement: 'bottom'
-	};
+	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 
 	let products: any = [{}];
 	let contacts: any = [{}];
-	let productBlacklist: any = [{}];
-
-	let productAutoCompleteList: any = [{}];
-	let contactAutoCompleteList: any = [{}];
+	let productBlacklist: any = [];
+	let productAutoCompleteList: AutocompleteOption[];
+	let contactAutoCompleteList: AutocompleteOption[];
 	export let data;
 
 	$: items = [
@@ -31,18 +25,27 @@
 			cost: null,
 			item_label: '',
 			index: 0,
-			search_error: false
+			search_error: false,
+			input_disabled: true
 		}
 	];
 
 	function addProductToBlacklist(id: any) {
 		let product = products.find((product: any) => product.id == id);
 		productBlacklist = [...productBlacklist, product];
+		productAutoCompleteList = productAutoCompleteList.filter((p: any) => {
+			return p.value != product.id;
+		});
+		console.log(productAutoCompleteList);
 	}
 
 	function removeProductFromBlacklist(id: any) {
 		let product = productBlacklist.find((product: any) => product.id == id);
-		products = products.filter((p: any) => p.id != product.id);
+		productBlacklist = products.filter((p: any) => p.id != product.id);
+		productAutoCompleteList = [
+			...productAutoCompleteList,
+			{ label: product.item, value: product.id }
+		];
 	}
 
 	function unloadRowItemValues(row: any) {
@@ -50,35 +53,43 @@
 		row.availability = null;
 		row.price = null;
 		row.cost = 0;
-		row.quantity = 0;
+		row.quantity = '';
 		if (row.item) {
 			removeProductFromBlacklist(row.item);
 		}
+		row.input_disabled = true;
 		row.item = null;
-		row.search_error = true;
 	}
 	function loadRowItemValues(row: any, id: any) {
-		let item_object = products.find((product: any) => product.id === id);
-		row.id = item_object.id;
-		row.availability = item_object.available_quantity;
-		row.item = item_object.id;
-		row.item_label = item_object.item;
-		row.price = Object.values(item_object.prices[0])[0];
-		/*row.price =
-				item_object.prices[0].key; */ /*product_object.prices.find((pricetype: any) => {
-      pricetype.trim() === selectedPriceType.label;
-    }*/
-		row.quantity = 1;
-		row.search_error = false;
-		calculateCost(row);
-		addProductToBlacklist(row.item);
-	}
+		let item_object = products.find((product: any) => product.id == id);
 
-	function checkError(row: any) {}
+		if (item_object) {
+			// Actualizar las propiedades del objeto original
+			row.id = item_object.id;
+			row.availability = item_object.available_quantity;
+			row.item = item_object.id;
+			row.item_label = item_object.item;
+			row.price = Object.values(item_object.prices[0])[0];
+			row.quantity = 1;
+			row.input_disabled = false;
+
+			calculateCost(row);
+			addProductToBlacklist(row.item);
+		} else {
+			console.log(item_object);
+			console.log(id);
+		}
+	}
 
 	function addRow() {
 		// carefull here, reactiviy works this way
-		let index = items[items.length - 1].index + 1;
+		let index;
+		if (items.length > 0) {
+			index = items[items.length - 1].index + 1;
+		} else {
+			index = 0;
+		}
+
 		let newRow: any = {
 			id: null,
 			item: '',
@@ -89,25 +100,27 @@
 			cost: null,
 			item_label: '',
 			index: index,
-			search_error: false
+			search_error: false,
+			input_disabled: true
 		};
-
 		items = [...items, newRow]; // Here the array value is changed to another array with different  content
-		//items.push(newRow); // You see? this just updates the content, not the value
 	}
 
 	function removeRow(index: number) {
 		items = items.filter((item: any) => item.index !== index);
 		updateIndex();
-		//items.splice(index,1); // this would work well if instead of id, it would be the current index inside of the items array
 	}
 
 	function calculateCost(row: any) {
+		let item_object = products.find((product: any) => product.id === row.item);
 		if (row.quantity < 1) {
 			row.quantity = 1;
 			calculateCost(row);
 			return;
+		} else if (item_object && row.quantity > item_object?.available_quantity) {
+			row.quantity = item_object?.available_quantity;
 		}
+
 		if (row.quantity && row.price) {
 			row.cost = (row.quantity * row.price).toFixed(2);
 		} else {
@@ -129,27 +142,53 @@
 	}
 
 	function listAutocompleteOptions(input: string) {
-		return productAutoCompleteList.map((item: any) => {
-			if (item.label.includes(input)) {
+		let list = productAutoCompleteList.filter((item: any) => {
+			if (item.label.toLowerCase().trim().includes(input.toLowerCase().trim())) {
 				return item;
 			}
 		});
+		return list;
 	}
 
 	function findItemByName(row: any) {
-		return productAutoCompleteList.find((p: any) => p.item == row.item_label);
+		return productAutoCompleteList.find(
+			(p: any) => p.label?.toLowerCase()?.trim() == row.item_label?.toLowerCase()?.trim()
+		);
+	}
+
+	function markSearchError(row: any) {
+		row.search_error = true;
+	}
+
+	function unmarkSearchError(row: any) {
+		row.search_error = false;
+	}
+
+	function handleItemInput(row: any) {
+		if (checkErrors(row)) {
+			markSearchError(row);
+			unloadRowItemValues(row);
+		} else {
+			unmarkSearchError(row);
+			let item = findItemByName(row);
+			if (item) {
+				console.log(item);
+				loadRowItemValues(row, item?.value);
+			} else {
+				unloadRowItemValues(row);
+			}
+		}
 	}
 
 	onMount(async () => {
-		let response = await getData('products');
+		let response = await fetchData('products', 'GET');
 		products = await response.json();
 		productAutoCompleteList = products.map((product: any) => {
 			return { label: product.item, value: product.id };
 		});
-		response = await getData('contacts');
+		response = await fetchData('contacts', 'GET');
 		contacts = await response.json();
 	});
-	// id does not depend on the table, it merely depends on the item
 </script>
 
 <title>Editar Pedidos</title>
@@ -182,7 +221,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each items as row}
+			{#each items as row, index}
 				<tr>
 					<td>{row.id || ''}</td>
 					<td>
@@ -193,9 +232,14 @@
 							name="autocomplete-search"
 							bind:value={row.item_label}
 							placeholder="Buscar..."
-							use:popup={popupSettings}
+							use:popup={{
+								event: 'focus-click',
+								target: `popupAutocomplete-${index}`,
+								placement: 'bottom'
+							}}
+							on:input={() => handleItemInput(row)}
 						/>
-						<div data-popup="popupAutocomplete" class="max-w-md w-full card">
+						<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
 							<Autocomplete
 								bind:input={row.item_label}
 								options={productAutoCompleteList}
@@ -203,7 +247,6 @@
 									row.item_label = e.detail.label;
 									row.item = e.detail.value;
 									loadRowItemValues(row, e.detail.value);
-								}}
 								}}
 							/>
 						</div>
@@ -214,6 +257,7 @@
 							type="number"
 							class="input"
 							min="1"
+							disabled={row.input_disabled}
 							bind:value={row.quantity}
 							on:input={() => calculateCost(row)}
 						/></td
