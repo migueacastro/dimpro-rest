@@ -36,7 +36,6 @@
 		productAutoCompleteList = productAutoCompleteList.filter((p: any) => {
 			return p.value != product.id;
 		});
-		console.log(productAutoCompleteList);
 	}
 
 	function removeProductFromBlacklist(id: any) {
@@ -76,8 +75,6 @@
 			calculateCost(row);
 			addProductToBlacklist(row.item);
 		} else {
-			console.log(item_object);
-			console.log(id);
 		}
 	}
 
@@ -127,7 +124,6 @@
 			row.cost = null;
 		}
 	}
-
 	function updateIndex() {
 		items.forEach((item: any, index: any) => {
 			item.index = index;
@@ -135,7 +131,7 @@
 	}
 
 	function checkErrors(row: any) {
-		if (listAutocompleteOptions(row.item_label).length < 1) {
+		if (listAutocompleteOptions(row.item_label).length < 1 && !row.item) {
 			return true;
 		}
 		return false;
@@ -172,11 +168,32 @@
 			unmarkSearchError(row);
 			let item = findItemByName(row);
 			if (item) {
-				console.log(item);
 				loadRowItemValues(row, item?.value);
 			} else {
 				unloadRowItemValues(row);
 			}
+		}
+	}
+
+	function clearItemInput(row: any) {
+		row.item = null;
+		row.item_label = '';
+		unloadRowItemValues(row);
+		items = items;
+	}
+
+	function handleItemInputBlur(row: any) {
+		if (checkErrors(row)) {
+			clearItemInput(row);
+			unmarkSearchError(row);
+		}
+	}
+
+	function handleItemEnterPress(row: any, event: any) {
+		if (event.key === 'Enter') {
+			row.item_label = listAutocompleteOptions(row.item_label)[0].label;
+			items = items;
+			handleItemInput(row);
 		}
 	}
 
@@ -225,20 +242,27 @@
 				<tr>
 					<td>{row.id || ''}</td>
 					<td>
-						<input
-							class="input autocomplete my-2"
-							class:input-error={row.search_error}
-							type="search"
-							name="autocomplete-search"
-							bind:value={row.item_label}
-							placeholder="Buscar..."
-							use:popup={{
-								event: 'focus-click',
-								target: `popupAutocomplete-${index}`,
-								placement: 'bottom'
-							}}
-							on:input={() => handleItemInput(row)}
-						/>
+						<div class="input-group input-group-divider grid-cols-[1fr_auto] p-0">
+							<input
+								class="input autocomplete"
+								class:input-error={row.search_error}
+								type="search"
+								name="autocomplete-search"
+								bind:value={row.item_label}
+								placeholder="Buscar..."
+								use:popup={{
+									event: 'focus-click',
+									target: `popupAutocomplete-${index}`,
+									placement: 'bottom'
+								}}
+								on:input={() => handleItemInput(row)}
+								on:blur={() => handleItemInputBlur(row)}
+								on:keydown={(e) => handleItemEnterPress(row, e)}
+							/>
+							<button type="button" class="input-group-shim" on:click={() => clearItemInput(row)}>
+								<i class="fa-solid fa-xmark"></i>
+							</button>
+						</div>
 						<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
 							<Autocomplete
 								bind:input={row.item_label}

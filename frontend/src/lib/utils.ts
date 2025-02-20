@@ -1,9 +1,10 @@
 import { apiURL } from "./api_url";
 import Cookies from 'js-cookie';
 
+// Fetch that includes bearer auth cookie inside headers
 export async function fetchData(endpoint: string, method: string, body: any = null) {
   let url = apiURL + endpoint;
-  if (method === "POST" || method === "PUT" || method === "PATCH") {
+  if (Array.from(["POST", "PUT", "PATCH"]).includes(method)) {
     url += '/';
   }
   let token = Cookies.get("token");
