@@ -2,12 +2,11 @@
 	import { popup } from '@skeletonlabs/skeleton';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 	import { Autocomplete } from '@skeletonlabs/skeleton';
-	import { fetchData } from '$lib/utils.ts';
 	import { user } from '../../../../stores/stores';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
-	import { getData } from '$lib/utils.ts';
+	import { fetchData } from '$lib/utils.ts';
 	import { onMount } from 'svelte';
 
 	const toastStore = getToastStore();

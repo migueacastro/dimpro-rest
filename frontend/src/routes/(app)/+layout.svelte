@@ -34,7 +34,7 @@
 	onMount(async () => {
 		await authenticate();
 		if (!$user) {
-			await goto('/');
+			await goto('/start');
 		}
 	});
 </script>

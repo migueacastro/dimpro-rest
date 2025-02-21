@@ -5,14 +5,18 @@
 	import { goto } from "$app/navigation";
 	onMount(async () => {
 		let token = Cookies.get('token');
-		if ($user) {
-			goto("/dashboard")
+		if (token) {
+			goto("/dashboard");
 		} else {
-			goto("/start")
+			goto("/start");
 		}
 	});
 </script>
 
-<div class="m-[6rem]">
-	<button type="button" class="btn btn-xl variant-filled-primary">Hola {$user?.name}</button>
+<title>Cargando...</title>
+
+<div class="m-[10rem]">
+	<h1 style="font-size: x-large;">Bienvenido, 
+		{$user?.name}
+	</h1>
 </div>

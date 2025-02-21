@@ -43,7 +43,7 @@
 	<ol class="breadcrumb mb-[3rem]">
 		<li class="crumb"><a class="anchor" href="/start">Inicio</a></li>
 		<li class="crumb-separator" aria-hidden>/</li>
-		<li class="crumb">Vendedor</li>
+		<li class="crumb">Empleado</li>
 	</ol>
 
 	<form>
