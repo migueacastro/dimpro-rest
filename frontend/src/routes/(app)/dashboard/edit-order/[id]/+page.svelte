@@ -13,7 +13,17 @@
 	let productAutoCompleteList: AutocompleteOption[];
 	let contactAutoCompleteList: AutocompleteOption[];
 	export let data;
-
+	$: totalQuantity = parseFloat(
+		items
+			.reduce((accumulator: number, item: any) => accumulator + (item?.quantity ?? 0), 0)
+			.toString()
+	).toFixed(0);
+	$: totalPrice = items
+		.reduce((accumulator: number, item: any) => accumulator + (item.price || 0), 0)
+		.toFixed(2);
+	$: totalCost = items
+		.reduce((accumulator: number, item: any) => accumulator + (Number(item?.cost) || 0), 0)
+		.toFixed(2);
 	$: items = [
 		{
 			id: null,
@@ -26,7 +36,8 @@
 			item_label: '',
 			index: 0,
 			search_error: false,
-			input_disabled: true
+			input_disabled: true,
+			hover: false
 		}
 	];
 
@@ -51,7 +62,8 @@
 		row.id = null;
 		row.availability = null;
 		row.price = null;
-		row.cost = 0;
+		row.cost = null;
+		row.reference = '';
 		row.quantity = '';
 		if (row.item) {
 			removeProductFromBlacklist(row.item);
@@ -70,6 +82,7 @@
 			row.item_label = item_object.item;
 			row.price = Object.values(item_object.prices[0])[0];
 			row.quantity = 1;
+			row.reference = item_object.reference;
 			row.input_disabled = false;
 
 			calculateCost(row);
@@ -98,7 +111,8 @@
 			item_label: '',
 			index: index,
 			search_error: false,
-			input_disabled: true
+			input_disabled: true,
+			hover: false
 		};
 		items = [...items, newRow]; // Here the array value is changed to another array with different  content
 	}
@@ -123,6 +137,7 @@
 		} else {
 			row.cost = null;
 		}
+		items = items;
 	}
 	function updateIndex() {
 		items.forEach((item: any, index: any) => {
@@ -185,6 +200,7 @@
 	function handleItemInputBlur(row: any) {
 		if (checkErrors(row)) {
 			clearItemInput(row);
+			1;
 			unmarkSearchError(row);
 		}
 	}
@@ -224,7 +240,7 @@
 <!-- Responsive Container (recommended) -->
 <div class="table-container">
 	<!-- Native Table Element -->
-	<table class="table table-hover">
+	<table class="table table-hover overflow-x-scroll">
 		<thead>
 			<tr>
 				<th>ID</th>
@@ -234,18 +250,26 @@
 				<th>Disponibilidad</th>
 				<th>Precio</th>
 				<th>Costo</th>
-				<th></th>
+				<th class="w-[10rem]"></th>
 			</tr>
 		</thead>
 		<tbody>
 			{#each items as row, index}
-				<tr>
+				<tr
+					on:mouseover={() => (row.hover = true)}
+					on:mouseout={() => (row.hover = false)}
+					on:focus={() => {}}
+					on:blur={() => {}}
+				>
 					<td>{row.id || ''}</td>
 					<td>
-						<div class="input-group input-group-divider grid-cols-[1fr_auto] p-0">
+						<div
+							class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
+							class:variant-ghost-error={row.searc1h_error}
+						>
 							<input
 								class="input autocomplete"
-								class:input-error={row.search_error}
+								class:variant-ghost-error={row.search_error}
 								type="search"
 								name="autocomplete-search"
 								bind:value={row.item_label}
@@ -289,8 +313,20 @@
 					<td>{row.availability || ''}</td>
 					<td>{row.price || ''}</td>
 					<td>{row.cost || ''}</td>
-					<td class="flex flex-row">
-						<button class="btn variant-filled" on:click={() => removeRow(row.index)}>
+					<td class="hidden lg:flex flex-row">
+						<button
+							class:hidden={!row.hover}
+							class="btn variant-ghost-error"
+							on:click={() => removeRow(row.index)}
+						>
+							<i class="fa-solid fa-trash"></i>
+						</button>
+						<button class:hidden={!row.hover} class="btn ml-2 variant-filled" on:click={addRow}>
+							<i class="fa-solid fa-plus"></i>
+						</button>
+					</td>
+					<td class="flex lg:hidden flex-row">
+						<button class="btn variant-ghost-error" on:click={() => removeRow(row.index)}>
 							<i class="fa-solid fa-trash"></i>
 						</button>
 						<button class="btn ml-2 variant-filled" on:click={addRow}>
@@ -303,27 +339,29 @@
 		<tfoot>
 			<tr>
 				<th colspan="3">Totales</th>
-				<td class="font-bold">45</td>
+				<td class="font-bold">{totalQuantity}</td>
 				<td></td>
-				<td class="font-bold">6.5</td>
-				<td class="font-bold">245.4</td>
+				<td class="font-bold">{totalPrice}</td>
+				<td class="font-bold">{totalCost}</td>
 				<td></td>
 			</tr>
 		</tfoot>
 	</table>
+</div>
+<div>
 	<div class="flex flex-row justify-center mt-[2rem]">
-		<button class="btn ml-2 variant-filled" on:click={addRow}>
-			<i class="fa-solid fa-plus mr-2"></i> Añadir item
+		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
+			<i class="fa-solid fa-plus"></i><span class="hidden lg:block ml-2">Añadir item</span>
 		</button>
-		<button class="btn ml-2 variant-filled" on:click={addRow}>
+		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
 			<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 		</button>
-		<button class="btn ml-2 variant-filled" on:click={addRow}>
+		<button class="btn ml-2 text-sm variant-ghost-error" on:click={addRow}>
 			<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
 		</button>
 	</div>
 	<div class="flex justify-end flex-row">
-		<h1 class="h2 mt-[2rem]">Total: 9.40$</h1>
+		<h1 class="h2 mt-[2rem]">Total: {totalCost}$</h1>
 	</div>
 	<div class="card p-[2rem] mt-[2rem]">
 		<h1 class="h3">Recordatorio</h1>
