@@ -15,6 +15,8 @@ router.register(r'contacts',ContactViewSet)
 router.register(r'orders',OrderViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'staff', StaffViewSet, basename="staff")
+router.register(r'pricetypes', PriceTypeViewSet)
+
 
 
 urlpatterns = [
