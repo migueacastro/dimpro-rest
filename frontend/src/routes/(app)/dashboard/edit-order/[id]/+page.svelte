@@ -9,21 +9,13 @@
 
 	let products: any = [{}];
 	let contacts: any = [{}];
+	let pricetypes: Array<any> = [{}];
 	let productBlacklist: any = [];
 	let productAutoCompleteList: AutocompleteOption[];
-	let contactAutoCompleteList: AutocompleteOption[];
+	let selectedPricetypeId: any;
+	let order: any;
+
 	export let data;
-	$: totalQuantity = parseFloat(
-		items
-			.reduce((accumulator: number, item: any) => accumulator + (item?.quantity ?? 0), 0)
-			.toString()
-	).toFixed(0);
-	$: totalPrice = items
-		.reduce((accumulator: number, item: any) => accumulator + (item.price || 0), 0)
-		.toFixed(2);
-	$: totalCost = items
-		.reduce((accumulator: number, item: any) => accumulator + (Number(item?.cost) || 0), 0)
-		.toFixed(2);
 	$: items = [
 		{
 			id: null,
@@ -40,6 +32,18 @@
 			hover: false
 		}
 	];
+
+	$: totalQuantity = items
+		.reduce((accumulator: number, item: any) => accumulator + (Number(item.quantity) || 0), 0)
+		.toFixed(2);
+
+	$: totalPrice = items
+		.reduce((accumulator: number, item: any) => accumulator + (Number(item.price) || 0), 0)
+		.toFixed(2);
+
+	$: totalCost = items
+		.reduce((accumulator: number, item: any) => accumulator + (Number(item?.cost) || 0), 0)
+		.toFixed(2);
 
 	function addProductToBlacklist(id: any) {
 		let product = products.find((product: any) => product.id == id);
@@ -80,14 +84,20 @@
 			row.availability = item_object.available_quantity;
 			row.item = item_object.id;
 			row.item_label = item_object.item;
-			row.price = Object.values(item_object.prices[0])[0];
+			let selectedPricetypeName = pricetypes.find(
+				(pricetype: any) => Object.values(pricetype)[0] === selectedPricetypeId
+			).name;
+			row.price = Object.values(
+				item_object.prices.find(
+					(pricetype: any) => Object.keys(pricetype)[0] === selectedPricetypeName
+				)
+			)[0];
 			row.quantity = 1;
 			row.reference = item_object.reference;
 			row.input_disabled = false;
 
 			calculateCost(row);
 			addProductToBlacklist(row.item);
-		} else {
 		}
 	}
 
@@ -200,7 +210,6 @@
 	function handleItemInputBlur(row: any) {
 		if (checkErrors(row)) {
 			clearItemInput(row);
-			1;
 			unmarkSearchError(row);
 		}
 	}
@@ -213,6 +222,45 @@
 		}
 	}
 
+	function updateTablePrices() {
+		items = items.map((row: any) => {
+			if (row.item) {
+				let itemId = row.item;
+				unloadRowItemValues(row);
+				loadRowItemValues(row, itemId);
+			}
+			return row;
+		});
+		items = [...items];
+	}
+
+	function loadItems(orderObject: any) {
+		// Create a new array for items
+		items = orderObject.products.map((product: any, index: any) => {
+			const row = {
+				id: product.product.id,
+				item: product.product.id,
+				reference: product.product.reference,
+				quantity: product.quantity,
+				availability: product.product.available_quantity,
+				price: product.price,
+				cost: product.cost,
+				item_label: product.product.item,
+				index: index,
+				search_error: false,
+				input_disabled: true,
+				hover: false
+			};
+			// Load row values (e.g., price, cost) based on the selected pricetype
+
+			return row;
+		});
+		items.forEach((item: any) => {
+			loadRowItemValues(item, item.id);
+		});
+		items = items;
+	}
+
 	onMount(async () => {
 		let response = await fetchData('products', 'GET');
 		products = await response.json();
@@ -221,6 +269,12 @@
 		});
 		response = await fetchData('contacts', 'GET');
 		contacts = await response.json();
+		response = await fetchData('pricetypes', 'GET');
+		pricetypes = await response.json();
+		response = await fetchData('orders/' + data.id, 'GET');
+		order = await response.json();
+		selectedPricetypeId = order.pricetype ?? pricetypes[0]?.id;
+		loadItems(order);
 	});
 </script>
 
@@ -234,7 +288,17 @@
 	<h3 class="h3 my-[2rem]">Items: {items.length}</h3>
 	<div class="flex flex-col">
 		<label for="" class="h4 my-2">Tipo de precio</label>
-		<select class="select" name="pricetype" id="pricetype"> </select>
+		<select
+			class="select"
+			name="pricetype"
+			id="pricetype"
+			bind:value={selectedPricetypeId}
+			on:change={updateTablePrices}
+		>
+			{#each pricetypes as pricetype}
+				<option value={pricetype.id}>{pricetype.name}</option>
+			{/each}
+		</select>
 	</div>
 </div>
 <!-- Responsive Container (recommended) -->
@@ -265,7 +329,7 @@
 					<td>
 						<div
 							class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
-							class:variant-ghost-error={row.searc1h_error}
+							class:variant-ghost-error={row.search_error}
 						>
 							<input
 								class="input autocomplete"

@@ -74,7 +74,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class PriceTypeSerializer(serializers.ModelSerializer):
   class Meta:
     model = PriceType
-    fields = ['id', 'name', 'default']
+    fields = ['id', 'name']
 
 class ContactSerializer(serializers.ModelSerializer):
   class Meta:
