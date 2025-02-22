@@ -92,7 +92,7 @@
 		<h3 class="text-4xl mb-[2rem]">Regístre su usuario</h3>
 
 		<input
-			class="input my-2"
+			class="input"
 			title="Nombre"
 			type="text"
 			placeholder="Usuario"
@@ -137,38 +137,30 @@
 			</div>
 		{/if}
 
-		{#if showPassword}
-			<input
-				class="input my-2"
-				title="Contraseña"
-				type="text"
-				placeholder="Contraseña"
-				bind:value={password}
-				on:input={validateFields}
-			/>
-		{:else}
-			<input
-				class="input my-2"
-				title="Contraseña"
-				type="password"
-				placeholder="Contraseña"
-				bind:value={password}
-				on:input={validateFields}
-			/>
-		{/if}
-		<div class="flex justify-start gap-3 ml-2">
-			{#if !showPassword}
-				<button type="button" on:click={togglePasswordVisibility}
-					><i class="fa-regular fa-eye"></i></button
-				>
-			{:else}
+		<div class="input-group input-group-divider grid-cols-[1fr_auto] p-0">
+			{#if showPassword}
+				<input
+					class="input"
+					title="Contraseña"
+					type="text"
+					placeholder="Contraseña"
+					bind:value={password}
+				/>
 				<button type="button" on:click={togglePasswordVisibility}
 					><i class="fa-regular fa-eye-slash"></i></button
 				>
+			{:else}
+				<input
+					class="input"
+					title="Contraseña"
+					type="password"
+					placeholder="Contraseña"
+					bind:value={password}
+				/>
+				<button type="button" on:click={togglePasswordVisibility}
+					><i class="fa-regular fa-eye"></i></button
+				>
 			{/if}
-			<button type="button" on:click={togglePasswordVisibility}>
-				{showPassword ? 'Ocultar' : 'Mostrar'} Contraseña
-			</button>
 		</div>
 		{#if errors.password}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -195,38 +187,30 @@
 			{/if}
 		{/if}
 
-		{#if showRepPassword}
-			<input
-				class="input my-2"
-				title="Repetir Contraseña"
-				type="text"
-				placeholder="Repita su Contraseña"
-				bind:value={confirmPassword}
-				on:input={validateFields}
-			/>
-		{:else}
-			<input
-				class="input my-2"
-				title="Repetir Contraseña"
-				type="password"
-				placeholder="Repita su Contraseña"
-				bind:value={confirmPassword}
-				on:input={validateFields}
-			/>
-		{/if}
-		<div class="flex justify-start gap-3 ml-2">
-			{#if !showRepPassword}
-				<button type="button" on:click={toggleRepPasswordVisibility}
-					><i class="fa-regular fa-eye"></i></button
-				>
-			{:else}
+		<div class="input-group input-group-divider grid-cols-[1fr_auto] my-2">
+			{#if showRepPassword}
+				<input
+					class="input"
+					title="Confirmar Contraseña"
+					type="text"
+					placeholder="Confirmar Contraseña"
+					bind:value={confirmPassword}
+				/>
 				<button type="button" on:click={toggleRepPasswordVisibility}
 					><i class="fa-regular fa-eye-slash"></i></button
 				>
+			{:else}
+				<input
+					class="input"
+					title="Confirmar Contraseña"
+					type="password"
+					placeholder="Confirmar Contraseña"
+					bind:value={confirmPassword}
+				/>
+				<button type="button" on:click={toggleRepPasswordVisibility}
+					><i class="fa-regular fa-eye"></i></button
+				>
 			{/if}
-			<button type="button" on:click={toggleRepPasswordVisibility}>
-				{showRepPassword ? 'Ocultar' : 'Mostrar'} Contraseña
-			</button>
 		</div>
 		{#if confirmPassword.length > 0}
 			{#if password !== confirmPassword}
@@ -245,7 +229,7 @@
 			</div>
 		{/if}
 		<input
-			class="input my-2"
+			class="input"
 			title="telefono"
 			type="text"
 			placeholder="Número de telefono"
