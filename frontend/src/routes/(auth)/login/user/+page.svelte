@@ -61,36 +61,30 @@
 			</div>
 		{/if}
 
-		{#if showPassword}
-			<input
-				class="input my-2"
-				title="Contraseña"
-				type="text"
-				placeholder="Contraseña"
-				bind:value={password}
-			/>
-		{:else}
-			<input
-				class="input my-2"
-				title="Contraseña"
-				type="password"
-				placeholder="Contraseña"
-				bind:value={password}
-			/>
-		{/if}
-		<div class="flex justify-start gap-3 ml-2">
-			{#if !showPassword}
-				<button type="button" on:click={togglePasswordVisibility}
-					><i class="fa-regular fa-eye"></i></button
-				>
-			{:else}
+		<div class="input-group input-group-divider grid-cols-[1fr_auto] p-0">
+			{#if showPassword}
+				<input
+					class="input"
+					title="Contraseña"
+					type="text"
+					placeholder="Contraseña"
+					bind:value={password}
+				/>
 				<button type="button" on:click={togglePasswordVisibility}
 					><i class="fa-regular fa-eye-slash"></i></button
 				>
+			{:else}
+				<input
+					class="input"
+					title="Contraseña"
+					type="password"
+					placeholder="Contraseña"
+					bind:value={password}
+				/>
+				<button type="button" on:click={togglePasswordVisibility}
+					><i class="fa-regular fa-eye"></i></button
+				>
 			{/if}
-			<button type="button" on:click={togglePasswordVisibility}>
-				{showPassword ? 'Ocultar' : 'Mostrar'} Contraseña
-			</button>
 		</div>
 		{#if errors.password}
 			<div class="card variant-ghost-error p-2 text-sm text-left">

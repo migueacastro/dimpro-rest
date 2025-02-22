@@ -1,4 +1,5 @@
 <script lang="ts">
+	//@ts-nocheck
 	import { checkAdminGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
 	import { user } from '../../../../../stores/stores';
