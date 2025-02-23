@@ -1,5 +1,5 @@
 import { apiURL } from "./api_url";
-import { headers, refreshCSRFToken } from "./auth";
+import { headers } from "./auth";
 
 export async function fetchData(endpoint: string, method: string, body: any = null) {
   let url = apiURL + endpoint;
@@ -12,7 +12,6 @@ export async function fetchData(endpoint: string, method: string, body: any = nu
     credentials: 'include',
     body: (body) ? JSON.stringify(body) : null,
   });
-  await refreshCSRFToken();
   return response;
 }
 
