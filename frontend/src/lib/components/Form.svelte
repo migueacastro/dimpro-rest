@@ -3,12 +3,12 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { getData } from '$lib/components/data';
-	import { formData } from '$lib/components/formData';
 	import { fetchData } from '$lib/utils.ts';
 
 	export let fields = [{ type: null, value: null, name: null, label: null }];
 	export let endpoint = '';
 	export let edit = false;
+	export let method = '';
 	let id = $page.params.id;
 	async function isEditable() {
 		if (edit) {
@@ -25,7 +25,8 @@
 		fields.forEach((field) => {
 			body[field.name] = field.value;
 		});
-		let response = await fetchData(endpoint, body, edit ? 'PATCH' : 'POST');
+		console.log(body);
+		let response = await fetchData(endpoint, method, body);
 		let data = await response.json();
 		// TODO: Handle success, and errors
 	}
