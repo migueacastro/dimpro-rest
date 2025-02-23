@@ -73,7 +73,13 @@
 		</thead>
 		<tbody>
 			{#each $rows as row}
-				<tr on:click={() => goto('/dashboard/' + endpoint + '/' + row['id'])}>
+				<tr
+					on:click={() => {
+						if (endpoint) {
+							goto('/dashboard/' + endpoint + '/' + row['id']);
+						}
+					}}
+				>
 					{#each fields as field}
 						<td class="capitalize">{row[field]}</td>
 					{/each}
