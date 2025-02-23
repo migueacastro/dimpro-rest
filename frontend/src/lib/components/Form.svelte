@@ -3,7 +3,6 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { getData } from '$lib/components/data';
-	import { formData } from '$lib/components/formData';
 	import { fetchData } from '$lib/utils.ts';
 
 	export let fields = [{ type: null, value: null, name: null, label: null }];

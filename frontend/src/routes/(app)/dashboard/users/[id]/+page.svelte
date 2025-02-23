@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { getData } from '$lib/utils';
+	import { fetchData } from '$lib/utils';
 	import { onMount } from 'svelte';
 	export let data: any;
 	import { goto } from '$app/navigation';
 	let user: any;
 
 	onMount(async () => {
-		let response = await getData('users/' + data?.id);
+		let response = await fetchData('users/' + data?.id, 'GET');
 		user = await response.json();
 	});
 </script>
