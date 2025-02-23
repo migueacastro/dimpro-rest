@@ -1,29 +1,42 @@
 import { apiURL } from './api_url';
 import { goto } from '$app/navigation';
 import { user, users } from '../stores/stores';
-
+import Cookies from 'js-cookie';
 
 // Simplificar la solicitud http al iniciar sesión
+export let headers: any = {
+  "X-CSRFToken": Cookies.get("csrftoken") ?? "",
+  "content-type": "application/json",
+};
+
+export async function refreshCSRFToken() {
+  const response = await fetch(apiURL + "csrf");
+  const data = await response.json();
+  Cookies.set("csrftoken", data.csrftoken);
+  headers = {
+    "X-CSRFToken": Cookies.get("csrftoken") ?? "",
+    "content-type": "application/json",
+  };
+}
+
 export async function fetchLogin(data: any) {
   const url = apiURL + "login";
   const response = await window.fetch(url, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
+    headers: headers,
     credentials: "include",
     body: JSON.stringify(data)
   });
+  await refreshCSRFToken();
   return response;
 }
 
 export async function fetchLogout() {
+  await refreshCSRFToken();
   const url = apiURL + "logout";
   await window.fetch(url, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
+    headers: headers,
     credentials: "include",
   });
 }
@@ -33,12 +46,11 @@ export async function fetchStaff(data: any) {
   const url = apiURL + "login/staff";
   const response = await window.fetch(url, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
+    headers: headers,
     body: JSON.stringify(data),
     credentials: "include",
   });
+  await refreshCSRFToken();
   return response;
 }
 
@@ -46,12 +58,11 @@ export async function fetchRegister(data: any) {
   const url = apiURL + "register";
   const response = await window.fetch(url, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
+    headers: headers,
     credentials: "include",
     body: JSON.stringify(data)
   });
+  await refreshCSRFToken();
   return response;
 }
 
@@ -61,14 +72,13 @@ export async function authenticate() {
   const url = apiURL + "user";
   const response = await window.fetch(url, {
     method: 'GET',
-    headers: {
-      'content-type': 'application/json',
-    },
+    headers: headers,
     credentials: "include",
   });
   const data = await response.json()
   if (response.ok) {
     user.set(data);
+    await refreshCSRFToken();
     return data;
   }
 
@@ -81,14 +91,13 @@ export async function fetchUsers() {
   const url = apiURL + "users";
   const response = await window.fetch(url, {
     method: 'GET',
-    headers: {
-      'content-type': 'application/json',
-    },
+    headers: headers,
     credentials: "include",
   });
   const data = await response.json()
   if (response.ok) {
     users.set(data);
+    await refreshCSRFToken();
     return data;
   }
 
@@ -97,7 +106,7 @@ export async function fetchUsers() {
 }
 
 export function checkStaffGroup(user: any) {
-  if (!user.groups) {
+  if (!user?.groups) {
     return false;
   }
   console.log(user.groups);
@@ -110,7 +119,7 @@ export function checkStaffGroup(user: any) {
 }
 
 export function checkAdminGroup(user: any) {
-  if (!user.groups) {
+  if (!user?.groups) {
     return false;
   }
   for (let group of user?.groups) {

@@ -140,6 +140,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "dimpro.User"
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
     "https://bd2c7731-eea7-47d1-8886-dd8133157689-00-hnezs8zhtojv.spock.replit.dev:8000",
     "https://sturdy-memory-7v7pxqgqw7qq3wpjj-5173.app.github.dev", #Joel: temporal, por github 
     ]
@@ -166,6 +167,13 @@ Q_CLUSTER = {
     'queue_limit': 50,
     'bulk': 10,
 }
-
+CORS_ALLOW_HEADERS = (
+'x-requested-with',
+'content-type',
+'accept',
+'origin',
+'authorization',
+'X-CSRFToken'
+)
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 

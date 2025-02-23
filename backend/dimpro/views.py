@@ -12,6 +12,7 @@ from dimpro.models import *
 from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission
 from django.utils.translation import gettext as _
 from django.contrib.sessions.models import Session
+from django.middleware.csrf import get_token
 # Create your views here.
 
 
@@ -19,7 +20,7 @@ class UserRegistrationView(APIView
                            ):  # Aqui puedes retornar responses personalizadas
   serializer_class = UserRegistrationSerializer
   permission_classes = (
-      AllowAny,
+AllowAny,
   )  # Estos son las classes que indican quienes pueden meterse a este endpoint
 
   def post(
@@ -165,6 +166,13 @@ class UserViewSet(SafeViewSet):
     object_instance = self.get_object()
     return Response(UserNestedSerializer(object_instance).data)
 
+class RefreshCSRFTokenView(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request):
+        return Response({
+            'csrftoken': get_token(request)
+        })
+        
 
 class StaffViewSet(SafeViewSet):
   permission_classes = (IsAdminUser, )
