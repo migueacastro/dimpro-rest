@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { apiURL } from '$lib/api_url';
+	import { Temporal } from '@js-temporal/polyfill';
 	import { fetchLogin } from '$lib/auth';
-	import Cookies from 'js-cookie';
+	import type { Cookies } from '@sveltejs/kit';
 	import { authenticate } from '$lib/auth';
 
 	interface FormErrors {
@@ -22,8 +23,6 @@
 		const response = await fetchLogin(formData);
 		const data = await response.json();
 		if (response.ok) {
-			const token = data?.token;
-			Cookies.set('token', token, { expires: 365, secure: true });
 			await authenticate();
 			goto('/');
 		} else {

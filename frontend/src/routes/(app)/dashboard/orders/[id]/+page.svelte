@@ -1,14 +1,27 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { fetchData } from '$lib/utils';
-	import { onMount } from 'svelte';
-	export let data;
 	import { goto } from '$app/navigation';
-	let order: any;
+	import { onMount } from 'svelte';
+	import { fetchData } from '$lib/utils';
 
+	export let data: any;
+	let order: any;
+	let products: Array<any> = [];
+	$: loaded = false;
 	onMount(async () => {
 		let response = await fetchData('orders/' + data.id, 'GET');
 		order = await response.json();
+		products = await order.products.map((item: any) => {
+			return {
+				id: item.product.id,
+				item: item.product.item,
+				reference: item.product.reference,
+				quantity: item.quantity,
+				price: item.price,
+				cost: item.cost
+			};
+		});
+		loaded = true;
 	});
 </script>
 
@@ -34,10 +47,7 @@
 	<div class="flex flex-row justify-between mb-[2rem]">
 		<h2 class="h2">Items: {order?.products?.length}</h2>
 		<div class="flex flex-row">
-			<button
-				class="capitalize btn variant-filled max-w-fit px-[2rem] mx-2"
-				on:click={() => createOrder()}
-			>
+			<button class="capitalize btn variant-filled max-w-fit px-[2rem] mx-2" on:click={() => {}}>
 				{order?.status}
 			</button>
 
@@ -47,14 +57,16 @@
 			>
 				<i class="fa-solid fa-pen-to-square"></i>
 			</button>
-			<button class="btn variant-filled max-w-fit px-[2rem] ml-2" on:click={() => createOrder()}>
+			<button class="btn variant-filled max-w-fit px-[2rem] ml-2" on:click={() => {}}>
 				<i class="fa-solid fa-floppy-disk"></i>
 			</button>
 		</div>
 	</div>
-	<Datatable
-		source_data={order?.products}
-		headings={['ID', 'Item', 'Referencia', 'Cantidad', 'Precio', 'Costo']}
-		fields={['id', 'item', 'reference', 'quantity', 'price', 'cost']}
-	/>
+	{#if loaded}
+		<Datatable
+			source_data={products}
+			headings={['ID', 'Item', 'Referencia', 'Cantidad', 'Precio', 'Costo']}
+			fields={['id', 'item', 'reference', 'quantity', 'price', 'cost']}
+		/>
+	{/if}
 </div>

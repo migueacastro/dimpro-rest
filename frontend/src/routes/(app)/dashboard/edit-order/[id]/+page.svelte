@@ -8,15 +8,15 @@
 	import { popup } from '@skeletonlabs/skeleton';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 
-	let products: any = [{}];
-	let contacts: any = [{}];
-	let pricetypes: Array<any> = [{}];
+	export let data;
+	let products: any = [];
+	let contacts: any = [];
+	let pricetypes: Array<any> = [];
 	let productBlacklist: any = [];
-	let productAutoCompleteList: AutocompleteOption[];
+	let productAutoCompleteList: AutocompleteOption[] = [];
 	let selectedPricetypeId: any;
 	let order: any;
 
-	export let data;
 	$: items = [
 		{
 			id: null,
@@ -265,9 +265,6 @@
 	onMount(async () => {
 		let response = await fetchData('products', 'GET');
 		products = await response.json();
-		productAutoCompleteList = products.map((product: any) => {
-			return { label: product.item, value: product.id };
-		});
 		response = await fetchData('contacts', 'GET');
 		contacts = await response.json();
 		response = await fetchData('pricetypes', 'GET');
@@ -275,6 +272,9 @@
 		response = await fetchData('orders/' + data.id, 'GET');
 		order = await response.json();
 		selectedPricetypeId = order.pricetype ?? pricetypes[0]?.id;
+		productAutoCompleteList = products.map((product: any) => {
+			return { label: product.item, value: product.id };
+		});
 		loadItems(order);
 	});
 </script>
