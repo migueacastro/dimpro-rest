@@ -1,9 +1,8 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { fetchData } from '$lib/utils';
 	import { onMount } from 'svelte';
+	import { fetchData } from '$lib/utils';
 	export let data: any;
-	import { goto } from '$app/navigation';
 	let user: any;
 
 	onMount(async () => {

@@ -1,9 +1,8 @@
 from auditlog.models import LogEntry
 from django.contrib.admin.options import get_content_type_for_model
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,6 +11,7 @@ from dimpro.serializers import *
 from dimpro.models import *
 from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission
 from django.utils.translation import gettext as _
+from django.contrib.sessions.models import Session
 # Create your views here.
 
 
@@ -51,8 +51,8 @@ class UserRegistrationView(APIView
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserLoginView(TokenObtainPairView):
-  serializer_class = CustomTokenObtainPairSerializer
+class UserLoginView(APIView):
+  serializer_class = UserLoginSerializer
   permission_classes = (AllowAny, )
 
   def post(self, request, *args, **kwargs):
@@ -73,6 +73,7 @@ class UserLoginView(TokenObtainPairView):
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
       user_serializer = UserSerializer(user_instance)
+      login(request, user_instance)
       LogEntry.objects.create(
         content_type=get_content_type_for_model(User),
         action=LogEntry.Action.UPDATE,
@@ -80,12 +81,11 @@ class UserLoginView(TokenObtainPairView):
         object_pk=user_instance.id,
         object_id=user_instance.id,
       ) 
+      
       return Response(
           {
-              "token": login_serializer.validated_data.get("access"),
-              "refresh-token": login_serializer.validated_data.get("refresh"),
               "user": user_serializer.data,
-              "message": "Successfull login"
+              "message": "Successfull login",
           },
           status=status.HTTP_200_OK)
     return Response(login_serializer.errors,
@@ -95,6 +95,9 @@ class UserLogoutView(APIView): # You might add this request into the Logout func
     permission_classes = (IsAuthenticated,)
     def post(self, request, *args, **kwargs):
       user_instance = request.user
+      logout(request)
+
+      Session.objects.filter(session_key=request.session.session_key).delete()
       LogEntry.objects.create(
         content_type=get_content_type_for_model(User),
         action=LogEntry.Action.UPDATE,
@@ -105,8 +108,8 @@ class UserLogoutView(APIView): # You might add this request into the Logout func
       return Response(status=status.HTTP_200_OK)
 
 
-class StaffOnlyLoginView(TokenObtainPairView):
-  serializer_class = CustomTokenObtainPairSerializer
+class StaffOnlyLoginView(APIView):
+  serializer_class = UserLoginSerializer 
   permission_classes = (AllowAny, )
 
   def post(self, request, *args, **kwargs):
@@ -124,6 +127,7 @@ class StaffOnlyLoginView(TokenObtainPairView):
 
     login_serializer = self.serializer_class(data=request.data)
     if login_serializer.is_valid():
+      login(request, user_instance)
       LogEntry.objects.create(
         content_type=get_content_type_for_model(User),
         action=LogEntry.Action.UPDATE,
@@ -134,10 +138,8 @@ class StaffOnlyLoginView(TokenObtainPairView):
       user_serializer = UserSerializer(user_instance)
       return Response(
           {
-              "token": login_serializer.validated_data.get("access"),
-              "refresh-token": login_serializer.validated_data.get("refresh"),
               "user": user_serializer.data,
-              "message": "Successfull login"
+              "message": "Successfull login",
           },
           status=status.HTTP_200_OK)
     return Response(login_serializer.errors,
@@ -184,6 +186,11 @@ class ContactViewSet(SafeViewSet):
   permission_classes = (IsAuthenticated, UserReadOnlyPermission)
   queryset = Contact.objects.filter(active=True)
 
+
+class PriceTypeViewSet(SafeViewSet):
+  serializer_class = PriceTypeSerializer
+  permission_classes = (IsAuthenticated, UserReadOnlyPermission)
+  queryset = PriceType.objects.filter(active=True)
 
 class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProducts
   serializer_class = OrderSerializer 

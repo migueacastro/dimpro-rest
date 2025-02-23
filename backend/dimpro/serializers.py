@@ -2,11 +2,7 @@ from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
 from dimpro.models import *
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-  pass
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
   password = serializers.CharField(write_only=True, style={"input_type":"password"}, min_length=8, max_length=100)
@@ -74,7 +70,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class PriceTypeSerializer(serializers.ModelSerializer):
   class Meta:
     model = PriceType
-    fields = ['id', 'name', 'default']
+    fields = ['id', 'name']
 
 class ContactSerializer(serializers.ModelSerializer):
   class Meta:

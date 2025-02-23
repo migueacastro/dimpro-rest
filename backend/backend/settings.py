@@ -38,10 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "dimpro",
-    "rest_framework_simplejwt",
     "corsheaders", # Agregue corsheaders
     "auditlog",
-    "django_q"
+    "django_q",
 ]
 
 MIDDLEWARE = [
@@ -116,17 +115,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':(
-        'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-}
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
-    'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
-    'SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER': timedelta(days=1),
-    'SLIDING_TOKEN_LIFETIME_LATE_USER': timedelta(days=30),
 }
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -176,3 +166,6 @@ Q_CLUSTER = {
     'queue_limit': 50,
     'bulk': 10,
 }
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
