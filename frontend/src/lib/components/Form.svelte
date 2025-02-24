@@ -28,6 +28,7 @@
 		console.log(body);
 		let response = await fetchData(endpoint, method, body);
 		let data = await response.json();
+		console.log(data); //response of the error
 		// TODO: Handle success, and errors
 	}
 

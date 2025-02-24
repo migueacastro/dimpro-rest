@@ -75,10 +75,12 @@ export async function authenticate() {
     headers: headers,
     credentials: "include",
   });
-  const data = await response.json()
+  const data = await response.json();
+  console.log(Cookies.get("csrftoken"));
   if (response.ok) {
     user.set(data);
-    await refreshCSRFToken();
+    refreshCSRFToken();
+    console.log(Cookies.get("csrftoken"));
     return data;
   }
 
@@ -109,7 +111,7 @@ export function checkStaffGroup(user: any) {
   if (!user?.groups) {
     return false;
   }
-  console.log(user.groups);
+  //console.log(user.groups);
   for (let group of user?.groups) {
     if (group?.name === "staff") {
       return true;

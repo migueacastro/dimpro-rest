@@ -6,7 +6,9 @@ export async function fetchData(endpoint: string, method: string, body: any = nu
   if (Array.from(["POST", "PUT", "PATCH"]).includes(method.toUpperCase())) {
     url += '/';
   }
-  const response = await fetch(url, {
+  console.log("came here");
+  console.log(headers['X-CSRFToken']);
+  const response = await window.fetch(url, {
     method: method,
     headers: headers,
     credentials: 'include',
