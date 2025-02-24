@@ -195,6 +195,11 @@ class ContactViewSet(SafeViewSet):
   queryset = Contact.objects.filter(active=True)
 
 
+class OrderProductViewSet(SafeViewSet):
+  serializer_class = OrderProductSerializer
+  permission_classes = (IsAuthenticated, )
+  queryset = Order_Product.objects.all()
+
 class PriceTypeViewSet(SafeViewSet):
   serializer_class = PriceTypeSerializer
   permission_classes = (IsAuthenticated, UserReadOnlyPermission)

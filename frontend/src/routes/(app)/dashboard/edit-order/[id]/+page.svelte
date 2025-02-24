@@ -15,7 +15,8 @@
 	let productBlacklist: any = [];
 	let productAutoCompleteList: AutocompleteOption[] = [];
 	let selectedPricetypeId: any;
-	let order: any;
+	let order: any = {};
+	let initialItemsList: Array<any> = [];
 
 	$: items = [
 		{
@@ -30,7 +31,8 @@
 			index: 0,
 			search_error: false,
 			input_disabled: true,
-			hover: false
+			hover: false,
+			product_object: null
 		}
 	];
 
@@ -75,6 +77,7 @@
 		}
 		row.input_disabled = true;
 		row.item = null;
+		row.product_object = null;
 	}
 	function loadRowItemValues(row: any, id: any) {
 		let item_object = products.find((product: any) => product.id == id);
@@ -96,6 +99,7 @@
 			row.quantity = 1;
 			row.reference = item_object.reference;
 			row.input_disabled = false;
+			row.product_object = item_object;
 
 			calculateCost(row);
 			addProductToBlacklist(row.item);
@@ -123,7 +127,8 @@
 			index: index,
 			search_error: false,
 			input_disabled: true,
-			hover: false
+			hover: false,
+			product_object: null
 		};
 		items = [...items, newRow]; // Here the array value is changed to another array with different  content
 	}
@@ -144,7 +149,7 @@
 		}
 
 		if (row.quantity && row.price) {
-			row.cost = (row.quantity * row.price).toFixed(2);
+			row.cost = parseFloat((row.quantity * row.price).toFixed(2));
 		} else {
 			row.cost = null;
 		}
@@ -250,16 +255,68 @@
 				index: index,
 				search_error: false,
 				input_disabled: true,
-				hover: false
+				hover: false,
+				product_object: null
 			};
 			// Load row values (e.g., price, cost) based on the selected pricetype
 
 			return row;
 		});
+		initialItemsList = items;
 		items.forEach((item: any) => {
 			loadRowItemValues(item, item.id);
 		});
 		items = items;
+	}
+
+	async function disableInitialItems(orderObject: any) {
+		let data: any;
+		let response: any;
+		for (const product of orderObject.products) {
+			response = await fetchData('order_products/' + product.id, 'PATCH', {
+				active: false
+			});
+			if (!response.ok) {
+				data = await response.json();
+				console.log(data);
+			}
+		}
+	}
+
+	async function handleSave() {
+		await disableInitialItems(order);
+		order = {
+			...order,
+			//contact: selectedContactId
+			total: totalCost,
+			pricetype: selectedPricetypeId
+		};
+
+		for (const row of items) {
+			console.log(row.cost);
+			let response = await fetchData('order_products', 'POST', {
+				order: data.id,
+				product: row.item,
+				price: row.price,
+				quantity: row.quantity,
+				cost: row.cost,
+				active: true
+			});
+			if (!response.ok) {
+				let data = await response.json();
+				console.log(data);
+			}
+		}
+		let response = await fetchData(`orders/${data.id}`, 'PATCH', order);
+		if (response.ok) {
+			// TODO: activate modal with success
+			console.log('Successfully saved');
+			goto(`dashboard/orders/${data.id}`);
+		} else {
+			let errorData = await response.json();
+			// TODO: activate error modal
+			console.log(errorData);
+		}
 	}
 
 	onMount(async () => {
@@ -418,7 +475,7 @@
 		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
 			<i class="fa-solid fa-plus"></i><span class="hidden lg:block ml-2">Añadir item</span>
 		</button>
-		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
+		<button class="btn ml-2 text-sm variant-filled" on:click={handleSave}>
 			<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 		</button>
 		<button class="btn ml-2 text-sm variant-ghost-error" on:click={addRow}>

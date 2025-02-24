@@ -2,6 +2,7 @@ from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
 from dimpro.models import *
+from rest_framework.response import Response
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -78,13 +79,40 @@ class ContactSerializer(serializers.ModelSerializer):
     fields = ['id','name','date_joined'] 
 
 class OrderProductSerializer(WritableNestedModelSerializer): # Se crea completo, producto es obligatorio
-  product = ProductSerializer()
+  cost = serializers.DecimalField(max_digits=10, decimal_places=2)
+  active = serializers.BooleanField()
   class Meta:
     model = Order_Product
-    fields = ['product', 'price', 'quantity', 'cost', 'order']
+    fields = ['id','product', 'price', 'quantity', 'cost', 'order', 'active']
+
+
+  def create(self, validated_data):
+    product = validated_data.get('product')
+    order = validated_data.get('order')
+    quantity= validated_data.get('quantity')
+    cost = validated_data.get('cost'),
+    price = validated_data.get('price')
+
+    order_product_instance, created = Order_Product.objects.update_or_create(
+        product=product,
+        order=order,
+        quantity=quantity,
+        cost=cost,
+        price=price,
+        active=True,
+    ) 
+    if not created:
+        return Response({'error': 'Error creating order_product'}, status=400)
+    
+    serializer = self.get_serializer(order_product_instance)
+    return Response(serializer.data)
+    
+  def to_representation(self, instance):
+    self.fields['product'] = ProductSerializer();
+    return super().to_representation(instance)
 
 class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden productos, cada producto no es obligatorio   
-  total = serializers.FloatField(required=False)
+  total = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
   pricetype = serializers.IntegerField(required=False);
   date = serializers.DateTimeField(read_only=True)
   products = serializers.SerializerMethodField(required=False)   
