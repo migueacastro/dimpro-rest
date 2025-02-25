@@ -1,15 +1,23 @@
 <script lang="ts">
-	//@ts-nocheck
+	
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { getData } from '$lib/components/data';
 	import { fetchData } from '$lib/utils.ts';
+	import { goto } from '$app/navigation';
 
 	export let fields = [{ type: null, value: null, name: null, label: null }];
 	export let endpoint = '';
 	export let edit = false;
 	export let method = '';
 	let id = $page.params.id;
+
+    let manyToManyListsDict = {};
+    let inputChipListsDict = {};
+    let valueChipListsDict = {};
+    let inputChipDict = {};
+
+
 	async function isEditable() {
 		if (edit) {
 			let response = await fetchData(endpoint, 'GET');
@@ -25,9 +33,10 @@
 		fields.forEach((field) => {
 			body[field.name] = field.value;
 		});
-		console.log(body);
 		let response = await fetchData(endpoint, method, body);
-		let data = await response.json();
+		if(response.ok){
+			goto("/dashboard/users");
+		}
 		// TODO: Handle success, and errors
 	}
 
@@ -85,7 +94,15 @@
 				{:else if field?.type == 'foreignKey'}
 					<p>algo foraneo</p>
 				{:else if field?.type == 'manyToMany'}
-					<p>algo</p>
+					<InputChip bind:input={inputChipDict[field.table]} bind:value={inputChipListsDict[field.table]} name="chips" on:remove={({ detail }) => removeChip(detail, field.table)} addChip={(event) => addChip(event.detail, field.table)} validation={InputChipValidation} invalid={''}/>
+                        <div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
+                            <Autocomplete
+                                bind:input={inputChipDict[field.table]}
+                                options={manyToManyListsDict[field.table]}
+                                on:selection={({ detail }) => addChip(detail, field.table)}
+                                
+                            />
+                        </div>
 				{/if}
 			</label>
 		{/each}

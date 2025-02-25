@@ -2,6 +2,7 @@ from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
 from dimpro.models import *
+from auditlog.models import LogEntry
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -100,7 +101,7 @@ class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden 
     list_products = Order_Product.objects.filter(active=True, order=obj.id)
     if list_products:
         return OrderProductSerializer(list_products, many=True).data
-    return [];
+    return []
 
   def get_user_name(self, obj):
     return obj.user.name
@@ -164,5 +165,6 @@ class UserNestedSerializer(UserSerializer):
         return obj.date_joined.strftime('%Y/%m/%d %H:%M') if obj.date_joined else ''
   def get_last_login_format(self, obj):
     return obj.last_login.strftime('%Y/%m/%d %H:%M') if obj.last_login else 'Ninguno'
-class LogSerializer(serializers.ModelSerializer):
-    pass
+
+class LogsSerializer(serializers.ModelSerializer):
+  pass
