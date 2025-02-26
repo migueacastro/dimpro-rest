@@ -6,6 +6,7 @@
 	import { fetchData } from '$lib/utils.ts';
 	import { Autocomplete } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
+	import { goto } from '$app/navigation';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 
 	export let data;
@@ -84,19 +85,21 @@
 
 		if (item_object) {
 			// Actualizar las propiedades del objeto original
+			if (!row.id == id) {
+				row.quantity = 1;
+			}
 			row.id = item_object.id;
 			row.availability = item_object.available_quantity;
 			row.item = item_object.id;
 			row.item_label = item_object.item;
 			let selectedPricetypeName = pricetypes.find(
-				(pricetype: any) => Object.values(pricetype)[0] === selectedPricetypeId
+				(pricetype: any) => pricetype.id === selectedPricetypeId
 			).name;
 			row.price = Object.values(
 				item_object.prices.find(
 					(pricetype: any) => Object.keys(pricetype)[0] === selectedPricetypeName
 				)
 			)[0];
-			row.quantity = 1;
 			row.reference = item_object.reference;
 			row.input_disabled = false;
 			row.product_object = item_object;
@@ -232,7 +235,6 @@
 		items = items.map((row: any) => {
 			if (row.item) {
 				let itemId = row.item;
-				unloadRowItemValues(row);
 				loadRowItemValues(row, itemId);
 			}
 			return row;
@@ -289,13 +291,14 @@
 			...order,
 			//contact: selectedContactId
 			total: totalCost,
-			pricetype: selectedPricetypeId
+			pricetype: selectedPricetypeId,
+			user: order.user.id
 		};
 
 		for (const row of items) {
 			console.log(row.cost);
 			let response = await fetchData('order_products', 'POST', {
-				order: data.id,
+				order: parseInt(data.id),
 				product: row.item,
 				price: row.price,
 				quantity: row.quantity,
@@ -311,7 +314,7 @@
 		if (response.ok) {
 			// TODO: activate modal with success
 			console.log('Successfully saved');
-			goto(`dashboard/orders/${data.id}`);
+			goto(`/dashboard/orders/${data.id}`);
 		} else {
 			let errorData = await response.json();
 			// TODO: activate error modal
@@ -328,7 +331,7 @@
 		pricetypes = await response.json();
 		response = await fetchData('orders/' + data.id, 'GET');
 		order = await response.json();
-		selectedPricetypeId = order.pricetype ?? pricetypes[0]?.id;
+		selectedPricetypeId = order.pricetype.id ?? pricetypes[0]?.id;
 		productAutoCompleteList = products.map((product: any) => {
 			return { label: product.item, value: product.id };
 		});

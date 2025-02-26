@@ -79,7 +79,6 @@ class ContactSerializer(serializers.ModelSerializer):
     fields = ['id','name','date_joined'] 
 
 class OrderProductSerializer(WritableNestedModelSerializer): # Se crea completo, producto es obligatorio
-  cost = serializers.DecimalField(max_digits=10, decimal_places=2)
   active = serializers.BooleanField()
   class Meta:
     model = Order_Product
@@ -87,33 +86,24 @@ class OrderProductSerializer(WritableNestedModelSerializer): # Se crea completo,
 
 
   def create(self, validated_data):
-    product = validated_data.get('product')
-    order = validated_data.get('order')
-    quantity= validated_data.get('quantity')
-    cost = validated_data.get('cost'),
-    price = validated_data.get('price')
-
-    order_product_instance, created = Order_Product.objects.update_or_create(
-        product=product,
-        order=order,
-        quantity=quantity,
-        cost=cost,
-        price=price,
-        active=True,
-    ) 
+    product = validated_data.pop('product')
+    order = validated_data.pop('order')
+    order_product_instance, created = Order_Product.objects.get_or_create(
+            product=product,
+            order=order,
+            defaults=validated_data
+    )
     if not created:
-        return Response({'error': 'Error creating order_product'}, status=400)
-    
-    serializer = self.get_serializer(order_product_instance)
-    return Response(serializer.data)
-    
+        for key, value in validated_data.items():
+            setattr(order_product_instance, key, value)
+        order_product_instance.save()
+    return order_product_instance
   def to_representation(self, instance):
     self.fields['product'] = ProductSerializer();
     return super().to_representation(instance)
 
 class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden productos, cada producto no es obligatorio   
-  total = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
-  pricetype = serializers.IntegerField(required=False);
+  total = serializers.DecimalField(max_digits=10, decimal_places=2)
   date = serializers.DateTimeField(read_only=True)
   products = serializers.SerializerMethodField(required=False)   
   user_name = serializers.SerializerMethodField(read_only=True)
