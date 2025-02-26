@@ -103,7 +103,7 @@ class OrderProductSerializer(WritableNestedModelSerializer): # Se crea completo,
     return super().to_representation(instance)
 
 class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden productos, cada producto no es obligatorio   
-  total = serializers.DecimalField(max_digits=10, decimal_places=2)
+  total = serializers.DecimalField(required=False,max_digits=10, decimal_places=2)
   date = serializers.DateTimeField(read_only=True)
   products = serializers.SerializerMethodField(required=False)   
   user_name = serializers.SerializerMethodField(read_only=True)

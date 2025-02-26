@@ -18,6 +18,14 @@
 	let selectedPricetypeId: any;
 	let order: any = {};
 	let initialItemsList: Array<any> = [];
+	let inputContact: string = '';
+	let selectedContactId: number;
+	let contactAutoCompleteList: AutocompleteOption<number, string>[] = [];
+	let popupSettings: PopupSettings = {
+		event: 'focus-click',
+		target: 'popupAutocomplete',
+		placement: 'bottom'
+	};
 
 	$: items = [
 		{
@@ -291,8 +299,9 @@
 			...order,
 			//contact: selectedContactId
 			total: totalCost,
-			pricetype: selectedPricetypeId,
-			user: order.user.id
+			pricetype: selectedPricetypeId ?? pricetypes[0]?.id,
+			user: order.user.id,
+			contact: selectedContactId ?? order.contact.id
 		};
 
 		for (const row of items) {
@@ -321,20 +330,41 @@
 			console.log(errorData);
 		}
 	}
-
+	async function handleDelete() {
+		// TODO: add confirm modal here
+		let response = await fetchData('orders/' + data.id, 'DELETE');
+		if (response.ok) {
+			goto('/dashboard/orders');
+			// TODO: show successfull delete modal
+		} else {
+			// TODO: show error modal
+		}
+	}
 	onMount(async () => {
 		let response = await fetchData('products', 'GET');
 		products = await response.json();
+		response = await fetchData('orders/' + data.id, 'GET');
+		order = await response.json();
+		response = await fetchData('orders', 'GET');
+		let orders = await response.json();
+		let orderExists = orders.find((ord: any) => {
+			ord.id == order.id;
+		});
+		if (!orderExists) {
+			goto('/dashboard/orders');
+		}
 		response = await fetchData('contacts', 'GET');
 		contacts = await response.json();
 		response = await fetchData('pricetypes', 'GET');
 		pricetypes = await response.json();
-		response = await fetchData('orders/' + data.id, 'GET');
-		order = await response.json();
-		selectedPricetypeId = order.pricetype.id ?? pricetypes[0]?.id;
+		selectedPricetypeId = order?.pricetype?.id ?? pricetypes[0]?.id;
 		productAutoCompleteList = products.map((product: any) => {
 			return { label: product.item, value: product.id };
 		});
+		contactAutoCompleteList = contacts.map((contact: any) => {
+			return { label: contact.name, value: contact.id };
+		});
+		inputContact = contacts.find((contact: any) => contact.id == order?.contact)?.name;
 		loadItems(order);
 	});
 </script>
@@ -347,19 +377,42 @@
 
 <div class="flex flex-row justify-between">
 	<h3 class="h3 my-[2rem]">Items: {items.length}</h3>
-	<div class="flex flex-col">
-		<label for="" class="h4 my-2">Tipo de precio</label>
-		<select
-			class="select"
-			name="pricetype"
-			id="pricetype"
-			bind:value={selectedPricetypeId}
-			on:change={updateTablePrices}
-		>
-			{#each pricetypes as pricetype}
-				<option value={pricetype.id}>{pricetype.name}</option>
-			{/each}
-		</select>
+	<div class="space-x-2 flex flex-row">
+		<div class="flex flex-col w-1/2 max-w-md">
+			<label for="select-contact" class="h4">Cliente</label>
+			<input
+				class="input autocomplete"
+				type="search"
+				name="autocomplete-search"
+				bind:value={inputContact}
+				placeholder="Buscar..."
+				use:popup={popupSettings}
+			/>
+			<div data-popup="popupAutocomplete" class="max-w-md w-full card">
+				<Autocomplete
+					bind:input={inputContact}
+					options={contactAutoCompleteList}
+					on:selection={(e) => {
+						inputContact = e.detail.label;
+						selectedContactId = e.detail.value;
+					}}
+				/>
+			</div>
+		</div>
+		<div class="flex flex-col">
+			<label for="" class="h4">Tipo de precio</label>
+			<select
+				class="select"
+				name="pricetype"
+				id="pricetype"
+				bind:value={selectedPricetypeId}
+				on:change={updateTablePrices}
+			>
+				{#each pricetypes as pricetype}
+					<option value={pricetype.id}>{pricetype.name}</option>
+				{/each}
+			</select>
+		</div>
 	</div>
 </div>
 <!-- Responsive Container (recommended) -->
@@ -481,7 +534,7 @@
 		<button class="btn ml-2 text-sm variant-filled" on:click={handleSave}>
 			<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 		</button>
-		<button class="btn ml-2 text-sm variant-ghost-error" on:click={addRow}>
+		<button class="btn ml-2 text-sm variant-ghost-error" on:click={handleDelete}>
 			<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
 		</button>
 	</div>
