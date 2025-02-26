@@ -2,6 +2,7 @@ from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
 from dimpro.models import *
+from rest_framework.response import Response
 from auditlog.models import LogEntry
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
 
@@ -79,14 +80,31 @@ class ContactSerializer(serializers.ModelSerializer):
     fields = ['id','name','date_joined'] 
 
 class OrderProductSerializer(WritableNestedModelSerializer): # Se crea completo, producto es obligatorio
-  product = ProductSerializer()
+  active = serializers.BooleanField()
   class Meta:
     model = Order_Product
-    fields = ['product', 'price', 'quantity', 'cost', 'order']
+    fields = ['id','product', 'price', 'quantity', 'cost', 'order', 'active']
+
+
+  def create(self, validated_data):
+    product = validated_data.pop('product')
+    order = validated_data.pop('order')
+    order_product_instance, created = Order_Product.objects.get_or_create(
+            product=product,
+            order=order,
+            defaults=validated_data
+    )
+    if not created:
+        for key, value in validated_data.items():
+            setattr(order_product_instance, key, value)
+        order_product_instance.save()
+    return order_product_instance
+  def to_representation(self, instance):
+    self.fields['product'] = ProductSerializer();
+    return super().to_representation(instance)
 
 class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden productos, cada producto no es obligatorio   
-  total = serializers.FloatField(required=False)
-  pricetype = serializers.IntegerField(required=False);
+  total = serializers.DecimalField(required=False,max_digits=10, decimal_places=2)
   date = serializers.DateTimeField(read_only=True)
   products = serializers.SerializerMethodField(required=False)   
   user_name = serializers.SerializerMethodField(read_only=True)

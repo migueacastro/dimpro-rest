@@ -6,6 +6,7 @@
 	import { fetchData } from '$lib/utils.ts';
 	import { Autocomplete } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
+	import { goto } from '$app/navigation';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 
 	export let data;
@@ -15,7 +16,16 @@
 	let productBlacklist: any = [];
 	let productAutoCompleteList: AutocompleteOption[] = [];
 	let selectedPricetypeId: any;
-	let order: any;
+	let order: any = {};
+	let initialItemsList: Array<any> = [];
+	let inputContact: string = '';
+	let selectedContactId: number;
+	let contactAutoCompleteList: AutocompleteOption<number, string>[] = [];
+	let popupSettings: PopupSettings = {
+		event: 'focus-click',
+		target: 'popupAutocomplete',
+		placement: 'bottom'
+	};
 
 	$: items = [
 		{
@@ -30,7 +40,8 @@
 			index: 0,
 			search_error: false,
 			input_disabled: true,
-			hover: false
+			hover: false,
+			product_object: null
 		}
 	];
 
@@ -75,27 +86,31 @@
 		}
 		row.input_disabled = true;
 		row.item = null;
+		row.product_object = null;
 	}
 	function loadRowItemValues(row: any, id: any) {
 		let item_object = products.find((product: any) => product.id == id);
 
 		if (item_object) {
 			// Actualizar las propiedades del objeto original
+			if (!row.id == id) {
+				row.quantity = 1;
+			}
 			row.id = item_object.id;
 			row.availability = item_object.available_quantity;
 			row.item = item_object.id;
 			row.item_label = item_object.item;
 			let selectedPricetypeName = pricetypes.find(
-				(pricetype: any) => Object.values(pricetype)[0] === selectedPricetypeId
+				(pricetype: any) => pricetype.id === selectedPricetypeId
 			).name;
 			row.price = Object.values(
 				item_object.prices.find(
 					(pricetype: any) => Object.keys(pricetype)[0] === selectedPricetypeName
 				)
 			)[0];
-			row.quantity = 1;
 			row.reference = item_object.reference;
 			row.input_disabled = false;
+			row.product_object = item_object;
 
 			calculateCost(row);
 			addProductToBlacklist(row.item);
@@ -123,7 +138,8 @@
 			index: index,
 			search_error: false,
 			input_disabled: true,
-			hover: false
+			hover: false,
+			product_object: null
 		};
 		items = [...items, newRow]; // Here the array value is changed to another array with different  content
 	}
@@ -144,7 +160,7 @@
 		}
 
 		if (row.quantity && row.price) {
-			row.cost = (row.quantity * row.price).toFixed(2);
+			row.cost = parseFloat((row.quantity * row.price).toFixed(2));
 		} else {
 			row.cost = null;
 		}
@@ -227,7 +243,6 @@
 		items = items.map((row: any) => {
 			if (row.item) {
 				let itemId = row.item;
-				unloadRowItemValues(row);
 				loadRowItemValues(row, itemId);
 			}
 			return row;
@@ -250,31 +265,106 @@
 				index: index,
 				search_error: false,
 				input_disabled: true,
-				hover: false
+				hover: false,
+				product_object: null
 			};
 			// Load row values (e.g., price, cost) based on the selected pricetype
 
 			return row;
 		});
+		initialItemsList = items;
 		items.forEach((item: any) => {
 			loadRowItemValues(item, item.id);
 		});
 		items = items;
 	}
 
+	async function disableInitialItems(orderObject: any) {
+		let data: any;
+		let response: any;
+		for (const product of orderObject.products) {
+			response = await fetchData('order_products/' + product.id, 'PATCH', {
+				active: false
+			});
+			if (!response.ok) {
+				data = await response.json();
+				console.log(data);
+			}
+		}
+	}
+
+	async function handleSave() {
+		await disableInitialItems(order);
+		order = {
+			...order,
+			//contact: selectedContactId
+			total: totalCost,
+			pricetype: selectedPricetypeId ?? pricetypes[0]?.id,
+			user: order.user.id,
+			contact: selectedContactId ?? order.contact.id
+		};
+
+		for (const row of items) {
+			console.log(row.cost);
+			let response = await fetchData('order_products', 'POST', {
+				order: parseInt(data.id),
+				product: row.item,
+				price: row.price,
+				quantity: row.quantity,
+				cost: row.cost,
+				active: true
+			});
+			if (!response.ok) {
+				let data = await response.json();
+				console.log(data);
+			}
+		}
+		let response = await fetchData(`orders/${data.id}`, 'PATCH', order);
+		if (response.ok) {
+			// TODO: activate modal with success
+			console.log('Successfully saved');
+			goto(`/dashboard/orders/${data.id}`);
+		} else {
+			let errorData = await response.json();
+			// TODO: activate error modal
+			console.log(errorData);
+		}
+	}
+	async function handleDelete() {
+		// TODO: add confirm modal here
+		let response = await fetchData('orders/' + data.id, 'DELETE');
+		if (response.ok) {
+			goto('/dashboard/orders');
+			// TODO: show successfull delete modal
+		} else {
+			// TODO: show error modal
+		}
+	}
 	onMount(async () => {
 		let response = await fetchData('products', 'GET');
 		products = await response.json();
+		response = await fetchData('orders/' + data.id, 'GET');
+		order = await response.json();
+		response = await fetchData('orders', 'GET');
+		let orders = await response.json();
+		let orderExists = orders.find((ord: any) => {
+			ord.id == order.id;
+		});
+		if (!orderExists) {
+			goto('/dashboard/orders');
+		}
 		response = await fetchData('contacts', 'GET');
 		contacts = await response.json();
 		response = await fetchData('pricetypes', 'GET');
 		pricetypes = await response.json();
-		response = await fetchData('orders/' + data.id, 'GET');
-		order = await response.json();
-		selectedPricetypeId = order.pricetype ?? pricetypes[0]?.id;
+		selectedPricetypeId = order?.pricetype?.id ?? pricetypes[0]?.id;
 		productAutoCompleteList = products.map((product: any) => {
 			return { label: product.item, value: product.id };
 		});
+		contactAutoCompleteList = contacts.map((contact: any) => {
+			return { label: contact.name, value: contact.id };
+		});
+		inputContact = contacts.find((contact: any) => contact.id == order?.contact)?.name;
 		loadItems(order);
 	});
 </script>
@@ -287,19 +377,42 @@
 
 <div class="flex flex-row justify-between">
 	<h3 class="h3 my-[2rem]">Items: {items.length}</h3>
-	<div class="flex flex-col">
-		<label for="" class="h4 my-2">Tipo de precio</label>
-		<select
-			class="select"
-			name="pricetype"
-			id="pricetype"
-			bind:value={selectedPricetypeId}
-			on:change={updateTablePrices}
-		>
-			{#each pricetypes as pricetype}
-				<option value={pricetype.id}>{pricetype.name}</option>
-			{/each}
-		</select>
+	<div class="space-x-2 flex flex-row">
+		<div class="flex flex-col w-1/2 max-w-md">
+			<label for="select-contact" class="h4">Cliente</label>
+			<input
+				class="input autocomplete"
+				type="search"
+				name="autocomplete-search"
+				bind:value={inputContact}
+				placeholder="Buscar..."
+				use:popup={popupSettings}
+			/>
+			<div data-popup="popupAutocomplete" class="max-w-md w-full card">
+				<Autocomplete
+					bind:input={inputContact}
+					options={contactAutoCompleteList}
+					on:selection={(e) => {
+						inputContact = e.detail.label;
+						selectedContactId = e.detail.value;
+					}}
+				/>
+			</div>
+		</div>
+		<div class="flex flex-col">
+			<label for="" class="h4">Tipo de precio</label>
+			<select
+				class="select"
+				name="pricetype"
+				id="pricetype"
+				bind:value={selectedPricetypeId}
+				on:change={updateTablePrices}
+			>
+				{#each pricetypes as pricetype}
+					<option value={pricetype.id}>{pricetype.name}</option>
+				{/each}
+			</select>
+		</div>
 	</div>
 </div>
 <!-- Responsive Container (recommended) -->
@@ -418,10 +531,10 @@
 		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
 			<i class="fa-solid fa-plus"></i><span class="hidden lg:block ml-2">Añadir item</span>
 		</button>
-		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
+		<button class="btn ml-2 text-sm variant-filled" on:click={handleSave}>
 			<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 		</button>
-		<button class="btn ml-2 text-sm variant-ghost-error" on:click={addRow}>
+		<button class="btn ml-2 text-sm variant-ghost-error" on:click={handleDelete}>
 			<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
 		</button>
 	</div>

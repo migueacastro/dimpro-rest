@@ -1,5 +1,4 @@
 import { apiURL } from './api_url';
-import { goto } from '$app/navigation';
 import { user, users } from '../stores/stores';
 import Cookies from 'js-cookie';
 
@@ -78,7 +77,6 @@ export async function authenticate() {
   const data = await response.json()
   if (response.ok) {
     user.set(data);
-    await refreshCSRFToken();
     return data;
   }
 
@@ -97,7 +95,6 @@ export async function fetchUsers() {
   const data = await response.json()
   if (response.ok) {
     users.set(data);
-    await refreshCSRFToken();
     return data;
   }
 

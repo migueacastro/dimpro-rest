@@ -169,7 +169,6 @@ auditlog.register(Order)
 
 
 class Order_Product(models.Model):
-    id = models.AutoField(primary_key=True)
     order =  models.ForeignKey(Order, on_delete=models.CASCADE, related_name='orders')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
     price = models.DecimalField(max_digits=7,decimal_places=2, default=0)
