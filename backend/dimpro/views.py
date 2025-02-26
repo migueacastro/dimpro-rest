@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
 from django.db.models import Q
 from dimpro.serializers import *
 from dimpro.models import *
@@ -227,4 +228,4 @@ class WelcomeSuperUserView(APIView):
   def get(self, request, format=None):
     serializer = WelcomeSuperUserSerializer() # El serializador solito agarra los registros, usara UserSerializer
     return Response(serializer.data)
-  
+

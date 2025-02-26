@@ -11,6 +11,7 @@
 	import { goto } from '$app/navigation';
 	//Load local data
 	import { fetchData } from '$lib/utils.ts';
+	import { getData } from './data';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
@@ -81,7 +82,11 @@
 					}}
 				>
 					{#each fields as field}
-						<td class="capitalize">{row[field]}</td>
+						{#if row[field]}
+							<td class="capitalize">{row[field]}</td>
+						{:else}
+							<td class="capitalize">No Definido</td>
+						{/if}
 					{/each}
 					{#if editable}
 						<td class="flex flex-row">
