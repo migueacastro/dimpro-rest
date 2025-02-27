@@ -1,31 +1,36 @@
 <script lang="ts">
-	
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { getData } from '$lib/components/data';
 	import { fetchData } from '$lib/utils.ts';
 	import { goto } from '$app/navigation';
+	import { alerts } from '../../stores/stores';
 
 	export let fields = [{ type: null, value: null, name: null, label: null }];
 	export let endpoint = '';
 	export let edit = false;
 	export let method = '';
 	let id = $page.params.id;
+	let action = "";
 
-    let manyToManyListsDict = {};
-    let inputChipListsDict = {};
-    let valueChipListsDict = {};
-    let inputChipDict = {};
-
+	let manyToManyListsDict = {};
+	let inputChipListsDict = {};
+	let valueChipListsDict = {};
+	let inputChipDict = {};
 
 	async function isEditable() {
 		if (edit) {
+			action = "editó";
 			let response = await fetchData(endpoint, 'GET');
 			let data = await response.json();
 			let value = data.filter((values: { id: string }) => values.id == id);
 			for (let i = 0; i < fields.length; i++) {
-				fields[i].value = value[0][`${fields[i].name}`];
+				if (fields[i].name !== 'groups') {
+					fields[i].value = value[0][`${fields[i].name}`];
+				}
 			}
+		}else{
+			action = "agregó"
 		}
 	}
 	async function sendData() {
@@ -33,11 +38,18 @@
 		fields.forEach((field) => {
 			body[field.name] = field.value;
 		});
-		let response = await fetchData(endpoint, method, body);
-		if(response.ok){
-			goto("/dashboard/users");
+		let response = await fetchData(endpoint, method, body, id);
+		if (response.ok) {
+			alerts['visible'] = true;
+			alerts['success'] = true;
+			alerts['action'] = action;
+		} else {
+			alerts['visible'] = true;
+			alerts['success'] = false;
+			alerts['action'] = action;
+			alerts['message'] = response;
 		}
-		// TODO: Handle success, and errors
+		goto('/dashboard/users');
 	}
 
 	onMount(async () => {
@@ -56,6 +68,8 @@
 				<p class="capitalize">{field.label}</p>
 				{#if field?.type === 'text'}
 					<input class="input" type="text" bind:value={field.value} id={field.name} />
+				{:else if field?.type === 'email'}
+					<input class="input" type="email" bind:value={field.value} id={field.name} />
 				{:else if field?.type === 'password'}
 					<input class="input" type="password" bind:value={field.value} id={field.name} />
 				{:else if field?.type === 'decimal'}
@@ -94,15 +108,22 @@
 				{:else if field?.type == 'foreignKey'}
 					<p>algo foraneo</p>
 				{:else if field?.type == 'manyToMany'}
-					<InputChip bind:input={inputChipDict[field.table]} bind:value={inputChipListsDict[field.table]} name="chips" on:remove={({ detail }) => removeChip(detail, field.table)} addChip={(event) => addChip(event.detail, field.table)} validation={InputChipValidation} invalid={''}/>
-                        <div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
-                            <Autocomplete
-                                bind:input={inputChipDict[field.table]}
-                                options={manyToManyListsDict[field.table]}
-                                on:selection={({ detail }) => addChip(detail, field.table)}
-                                
-                            />
-                        </div>
+					<InputChip
+						bind:input={inputChipDict[field.table]}
+						bind:value={inputChipListsDict[field.table]}
+						name="chips"
+						on:remove={({ detail }) => removeChip(detail, field.table)}
+						addChip={(event) => addChip(event.detail, field.table)}
+						validation={InputChipValidation}
+						invalid={''}
+					/>
+					<div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
+						<Autocomplete
+							bind:input={inputChipDict[field.table]}
+							options={manyToManyListsDict[field.table]}
+							on:selection={({ detail }) => addChip(detail, field.table)}
+						/>
+					</div>
 				{/if}
 			</label>
 		{/each}

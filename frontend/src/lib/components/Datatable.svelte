@@ -1,6 +1,4 @@
 <script lang="ts">
-	// @ts-nocheck
-
 	//Import local datatable components
 	import ThSort from '$lib/components/ThSort.svelte';
 	import ThFilter from '$lib/components/ThFilter.svelte';
@@ -8,6 +6,7 @@
 	import RowsPerPage from '$lib/components/RowsPerPage.svelte';
 	import RowCount from '$lib/components/RowCount.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
+	import { alerts } from '../../stores/stores';
 	import { goto } from '$app/navigation';
 	//Load local data
 	import { fetchData } from '$lib/utils.ts';
@@ -17,10 +16,12 @@
 	import { DataHandler } from '@vincjo/datatables';
 	import { onMount } from 'svelte';
 	import { apiURL } from '$lib/api_url';
+	import { getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
 
+	const modalStore = getModalStore();
 	//Init data handler - CLIENT
 	let data = [{}];
-	export let endpoint: any = null;
+	export let endpoint: any = { main: null, edit: null, add: null };
 	export let fields: any = [];
 	export let editable: any = false;
 	export let source_data: any = null;
@@ -34,9 +35,34 @@
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
+	function deleteConfirmation(name: any, id: any) {
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Eliminar: ${name}`,
+			body: '¿Está seguro de querer eliminar este usuario?',
+			response: async (r: boolean) => {
+				if (r) {
+					let response = await fetchData(endpoint['main'], 'DELETE', null, id);
+					if (response.ok) {
+						alerts['visible'] = true;
+						alerts['success'] = true;
+						alerts['action'] = 'eliminó';
+					} else {
+						alerts['visible'] = true;
+						alerts['success'] = false;
+						alerts['action'] = 'eliminó';
+						alerts['message'] = response;
+					}
+				}
+				goto('/dashboard/' + endpoint['main']);
+			}
+		};
+		modalStore.trigger(modal);
+	}
+
 	onMount(async () => {
-		if (endpoint) {
-			let response = await fetchData(endpoint, 'GET');
+		if (endpoint['main']) {
+			let response = await fetchData(endpoint['main'], 'GET');
 			data = await response.json();
 			handler = new DataHandler(data, { rowsPerPage: 5 });
 		} else {
@@ -59,25 +85,21 @@
 				{#each combinedHeadingsList as item}
 					<ThSort {handler} orderBy={item?.field}>{item?.heading}</ThSort>
 				{/each}
-				{#if editable}
 					<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
-				{/if}
 			</tr>
 			<tr>
 				{#each fields as field}
 					<ThFilter {handler} filterBy={field} />
 				{/each}
-				{#if editable}
 					<ThFilter {handler} filterBy={fields[0]} />
-				{/if}
 			</tr>
 		</thead>
 		<tbody>
 			{#each $rows as row}
 				<tr
 					on:click={() => {
-						if (endpoint) {
-							goto('/dashboard/' + endpoint + '/' + row['id']);
+						if (endpoint['main']) {
+							goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
 						}
 					}}
 				>
@@ -90,16 +112,39 @@
 					{/each}
 					{#if editable}
 						<td class="flex flex-row">
-							<button class="btn variant-filled">
+							<button
+								class="btn variant-filled"
+								on:click={() => deleteConfirmation(row['name'], row['id'])}
+							>
 								<i class="fa-solid fa-trash"></i>
 							</button>
-							<button class="btn ml-2 variant-filled">
-								<i class="fa-solid fa-plus"></i>
+							<button
+								class="btn ml-2 variant-filled"
+								on:click={() => {
+									setTimeout(() => {
+										goto(
+											'/dashboard/' + endpoint['main'] + '/' + `${endpoint['edit']}/` + row['id']
+										);
+									}, 90);
+								}}
+							>
+								<i class="fa-solid fa-pencil"></i>
 							</button>
 						</td>
 					{/if}
 				</tr>
 			{/each}
+			<tr>
+				{#each fields as field}
+					<td class="capitalize">----</td>
+				{/each}
+				<button
+					class="btn variant-filled ml-[0.75rem]"
+					on:click={() => goto('/dashboard/' + endpoint['main'] + '/' + `${endpoint['add']}`)}
+				>
+					<i class="fa-solid fa-plus"></i>
+				</button></tr
+			>
 		</tbody>
 	</table>
 	<!-- Footer -->
