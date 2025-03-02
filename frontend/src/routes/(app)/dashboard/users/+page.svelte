@@ -24,6 +24,7 @@
 <Datatable
 	editable={true}
 	endpoint={endpoint}
+	table_name={'usuario'}
 	fields={['name', 'email', 'phonenumber']}
 	headings={['Nombre', 'Email', 'Teléfono']}
 />

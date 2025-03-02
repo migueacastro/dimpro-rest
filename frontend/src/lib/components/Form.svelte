@@ -1,17 +1,27 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	//@ts-nocheck
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { getData } from '$lib/components/data';
 	import { fetchData } from '$lib/utils.ts';
 	import { goto } from '$app/navigation';
-	import { alerts } from '../../stores/stores';
+	import {
+		getToastStore,
+		getModalStore,
+		type ModalSettings,
+		type ToastSettings
+	} from '@skeletonlabs/skeleton';
 
+	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 	export let fields = [{ type: null, value: null, name: null, label: null }];
 	export let endpoint = '';
 	export let edit = false;
 	export let method = '';
-	let id = $page.params.id;
-	let action = "";
+	export let table_name = '';
+	let ogValue: any = null;
+	let id = page.params.id;
+	let action = '';
 
 	let manyToManyListsDict = {};
 	let inputChipListsDict = {};
@@ -20,19 +30,36 @@
 
 	async function isEditable() {
 		if (edit) {
-			action = "editó";
+			action = 'edit';
 			let response = await fetchData(endpoint, 'GET');
 			let data = await response.json();
 			let value = data.filter((values: { id: string }) => values.id == id);
+			ogValue = value[0][`${fields[0].name}`];
 			for (let i = 0; i < fields.length; i++) {
 				if (fields[i].name !== 'groups') {
 					fields[i].value = value[0][`${fields[i].name}`];
 				}
 			}
-		}else{
-			action = "agregó"
+		} else {
+			action = 'agreg';
 		}
 	}
+
+	function updateConfirmation() {
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Modificar: de ${ogValue} a ${fields[0].value}`,
+			body: `¿Está seguro de querer modificar este ${table_name}?`,
+			response: async (r: boolean) => {
+				if (r) {
+					sendData();
+				}
+				goto(`/dashboard/${endpoint}`);
+			}
+		};
+		modalStore.trigger(modal);
+	}
+
 	async function sendData() {
 		let body = {};
 		fields.forEach((field) => {
@@ -40,16 +67,25 @@
 		});
 		let response = await fetchData(endpoint, method, body, id);
 		if (response.ok) {
-			alerts['visible'] = true;
-			alerts['success'] = true;
-			alerts['action'] = action;
+			const toast: ToastSettings = {
+				message: `El ${table_name} se ${action}ó con exito.`,
+				background: 'variant-ghost-success',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
 		} else {
-			alerts['visible'] = true;
-			alerts['success'] = false;
-			alerts['action'] = action;
-			alerts['message'] = response;
+			console.log(response);
+			const toast: ToastSettings = {
+				message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
+							mensaje:${response.statusText}`,
+				background: 'variant-ghost-error',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
 		}
-		goto('/dashboard/users');
+		if (!edit) {
+			goto(`/dashboard/${endpoint}`);
+		}
 	}
 
 	onMount(async () => {
@@ -108,7 +144,7 @@
 				{:else if field?.type == 'foreignKey'}
 					<p>algo foraneo</p>
 				{:else if field?.type == 'manyToMany'}
-					<InputChip
+					<!--<InputChip
 						bind:input={inputChipDict[field.table]}
 						bind:value={inputChipListsDict[field.table]}
 						name="chips"
@@ -123,12 +159,14 @@
 							options={manyToManyListsDict[field.table]}
 							on:selection={({ detail }) => addChip(detail, field.table)}
 						/>
-					</div>
+					</div>-->
 				{/if}
 			</label>
 		{/each}
-		<button type="submit" class="btn variant-filled h-fit w-fit mx-auto btn-xl" on:click={sendData}
-			>Guardar</button
+		<button
+			type="submit"
+			class="btn variant-filled h-fit w-fit mx-auto btn-xl"
+			on:click={edit ? updateConfirmation : sendData}>Guardar</button
 		>
 	</div>
 </form>

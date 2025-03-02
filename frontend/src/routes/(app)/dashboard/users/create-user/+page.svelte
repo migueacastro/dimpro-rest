@@ -10,4 +10,4 @@
 	];
 </script>
 
-<Form fields={fields} method={'POST'} edit={false} endpoint={'users'} />
+<Form fields={fields} method={'POST'} edit={false} endpoint={'users'} table_name={'usuario'}/>

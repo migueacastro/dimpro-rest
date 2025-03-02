@@ -1,4 +1,5 @@
 <script lang="ts">
+	//@ts-nocheck
 	//Import local datatable components
 	import ThSort from '$lib/components/ThSort.svelte';
 	import ThFilter from '$lib/components/ThFilter.svelte';
@@ -6,7 +7,6 @@
 	import RowsPerPage from '$lib/components/RowsPerPage.svelte';
 	import RowCount from '$lib/components/RowCount.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
-	import { alerts } from '../../stores/stores';
 	import { goto } from '$app/navigation';
 	//Load local data
 	import { fetchData } from '$lib/utils.ts';
@@ -16,9 +16,10 @@
 	import { DataHandler } from '@vincjo/datatables';
 	import { onMount } from 'svelte';
 	import { apiURL } from '$lib/api_url';
-	import { getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
+	import { getModalStore,getToastStore, type ModalSettings, type ToastSettings } from '@skeletonlabs/skeleton';
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 	//Init data handler - CLIENT
 	let data = [{}];
 	export let endpoint: any = { main: null, edit: null, add: null };
@@ -26,6 +27,7 @@
 	export let editable: any = false;
 	export let source_data: any = null;
 	export let headings: any = [];
+	export let table_name = '';
 
 	// List to use inside each heading so that it can access the Title and the field name to access the object attribute
 	let combinedHeadingsList = headings.map((heading: any, index: any) => {
@@ -39,19 +41,25 @@
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Eliminar: ${name}`,
-			body: '¿Está seguro de querer eliminar este usuario?',
+			body: `¿Está seguro de querer eliminar este ${table_name}?`,
 			response: async (r: boolean) => {
 				if (r) {
 					let response = await fetchData(endpoint['main'], 'DELETE', null, id);
 					if (response.ok) {
-						alerts['visible'] = true;
-						alerts['success'] = true;
-						alerts['action'] = 'eliminó';
+						const t: ToastSettings = {
+							message: `El ${table_name} se eliminó con exito.`,
+							background: 'variant-ghost-success',
+							timeout: 7000
+						};
+						toastStore.trigger(t);
 					} else {
-						alerts['visible'] = true;
-						alerts['success'] = false;
-						alerts['action'] = 'eliminó';
-						alerts['message'] = response;
+						const toast: ToastSettings = {
+							message: `¡ERROR! El ${table_name} no se pudo eliminar.
+							\nmensaje:${response.statusText}`,
+							background: 'variant-ghost-error',
+							timeout: 7000
+						};
+						toastStore.trigger(toast);
 					}
 				}
 				goto('/dashboard/' + endpoint['main']);
@@ -85,13 +93,13 @@
 				{#each combinedHeadingsList as item}
 					<ThSort {handler} orderBy={item?.field}>{item?.heading}</ThSort>
 				{/each}
-					<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
+				<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
 			</tr>
 			<tr>
 				{#each fields as field}
 					<ThFilter {handler} filterBy={field} />
 				{/each}
-					<ThFilter {handler} filterBy={fields[0]} />
+				<ThFilter {handler} filterBy={fields[0]} />
 			</tr>
 		</thead>
 		<tbody>

@@ -10,4 +10,4 @@
 	];
 </script>
 
-<Form fields={fields} method={'PATCH'} edit={true} endpoint={'users'} />
+<Form fields={fields} method={'PATCH'} edit={true} endpoint={'users'} table_name={'usuario'}/>

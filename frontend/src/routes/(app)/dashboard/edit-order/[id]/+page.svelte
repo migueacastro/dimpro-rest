@@ -321,25 +321,72 @@
 		}
 		let response = await fetchData(`orders/${data.id}`, 'PATCH', order);
 		if (response.ok) {
-			// TODO: activate modal with success
+			const toast: ToastSettings = {
+				message: 'El pedido se guardó con exito.',
+				background: 'variant-ghost-success',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
 			console.log('Successfully saved');
 			goto(`/dashboard/orders/${data.id}`);
 		} else {
 			let errorData = await response.json();
-			// TODO: activate error modal
+			const toast: ToastSettings = {
+				message: `¡ERROR! El pedido no se pudo guardar.
+							\nmensaje:${response.statusText}`,
+				background: 'variant-ghost-error',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
 			console.log(errorData);
 		}
 	}
 	async function handleDelete() {
-		// TODO: add confirm modal here
-		let response = await fetchData('orders/' + data.id, 'DELETE');
-		if (response.ok) {
-			goto('/dashboard/orders');
-			// TODO: show successfull delete modal
-		} else {
-			// TODO: show error modal
-		}
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Eliminar pedido`,
+			body: `¿Está seguro de querer eliminar este pedido?`,
+			response: async (r: boolean) => {
+				if (r) {
+					let response = await fetchData('orders/' + data.id, 'DELETE');
+					if (response.ok) {
+						const toast: ToastSettings = {
+							message: `El pedido se eliminó con exito.`,
+							background: 'variant-ghost-success',
+							timeout: 7000
+						};
+						toastStore.trigger(toast);
+					} else {
+						const toast: ToastSettings = {
+							message: `¡ERROR! El pedido no se pudo eliminar.
+							\nmensaje:${response.statusText}`,
+							background: 'variant-ghost-error',
+							timeout: 7000
+						};
+						toastStore.trigger(toast);
+					}
+				}
+				goto('/dashboard/orders');
+			}
+		};
+		modalStore.trigger(modal);
 	}
+
+	function confirmation() {
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Modificar Pedido`,
+			body: `¿Está seguro de querer modificar este Pedido?`,
+			response: async (r: boolean) => {
+				if (r) {
+					handleSave();
+				}
+				goto(`/dashboard/orders/${data.id}`);
+			}
+		};
+		modalStore.trigger(modal);
+	}
+
 	onMount(async () => {
 		let response = await fetchData('products', 'GET');
 		products = await response.json();
@@ -531,7 +578,7 @@
 		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
 			<i class="fa-solid fa-plus"></i><span class="hidden lg:block ml-2">Añadir item</span>
 		</button>
-		<button class="btn ml-2 text-sm variant-filled" on:click={handleSave}>
+		<button class="btn ml-2 text-sm variant-filled" on:click={confirmation}>
 			<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 		</button>
 		<button class="btn ml-2 text-sm variant-ghost-error" on:click={handleDelete}>
