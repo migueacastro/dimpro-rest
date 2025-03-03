@@ -92,7 +92,7 @@
 							class="w-fit my-2 mx-auto h4 font-bold"
 							on:click={hideDrawer}
 						>
-							Usuarios
+						Vendedores
 						</a>
 					</li>
 				{/if}
@@ -239,7 +239,7 @@
 						class:show-text={expandedSideBar}
 						class:hide-text={!expandedSideBar}
 					>
-						Usuarios
+						Vendedores
 					</p>
 				</div>
 			</a>

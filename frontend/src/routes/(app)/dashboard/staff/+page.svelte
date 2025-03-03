@@ -5,26 +5,26 @@
 	import { goto } from '$app/navigation';
 	import { authenticate } from '$lib/auth';
 
-	let endpoint = {"main":"users","edit":"edit-user","add":"create-user"};
+	let endpoint = {"main":"staff","edit":"edit-staff","add":"create-staff"};
 	onMount(async () => {
 		await authenticate();
-		let isStaffOrAdmin = false;
+		let isAdmin = false;
 		$user['groups'].forEach((group: any) => {
-			if (group['name'] === 'staff' || group['name'] === 'admin') {
-				isStaffOrAdmin = true;
+			if (group['name'] === 'admin') {
+				isAdmin = true;
 			}
 		});
-		if (!isStaffOrAdmin) {
+		if (!isAdmin) {
 			goto('/dashboard');
 		}
 	});
 </script>
 
-<h1 class="h2 my-4">Vendedores</h1>
+<h1 class="h2 my-4">Empleados/Administradores</h1>
 <Datatable
 	editable={true}
 	endpoint={endpoint}
-	table_name={'vendedor'}
+	table_name={'empleado/administrador'}
 	fields={['name', 'email', 'phonenumber']}
 	headings={['Nombre', 'Email', 'Teléfono']}
 />

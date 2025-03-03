@@ -14,7 +14,7 @@
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
-	export let fields = [{ type: null, value: null, name: null, label: null }];
+	export let fields:any = null;
 	export let endpoint = '';
 	export let edit = false;
 	export let method = '';
@@ -62,7 +62,7 @@
 
 	async function sendData() {
 		let body = {};
-		fields.forEach((field) => {
+		fields.forEach((field:any) => {
 			body[field.name] = field.value;
 		});
 		let response = await fetchData(endpoint, method, body, id);
