@@ -36,11 +36,12 @@ class GroupSerializer(serializers.ModelSerializer):
  
 
 class UserSerializer(serializers.ModelSerializer):  
-  password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
+  password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  permissions = serializers.SerializerMethodField(read_only=True)
   confirmPassword = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
   class Meta:
     model = get_user_model() 
-    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups']
+    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups','permissions']
 
   def create(self, validated_data):
     validated_data.pop('confirmPassword')
@@ -63,6 +64,8 @@ class UserSerializer(serializers.ModelSerializer):
   def to_representation(self, instance):
     self.fields['groups'] = GroupSerializer(many = True)
     return super().to_representation(instance)
+  def get_permissions(self, obj):
+    return obj.get_all_permissions()
 
 class ProductSerializer(serializers.ModelSerializer):
   class Meta:
