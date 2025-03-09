@@ -22,7 +22,7 @@
 <h1 class="h2 my-4">Registros</h1>
 <Datatable
 	editable={true}
-	endpoint={'logs'}
+	endpoint={{main:'logs'}}
 	fields={['name', 'email', 'phonenumber']}
 	headings={['Nombre', 'Email', 'Teléfono']}
 />
