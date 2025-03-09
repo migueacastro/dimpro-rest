@@ -5,7 +5,7 @@
 <h1 class="h2 my-4">Inventario</h1>
 <Datatable
 	editable={false}
-	endpoint={'products'}
+	endpoint={{main:'products'}}
 	fields={['id', 'reference', 'item', 'available_quantity']}
 	headings={['ID', 'Referencia', 'item', 'Cantidad Disponible']}
 />
