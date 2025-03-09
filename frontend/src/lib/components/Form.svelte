@@ -1,43 +1,91 @@
 <script lang="ts">
-	
-	import { page } from '$app/stores';
+	//@ts-nocheck
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { getData } from '$lib/components/data';
 	import { fetchData } from '$lib/utils.ts';
 	import { goto } from '$app/navigation';
+	import {
+		getToastStore,
+		getModalStore,
+		type ModalSettings,
+		type ToastSettings
+	} from '@skeletonlabs/skeleton';
 
-	export let fields = [{ type: null, value: null, name: null, label: null }];
+	const modalStore = getModalStore();
+	const toastStore = getToastStore();
+	export let fields:any = null;
 	export let endpoint = '';
 	export let edit = false;
 	export let method = '';
-	let id = $page.params.id;
+	export let table_name = '';
+	let ogValue: any = null;
+	let id = page.params.id;
+	let action = '';
 
-    let manyToManyListsDict = {};
-    let inputChipListsDict = {};
-    let valueChipListsDict = {};
-    let inputChipDict = {};
-
+	let manyToManyListsDict = {};
+	let inputChipListsDict = {};
+	let valueChipListsDict = {};
+	let inputChipDict = {};
 
 	async function isEditable() {
 		if (edit) {
+			action = 'edit';
 			let response = await fetchData(endpoint, 'GET');
 			let data = await response.json();
 			let value = data.filter((values: { id: string }) => values.id == id);
+			ogValue = value[0][`${fields[0].name}`];
 			for (let i = 0; i < fields.length; i++) {
-				fields[i].value = value[0][`${fields[i].name}`];
+				if (fields[i].name !== 'groups') {
+					fields[i].value = value[0][`${fields[i].name}`];
+				}
 			}
+		} else {
+			action = 'agreg';
 		}
 	}
+
+	function updateConfirmation() {
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Modificar: de ${ogValue} a ${fields[0].value}`,
+			body: `¿Está seguro de querer modificar este ${table_name}?`,
+			response: async (r: boolean) => {
+				if (r) {
+					sendData();
+				}
+				goto(`/dashboard/${endpoint}`);
+			}
+		};
+		modalStore.trigger(modal);
+	}
+
 	async function sendData() {
 		let body = {};
-		fields.forEach((field) => {
+		fields.forEach((field:any) => {
 			body[field.name] = field.value;
 		});
-		let response = await fetchData(endpoint, method, body);
-		if(response.ok){
-			goto("/dashboard/users");
+		let response = await fetchData(endpoint, method, body, id);
+		if (response.ok) {
+			const toast: ToastSettings = {
+				message: `El ${table_name} se ${action}ó con exito.`,
+				background: 'variant-ghost-success',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
+		} else {
+			console.log(response);
+			const toast: ToastSettings = {
+				message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
+							mensaje:${response.statusText}`,
+				background: 'variant-ghost-error',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
 		}
-		// TODO: Handle success, and errors
+		if (!edit) {
+			goto(`/dashboard/${endpoint}`);
+		}
 	}
 
 	onMount(async () => {
@@ -56,6 +104,8 @@
 				<p class="capitalize">{field.label}</p>
 				{#if field?.type === 'text'}
 					<input class="input" type="text" bind:value={field.value} id={field.name} />
+				{:else if field?.type === 'email'}
+					<input class="input" type="email" bind:value={field.value} id={field.name} />
 				{:else if field?.type === 'password'}
 					<input class="input" type="password" bind:value={field.value} id={field.name} />
 				{:else if field?.type === 'decimal'}
@@ -94,20 +144,29 @@
 				{:else if field?.type == 'foreignKey'}
 					<p>algo foraneo</p>
 				{:else if field?.type == 'manyToMany'}
-					<InputChip bind:input={inputChipDict[field.table]} bind:value={inputChipListsDict[field.table]} name="chips" on:remove={({ detail }) => removeChip(detail, field.table)} addChip={(event) => addChip(event.detail, field.table)} validation={InputChipValidation} invalid={''}/>
-                        <div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
-                            <Autocomplete
-                                bind:input={inputChipDict[field.table]}
-                                options={manyToManyListsDict[field.table]}
-                                on:selection={({ detail }) => addChip(detail, field.table)}
-                                
-                            />
-                        </div>
+					<!--<InputChip
+						bind:input={inputChipDict[field.table]}
+						bind:value={inputChipListsDict[field.table]}
+						name="chips"
+						on:remove={({ detail }) => removeChip(detail, field.table)}
+						addChip={(event) => addChip(event.detail, field.table)}
+						validation={InputChipValidation}
+						invalid={''}
+					/>
+					<div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
+						<Autocomplete
+							bind:input={inputChipDict[field.table]}
+							options={manyToManyListsDict[field.table]}
+							on:selection={({ detail }) => addChip(detail, field.table)}
+						/>
+					</div>-->
 				{/if}
 			</label>
 		{/each}
-		<button type="submit" class="btn variant-filled h-fit w-fit mx-auto btn-xl" on:click={sendData}
-			>Guardar</button
+		<button
+			type="submit"
+			class="btn variant-filled h-fit w-fit mx-auto btn-xl"
+			on:click={edit ? updateConfirmation : sendData}>Guardar</button
 		>
 	</div>
 </form>

@@ -55,8 +55,11 @@ class UserSerializer(serializers.ModelSerializer):
   def update(self, instance, validated_data):
 
     user_groups = validated_data.pop('groups', None)
-    validated_data.pop('confirmPassword')
-    self.update(instance, validated_data)
+    if validated_data.get('confirmPassword'):
+      validated_data.pop('confirmPassword')
+    instance.name = validated_data.get('name')
+    instance.email = validated_data.get('email')
+    instance.password = validated_data.get('password')
     instance.groups.set(user_groups)
     instance.save()
     return instance 
@@ -103,7 +106,7 @@ class OrderProductSerializer(WritableNestedModelSerializer): # Se crea completo,
         order_product_instance.save()
     return order_product_instance
   def to_representation(self, instance):
-    self.fields['product'] = ProductSerializer();
+    self.fields['product'] = ProductSerializer()
     return super().to_representation(instance)
 
 class OrderSerializer(serializers.ModelSerializer): # Se crea, luego se añaden productos, cada producto no es obligatorio   

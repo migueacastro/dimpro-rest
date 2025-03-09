@@ -106,7 +106,6 @@ export function checkStaffGroup(user: any) {
   if (!user?.groups) {
     return false;
   }
-  console.log(user.groups);
   for (let group of user?.groups) {
     if (group?.name === "staff") {
       return true;

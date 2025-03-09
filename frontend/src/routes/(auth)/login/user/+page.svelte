@@ -98,7 +98,7 @@
 			>Iniciar Sesión</button
 		>
 		<p class="mt-4">
-			¿Eres nuevo vendedor? <a class="anchor no-underline" href="/register">Registrarse</a>
+			¿Es un nuevo vendedor? <a class="anchor no-underline" href="/register">Registrese</a>
 		</p>
 	</form>
 </div>

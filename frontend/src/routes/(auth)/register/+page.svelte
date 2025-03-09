@@ -79,7 +79,7 @@
 	$: inputRepType = showRepPassword ? 'text' : 'password';
 </script>
 
-<title>Registrar Usuario</title>
+<title>Registrar Vendedor</title>
 
 <div class="flex flex-col">
 	<ol class="breadcrumb mb-[3rem]">
@@ -89,7 +89,7 @@
 	</ol>
 
 	<form>
-		<h3 class="text-4xl mb-[2rem]">Regístre su usuario</h3>
+		<h3 class="text-4xl mb-[2rem]">Regístre su Vendedor</h3>
 
 		<input
 			class="input"

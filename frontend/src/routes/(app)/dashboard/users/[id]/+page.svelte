@@ -2,12 +2,17 @@
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils';
+	import { goto } from '$app/navigation';
+	import { authenticate } from '$lib/auth';
 	export let data: any;
 	let user: any;
-
 	onMount(async () => {
+		await authenticate();
 		let response = await fetchData('users/' + data?.id, 'GET');
 		user = await response.json();
+		if(user['detail']==='No posee los permisos necesarios'){
+			goto('/dashboard');
+		}
 	});
 </script>
 
@@ -34,5 +39,6 @@
 		use_array={true}
 		source_data={user?.orders}
 		fields={['id', 'item', 'reference', 'quantity', 'price', 'cost']}
+		headings={['Id','Item','Referencia','Cantidad','Precio','Costo']}
 	/>
 </div>

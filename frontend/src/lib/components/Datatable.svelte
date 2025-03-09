@@ -1,6 +1,5 @@
 <script lang="ts">
-	// @ts-nocheck
-
+	//@ts-nocheck
 	//Import local datatable components
 	import ThSort from '$lib/components/ThSort.svelte';
 	import ThFilter from '$lib/components/ThFilter.svelte';
@@ -17,14 +16,18 @@
 	import { DataHandler } from '@vincjo/datatables';
 	import { onMount } from 'svelte';
 	import { apiURL } from '$lib/api_url';
+	import { getModalStore,getToastStore, type ModalSettings, type ToastSettings } from '@skeletonlabs/skeleton';
 
+	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 	//Init data handler - CLIENT
 	let data = [{}];
-	export let endpoint: any = null;
+	export let endpoint: any = { main: null, edit: null, add: null };
 	export let fields: any = [];
 	export let editable: any = false;
 	export let source_data: any = null;
 	export let headings: any = [];
+	export let table_name = '';
 
 	// List to use inside each heading so that it can access the Title and the field name to access the object attribute
 	let combinedHeadingsList = headings.map((heading: any, index: any) => {
@@ -34,9 +37,40 @@
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
+	function deleteConfirmation(name: any, id: any) {
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Eliminar: ${name}`,
+			body: `¿Está seguro de querer eliminar este ${table_name}?`,
+			response: async (r: boolean) => {
+				if (r) {
+					let response = await fetchData(endpoint['main'], 'DELETE', null, id);
+					if (response.ok) {
+						const t: ToastSettings = {
+							message: `El ${table_name} se eliminó con exito.`,
+							background: 'variant-ghost-success',
+							timeout: 7000
+						};
+						toastStore.trigger(t);
+					} else {
+						const toast: ToastSettings = {
+							message: `¡ERROR! El ${table_name} no se pudo eliminar.
+							\nmensaje:${response.statusText}`,
+							background: 'variant-ghost-error',
+							timeout: 7000
+						};
+						toastStore.trigger(toast);
+					}
+				}
+				goto('/dashboard/' + endpoint['main']);
+			}
+		};
+		modalStore.trigger(modal);
+	}
+
 	onMount(async () => {
-		if (endpoint) {
-			let response = await fetchData(endpoint, 'GET');
+		if (endpoint['main']) {
+			let response = await fetchData(endpoint['main'], 'GET');
 			data = await response.json();
 			handler = new DataHandler(data, { rowsPerPage: 5 });
 		} else {
@@ -59,25 +93,21 @@
 				{#each combinedHeadingsList as item}
 					<ThSort {handler} orderBy={item?.field}>{item?.heading}</ThSort>
 				{/each}
-				{#if editable}
-					<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
-				{/if}
+				<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
 			</tr>
 			<tr>
 				{#each fields as field}
 					<ThFilter {handler} filterBy={field} />
 				{/each}
-				{#if editable}
-					<ThFilter {handler} filterBy={fields[0]} />
-				{/if}
+				<ThFilter {handler} filterBy={fields[0]} />
 			</tr>
 		</thead>
 		<tbody>
 			{#each $rows as row}
 				<tr
 					on:click={() => {
-						if (endpoint) {
-							goto('/dashboard/' + endpoint + '/' + row['id']);
+						if (endpoint['main']) {
+							goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
 						}
 					}}
 				>
@@ -90,16 +120,39 @@
 					{/each}
 					{#if editable}
 						<td class="flex flex-row">
-							<button class="btn variant-filled">
+							<button
+								class="btn variant-filled"
+								on:click={() => deleteConfirmation(row['name'], row['id'])}
+							>
 								<i class="fa-solid fa-trash"></i>
 							</button>
-							<button class="btn ml-2 variant-filled">
-								<i class="fa-solid fa-plus"></i>
+							<button
+								class="btn ml-2 variant-filled"
+								on:click={() => {
+									setTimeout(() => {
+										goto(
+											'/dashboard/' + endpoint['main'] + '/' + `${endpoint['edit']}/` + row['id']
+										);
+									}, 90);
+								}}
+							>
+								<i class="fa-solid fa-pencil"></i>
 							</button>
 						</td>
 					{/if}
 				</tr>
 			{/each}
+			<tr>
+				{#each fields as field}
+					<td class="capitalize">----</td>
+				{/each}
+				<button
+					class="btn variant-filled ml-[0.75rem]"
+					on:click={() => goto('/dashboard/' + endpoint['main'] + '/' + `${endpoint['add']}`)}
+				>
+					<i class="fa-solid fa-plus"></i>
+				</button></tr
+			>
 		</tbody>
 	</table>
 	<!-- Footer -->

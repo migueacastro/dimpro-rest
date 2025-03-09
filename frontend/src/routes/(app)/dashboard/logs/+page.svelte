@@ -7,12 +7,15 @@
 
 	onMount(async () => {
 		await authenticate();
-		let isStaffOrAdmin = false;
+		let isAdmin = false;
 		$user['groups'].forEach((group: any) => {
-			if (!group['name'] === 'admin') {
-				goto('/dashboard');
+			if (group['name'] === 'admin') {
+				isAdmin = true;
 			}
 		});
+		if (!isAdmin) {
+			goto('/dashboard');
+		}
 	});
 </script>
 
