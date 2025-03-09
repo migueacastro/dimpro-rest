@@ -16,7 +16,12 @@
 	import { DataHandler } from '@vincjo/datatables';
 	import { onMount } from 'svelte';
 	import { apiURL } from '$lib/api_url';
-	import { getModalStore,getToastStore, type ModalSettings, type ToastSettings } from '@skeletonlabs/skeleton';
+	import {
+		getModalStore,
+		getToastStore,
+		type ModalSettings,
+		type ToastSettings
+	} from '@skeletonlabs/skeleton';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -93,13 +98,17 @@
 				{#each combinedHeadingsList as item}
 					<ThSort {handler} orderBy={item?.field}>{item?.heading}</ThSort>
 				{/each}
-				<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
+				{#if editable}
+					<ThSort {handler} orderBy={fields[0]}>Acciones</ThSort>
+				{/if}
 			</tr>
 			<tr>
 				{#each fields as field}
 					<ThFilter {handler} filterBy={field} />
 				{/each}
-				<ThFilter {handler} filterBy={fields[0]} />
+				{#if editable}
+					<ThFilter {handler} filterBy={fields[0]} />
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
@@ -146,13 +155,15 @@
 				{#each fields as field}
 					<td class="capitalize">----</td>
 				{/each}
-				<button
-					class="btn variant-filled ml-[0.75rem]"
-					on:click={() => goto('/dashboard/' + endpoint['main'] + '/' + `${endpoint['add']}`)}
-				>
-					<i class="fa-solid fa-plus"></i>
-				</button></tr
-			>
+				{#if editable}
+					<button
+						class="btn variant-filled ml-[0.75rem]"
+						on:click={() => goto('/dashboard/' + endpoint['main'] + '/' + `${endpoint['add']}`)}
+					>
+						<i class="fa-solid fa-plus"></i>
+					</button>
+				{/if}
+			</tr>
 		</tbody>
 	</table>
 	<!-- Footer -->
