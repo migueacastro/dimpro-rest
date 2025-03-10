@@ -59,7 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
       validated_data.pop('confirmPassword')
     instance.name = validated_data.get('name')
     instance.email = validated_data.get('email')
-    instance.password = validated_data.get('password')
+    instance.set_password(validated_data.get('password'))
     instance.groups.set(user_groups)
     instance.save()
     return instance 
@@ -68,7 +68,27 @@ class UserSerializer(serializers.ModelSerializer):
     self.fields['groups'] = GroupSerializer(many = True)
     return super().to_representation(instance)
   def get_permissions(self, obj):
-    return obj.get_all_permissions()
+    permissions = {
+        'view':[],
+        'add':[],
+        'change':[],
+        'delete':[],
+    }
+    user_permissions = obj.get_all_permissions()
+    for permission in user_permissions:
+            app_label, codename = permission.split('.')
+            action, model_name = codename.split('_', 1)
+            formatted_permission = f'{app_label}.{model_name}'
+            if action == 'view':
+                permissions['view'].append(formatted_permission)
+            elif action == 'add':
+                permissions['add'].append(formatted_permission)
+            elif action == 'change':
+                permissions['change'].append(formatted_permission)
+            elif action == 'delete':
+                permissions['delete'].append(formatted_permission)
+    return permissions
+
 
 class ProductSerializer(serializers.ModelSerializer):
   class Meta:
