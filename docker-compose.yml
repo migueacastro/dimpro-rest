@@ -53,8 +53,6 @@ services:
       - ./certbot/conf:/etc/letsencrypt
     depends_on:
       - api
-    networks:
-      - docker-network
     env_file: .env
   certbot:
     image: certbot/certbot
@@ -63,9 +61,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt
     command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${EMAIL} -d ${DOMAIN} --agree-tos
     env_file: .env
-
-networks:
-  docker-network:  
-    driver: bridge
+    depends_on:
+      - nginx
 volumes:
   postgres_data:
