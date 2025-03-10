@@ -55,6 +55,7 @@ services:
       - api
     networks:
       - docker-network
+    env_file: .env
   certbot:
     image: certbot/certbot
     volumes:
