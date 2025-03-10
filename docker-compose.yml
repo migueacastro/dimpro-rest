@@ -46,7 +46,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx-conf/default.conf:/etc/nginx/nginx.conf
+      - ./nginx-conf:/etc/nginx/conf.d
       - ./backend/static_root:/usr/src/app/static_root
       - ./backend/media:/usr/src/app/media     
       - ./certbot/www:/var/www/certbot
