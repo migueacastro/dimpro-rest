@@ -44,15 +44,24 @@ services:
     image: nginx:1.13
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx-conf:/etc/nginx/conf.d
+      - ./nginx-conf/default.conf:/etc/nginx/nginx.conf
       - ./backend/static_root:/usr/src/app/static_root
       - ./backend/media:/usr/src/app/media     
-      - ./letsencrypt/letsencrypt-site:/usr/share/nginx/html
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
     depends_on:
       - api
     networks:
       - docker-network
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${EMAIL} -d ${DOMAIN} --agree-tos
+    env_file: .env
 
 networks:
   docker-network:  
