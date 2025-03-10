@@ -20,7 +20,7 @@ services:
       - ./backend:/backend
       - ./backend/static_root:/usr/src/app/static_root
       - ./backend/media:/usr/src/app/media     
-    command: command: ["./wait-for-db.sh", "gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]    
+    command: ["./wait-for-db.sh", "gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]    
     depends_on:
       db:
         condition: service_healthy
