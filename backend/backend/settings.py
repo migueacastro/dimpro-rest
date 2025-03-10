@@ -144,6 +144,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "dimpro.User"
 CSRF_TRUSTED_ORIGINS = [
+    "http://castroworks.lat",
+    "https://castroworks.lat",
     "http://localhost:5173",
     "https://bd2c7731-eea7-47d1-8886-dd8133157689-00-hnezs8zhtojv.spock.replit.dev:8000",
     "https://sturdy-memory-7v7pxqgqw7qq3wpjj-5173.app.github.dev", #Joel: temporal, por github 
@@ -154,8 +156,9 @@ TOKEN_DURATION = timedelta(days=90)
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://castroworks.lat",
+    "https://castroworks.lat",
     "http://localhost:3000",
-    "https://sturdy-memory-7v7pxqgqw7qq3wpjj-5173.app.github.dev", #Joel: temporal, por github 
 ]
 
 CORS_ALLOW_CREDENTIALS = True
