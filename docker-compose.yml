@@ -48,7 +48,14 @@ services:
       - ./nginx-conf:/etc/nginx/conf.d
       - ./backend/static_root:/usr/src/app/static_root
       - ./backend/media:/usr/src/app/media     
+      - ./letsencrypt/letsencrypt-site:/usr/share/nginx/html
     depends_on:
       - api
+    networks:
+      - docker-network
+
+networks:
+  docker-network:  
+    driver: bridge
 volumes:
   postgres_data:
