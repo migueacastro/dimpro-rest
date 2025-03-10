@@ -62,5 +62,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt
     command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${EMAIL} -d ${DOMAIN} --agree-tos
     env_file: .env
+    depends_on:
+      - nginx
 volumes:
   postgres_data:
