@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [sveltekit(), purgeCss()],
   server: {
+    allowedHosts:['castroworks.lat'],
     host: "0.0.0.0",
     port: 3000,
   },
