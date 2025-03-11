@@ -2,58 +2,60 @@ services:
   db:
     image: postgres:17
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgres/data/
     restart: always
-    env_file: .env   
+    env_file: .env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -d postgres -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
-  api: 
-    build: ./backend 
+  api:
+    build: ./backend
     ports:
-      - "8000:8000"
+      - 8000:8000
     volumes:
       - ./backend:/backend
       - ./backend/static_root:/usr/src/app/static_root
-      - ./backend/media:/usr/src/app/media     
-    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 
+      - ./backend/media:/usr/src/app/media
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
     depends_on:
       db:
         condition: service_healthy
-    env_file: .env
-  django-q:
-    build: ./backend
-    volumes:
-      - ./backend:/backend
-    command: python manage.py qcluster
-    depends_on:
-      - api
     env_file: .env
   frontend:
     build: ./frontend
     volumes:
       - ./frontend:/frontend
     ports:
-      - "3000:3000"
+      - 3000:3000
     env_file: .env
   nginx:
     image: nginx:1.13
     ports:
-      - "80:80"
+      - 80:80
+      - 443:443
     volumes:
-      # - ./nginx-conf:/etc/nginx/conf.d
+      - ./nginx-conf/nginx.conf:/etc/nginx/templates/nginx.conf.template
       - ./backend/static_root:/usr/src/app/static_root
-      - ./backend/media:/usr/src/app/media     
+      - ./backend/media:/usr/src/app/media
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     depends_on:
       - api
-    develop:
-      watch:
-        - action: sync+restart
-          path: ./nginx-conf/default.conf
-          target: /etc/nginx/conf.d/default.conf
+    command: /bin/bash -c "envsubst '$$DOMAIN' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    env_file: .env
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${EMAIL} -d ${DOMAIN} --agree-tos
+    env_file:
+      - .env
+    depends_on:
+      - nginx
 volumes:
   postgres_data:
