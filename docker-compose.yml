@@ -4,7 +4,10 @@ services:
     ports:
       - 5432:5432
     volumes:
+      - ./postgres/backups/:/backups
+      - ./postgres/scripts/:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgres/data/
+    entrypoint: ["/postgres/scripts/entrypoint.sh"] 
     restart: always
     env_file: .env
     healthcheck:
