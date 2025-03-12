@@ -7,7 +7,6 @@ services:
       - ./postgres/backups/:/backups
       - ./postgres/scripts/:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgres/data/
-    entrypoint: ["/postgres/scripts/entrypoint.sh"] 
     restart: always
     env_file: .env
     healthcheck:
@@ -37,18 +36,25 @@ services:
     env_file: .env
   nginx:
     image: nginx:1.13
+    restart: on-failure
     ports:
       - 80:80
       - 443:443
     volumes:
-      - ./nginx-conf/nginx.conf:/etc/nginx/templates/nginx.conf.template
+      - ./nginx-conf/nginx-http.conf:/etc/nginx/templates/nginx-http.conf.template
+      - ./nginx-conf/nginx-https.conf:/etc/nginx/templates/nginx-https.conf.template
+      - ./nginx-conf/startnginx.sh:/startnginx.sh
       - ./backend/static_root:/usr/src/app/static_root
       - ./backend/media:/usr/src/app/media
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:
       - api
-    command: /bin/bash -c "envsubst '$$DOMAIN' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    command: >
+      /bin/bash -c "
+      chmod +x /startnginx.sh &&
+      /startnginx.sh
+      "
     env_file: .env
   certbot:
     image: certbot/certbot
