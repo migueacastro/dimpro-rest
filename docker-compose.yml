@@ -6,12 +6,38 @@ services:
     volumes:
       - postgres_data:/var/lib/postgres/data/
     restart: always
+    environment:
+      - DB=db
     env_file: .env
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d postgres -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
+  initdb:
+    image: postgres:17
+    volumes:
+      - ./postgres/backups/:/backups
+      - ./postgres/scripts/entrypoint.sh:/initdb.sh
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+      export PGPASSWORD=${POSTGRES_PASSWORD};
+      while ! pg_isready -U postgres -h db -p 5432; do
+        sleep 1
+      done;
+      psql -U postgres -h db -d postgres -f /backups/backup.sql
+      function cleanup {
+        echo "Dumping database..."
+        pg_dump -U postgres -d postgres -f /backups/backup.sql
+      }
+      trap cleanup EXIT
+
+      tail -f /dev/null
+      "
+    env_file: .env
   api:
     build: ./backend
     ports:
@@ -25,6 +51,15 @@ services:
       db:
         condition: service_healthy
     env_file: .env
+  django-q:
+    build: ./backend
+    volumes:
+      - ./backend:/backend
+    command: python manage.py qcluster
+    depends_on:
+      - api
+      - initdb
+    env_file: .env
   frontend:
     build: ./frontend
     volumes:
@@ -34,18 +69,25 @@ services:
     env_file: .env
   nginx:
     image: nginx:1.13
+    restart: on-failure
     ports:
       - 80:80
       - 443:443
     volumes:
-      - ./nginx-conf/nginx.conf:/etc/nginx/templates/nginx.conf.template
+      - ./nginx-conf/nginx-http.conf:/etc/nginx/templates/nginx-http.conf.template
+      - ./nginx-conf/nginx-https.conf:/etc/nginx/templates/nginx-https.conf.template
+      - ./nginx-conf/startnginx.sh:/startnginx.sh
       - ./backend/static_root:/usr/src/app/static_root
       - ./backend/media:/usr/src/app/media
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:
       - api
-    command: /bin/bash -c "envsubst '$$DOMAIN' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    command: >
+      /bin/bash -c "
+      chmod +x /startnginx.sh &&
+      /startnginx.sh
+      "
     env_file: .env
   certbot:
     image: certbot/certbot
