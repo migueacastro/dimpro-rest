@@ -4,16 +4,40 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./postgres/backups/:/backups
-      - ./postgres/scripts/:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgres/data/
     restart: always
+    environment:
+      - DB=db
     env_file: .env
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d postgres -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
+  initdb:
+    image: postgres:17
+    volumes:
+      - ./postgres/backups/:/backups
+      - ./postgres/scripts/entrypoint.sh:/initdb.sh
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+      export PGPASSWORD=${POSTGRES_PASSWORD};
+      while ! pg_isready -U postgres -h db -p 5432; do
+        sleep 1
+      done;
+      psql -U postgres -h db -d postgres -f /backups/backup.sql
+      function cleanup {
+        echo "Dumping database..."
+        pg_dump -U postgres -d postgres -f /backups/backup.sql
+      }
+      trap cleanup EXIT
+
+      tail -f /dev/null
+      "
+    env_file: .env
   api:
     build: ./backend
     ports:
@@ -26,6 +50,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file: .env
+  django-q:
+    build: ./backend
+    volumes:
+      - ./backend:/backend
+    command: python manage.py qcluster
+    depends_on:
+      - api
+      - initdb
     env_file: .env
   frontend:
     build: ./frontend
