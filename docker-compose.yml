@@ -26,13 +26,6 @@ services:
       sh -c "
         export PGPASSWORD=${POSTGRES_PASSWORD};
 
-        cleanup() {
-          echo 'Dumping database...';
-          mkdir -p /backups;
-          pg_dump -U postgres -h db -d postgres -Fc -f /backups/backup.dump;
-        }
-        trap cleanup EXIT;  # Define cleanup trap.
-
         # Wait for PostgreSQL to be ready
         while ! pg_isready -U postgres -h db -p 5432; do
           sleep 1;
@@ -50,6 +43,8 @@ services:
         tail -f /dev/null;
         "
     env_file: .env
+    pre_stop:
+      - command: ["pg_dump", "-U", "postgres", "-h", "db", "-d", "postgres", "-Fc", "-f", "/backups/backup.dump"]
   api:
     build: ./backend
     ports:
