@@ -366,7 +366,7 @@
 						toastStore.trigger(toast);
 					}
 				}
-				goto('/dashboard/orders');
+				//goto('/dashboard/orders');
 			}
 		};
 		modalStore.trigger(modal);
@@ -381,7 +381,7 @@
 				if (r) {
 					handleSave();
 				}
-				goto(`/dashboard/orders/${data.id}`);
+				
 			}
 		};
 		modalStore.trigger(modal);

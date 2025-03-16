@@ -97,6 +97,7 @@ services:
       - 80:80
       - 443:443
     volumes:
+      - ./nginx-conf/nginx-dev.conf:/etc/nginx/templates/nginx-dev.conf.template
       - ./nginx-conf/nginx-http.conf:/etc/nginx/templates/nginx-http.conf.template
       - ./nginx-conf/nginx-https.conf:/etc/nginx/templates/nginx-https.conf.template
       - ./nginx-conf/startnginx.sh:/startnginx.sh
