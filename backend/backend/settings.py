@@ -149,14 +149,14 @@ MODE = os.getenv('MODE', None)
 
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{DOMAIN}" if MODE == "production" else "http://localhost:5173", 
+    f"https://{DOMAIN}" if MODE == "production" else "http://localhost:3000", 
 ]
 
 TOKEN_DURATION = timedelta(days=90) 
 
 
 CORS_ALLOWED_ORIGINS = [
-    f"https://{DOMAIN}" if MODE == "production" else "http://localhost:5173",
+    f"https://{DOMAIN}" if MODE == "production" else "http://localhost:3000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
