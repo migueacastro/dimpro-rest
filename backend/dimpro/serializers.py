@@ -54,13 +54,16 @@ class UserSerializer(serializers.ModelSerializer):
 
   def update(self, instance, validated_data):
 
-    user_groups = validated_data.pop('groups', None)
     if validated_data.get('confirmPassword'):
       validated_data.pop('confirmPassword')
-    instance.name = validated_data.get('name')
-    instance.email = validated_data.get('email')
-    instance.set_password(validated_data.get('password'))
-    instance.groups.set(user_groups)
+    if 'name' in validated_data:
+      instance.name = validated_data.get('name')
+    if 'email' in validated_data:
+      instance.email = validated_data.get('email')
+    if 'password' in validated_data:
+        instance.set_password(validated_data.get('password'))
+    if 'groups' in validated_data:
+      instance.groups.set(validated_data.pop('groups', None))
     instance.save()
     return instance 
 

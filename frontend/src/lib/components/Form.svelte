@@ -63,8 +63,13 @@
 	async function sendData() {
 		let body = {};
 		fields.forEach((field:any) => {
-			body[field.name] = field.value;
+			if (field?.value) {
+				if (field.value.toString().trim() !== "") {
+					body[field.name] = field.value;
+				}
+			}
 		});
+		console.log(body);
 		let response = await fetchData(endpoint, method, body, id);
 		if (response.ok) {
 			const toast: ToastSettings = {
