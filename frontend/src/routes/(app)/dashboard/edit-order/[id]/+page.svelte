@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { user } from '../../../../../stores/stores';
 	import { fetchData } from '$lib/utils.ts';
-	import { Autocomplete } from '@skeletonlabs/skeleton';
+	import { Autocomplete, getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
@@ -18,6 +18,8 @@
 	let selectedPricetypeId: any;
 	let order: any = {};
 	let initialItemsList: Array<any> = [];
+	let toastStore = getToastStore();
+	let modalStore = getModalStore();
 	let inputContact: string = '';
 	let selectedContactId: number;
 	let contactAutoCompleteList: AutocompleteOption<number, string>[] = [];
@@ -283,9 +285,9 @@
 		let data: any;
 		let response: any;
 		for (const product of orderObject.products) {
-			response = await fetchData('order_products/' + product.id, 'PATCH', {
+			response = await fetchData('order_products', 'PATCH', {
 				active: false
-			});
+			}, product.id);
 			if (!response.ok) {
 				data = await response.json();
 				console.log(data);
@@ -319,7 +321,7 @@
 				console.log(data);
 			}
 		}
-		let response = await fetchData(`orders/${data.id}`, 'PATCH', order);
+		let response = await fetchData(`orders`, 'PATCH', order, data.id);
 		if (response.ok) {
 			const toast: ToastSettings = {
 				message: 'El pedido se guardó con exito.',
@@ -372,7 +374,7 @@
 		modalStore.trigger(modal);
 	}
 
-	function confirmation() {
+	async function confirmation() {
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Modificar Pedido`,
