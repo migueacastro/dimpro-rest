@@ -24,19 +24,31 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-      export PGPASSWORD=${POSTGRES_PASSWORD};
-      while ! pg_isready -U postgres -h db -p 5432; do
-        sleep 1
-      done;
-      psql -U postgres -h db -d postgres -f /backups/backup.sql
-      function cleanup {
-        echo "Dumping database..."
-        pg_dump -U postgres -d postgres -f /backups/backup.sql
-      }
-      trap cleanup EXIT
+        export PGPASSWORD=${POSTGRES_PASSWORD};
 
-      tail -f /dev/null
-      "
+        cleanup() {
+          echo 'Dumping database...';
+          mkdir -p /backups;
+          pg_dump -U postgres -h db -d postgres -Fc -f /backups/backup.dump;
+        }
+        trap cleanup EXIT;  # Define cleanup trap.
+
+        # Wait for PostgreSQL to be ready
+        while ! pg_isready -U postgres -h db -p 5432; do
+          sleep 1;
+        done;
+
+        # Restore the database if a backup exists
+        if [ -f /backups/backup.dump ]; then
+          echo 'Backup file exists. Starting restore with --clean option...';
+          pg_restore --clean -U postgres -h db -d postgres -v /backups/backup.dump;
+        else
+          echo 'Backup file does not exist. Skipping restore.';
+        fi
+
+        # Keep the container running
+        tail -f /dev/null;
+        "
     env_file: .env
   api:
     build: ./backend
@@ -46,19 +58,30 @@ services:
       - ./backend:/backend
       - ./backend/static_root:/usr/src/app/static_root
       - ./backend/media:/usr/src/app/media
-    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+    command: >
+      sh -c  "python manage.py makemigrations && 
+              python manage.py migrate && 
+              python manage.py collectstatic --noinput && 
+              gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
     depends_on:
       db:
         condition: service_healthy
     env_file: .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api"]  # Replace with a valid health check endpoint
+      interval: 10s
+      timeout: 5s
+      retries: 5
   django-q:
     build: ./backend
     volumes:
       - ./backend:/backend
     command: python manage.py qcluster
     depends_on:
-      - api
-      - initdb
+      api:
+        condition: service_healthy
+      initdb:
+        condition: service_started
     env_file: .env
   frontend:
     build: ./frontend
@@ -74,6 +97,7 @@ services:
       - 80:80
       - 443:443
     volumes:
+      - ./nginx-conf/nginx-dev.conf:/etc/nginx/templates/nginx-dev.conf.template
       - ./nginx-conf/nginx-http.conf:/etc/nginx/templates/nginx-http.conf.template
       - ./nginx-conf/nginx-https.conf:/etc/nginx/templates/nginx-https.conf.template
       - ./nginx-conf/startnginx.sh:/startnginx.sh
@@ -82,7 +106,8 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     command: >
       /bin/bash -c "
       chmod +x /startnginx.sh &&
