@@ -394,10 +394,8 @@
 		order = await response.json();
 		response = await fetchData('orders', 'GET');
 		let orders = await response.json();
-		let orderExists = orders.find((ord: any) => {
-			ord.id == order.id;
-		});
-		if (!orderExists) {
+
+		if (!order) {
 			goto('/dashboard/orders');
 		}
 		response = await fetchData('contacts', 'GET');
