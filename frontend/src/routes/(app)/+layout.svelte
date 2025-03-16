@@ -98,6 +98,15 @@
 				{/if}
 				{#if checkAdminGroup($user)}
 					<li>
+						<a
+							href="/dashboard/users"
+							class="w-fit my-2 mx-auto h4 font-bold"
+							on:click={hideDrawer}
+						>
+						Empleados
+						</a>
+					</li>
+					<li>
 						<a href="/dashboard/settings" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 							Configuración
 						</a>
@@ -246,6 +255,20 @@
 		{/if}
 
 		{#if checkAdminGroup($user)}
+			
+			<a href="/dashboard/staff">
+				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
+					<i class="py-5 fa-solid fa-users-gear h3 w-20"></i>
+					<p
+						class="font-bold h5 fixed left-20"
+						class:opacity-0={!expandedSideBar}
+						class:show-text={expandedSideBar}
+						class:hide-text={!expandedSideBar}
+					>
+						Empleados
+					</p>
+				</div>
+			</a>
 			<a href="/dashboard/settings">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-gear h3 w-20"></i>
