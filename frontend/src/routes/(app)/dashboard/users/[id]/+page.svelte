@@ -6,25 +6,25 @@
 	import { authenticate } from '$lib/auth';
 	export let data: any;
 	let user: any;
-  $: loaded = false;
+	$: loaded = false;
 	onMount(async () => {
 		await authenticate();
-		let response = await fetchData('users/'+data.id, 'GET', null, data.id);
+		let response = await fetchData('users/' + data.id, 'GET', null, data.id);
 		user = await response.json();
-		if(user['detail']==='No posee los permisos necesarios'){
+		if (user['detail'] === 'No posee los permisos necesarios') {
 			goto('/dashboard');
 		}
-    loaded = true;
+		loaded = true;
 	});
 </script>
 
 <div class="flex flex-col">
-	<div class="flex flex-row">
+	<div class="flex flex-col lg:flex-row">
 		<div class="card p-[3rem] w-full mb-[2rem] mr-[2rem]">
 			<div class="flex flex-col">
-				<h4 class="h2 font-bold capitalize my-2">{user?.name ?? "No definido"}</h4>
-				<h4 class="h4 capitalize my-2">Email: {user?.email ?? "No definido"}</h4>
-				<h4 class="h4 capitalize my-2">Teléfono: {user?.phonenumber ?? "No definido"}</h4>
+				<h4 class="h2 font-bold capitalize my-2">{user?.name ?? 'No definido'}</h4>
+				<h4 class="h4 capitalize my-2">Email: {user?.email ?? 'No definido'}</h4>
+				<h4 class="h4 capitalize my-2">Teléfono: {user?.phonenumber ?? 'No definido'}</h4>
 			</div>
 		</div>
 		<div class="card p-[3rem] w-full mb-[2rem]">
@@ -38,12 +38,12 @@
 	<div class="flex flex-row justify-between mb-[2rem]">
 		<h2 class="h2">Pedidos: {user?.orders?.length}</h2>
 	</div>
-  {#if loaded}
-	<Datatable
-    endpoint={{secondary:"orders"}}
-		source_data={user?.orders}
-		headings={['ID', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
-			fields={['id','contact_name', 'product_count', 'status', 'date_format']}
-	/>
-  {/if}
+	{#if loaded}
+		<Datatable
+			endpoint={{ secondary: 'orders' }}
+			source_data={user?.orders}
+			headings={['ID', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
+			fields={['id', 'contact_name', 'product_count', 'status', 'date_format']}
+		/>
+	{/if}
 </div>
