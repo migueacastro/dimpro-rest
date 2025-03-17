@@ -2,6 +2,7 @@ from django.utils.regex_helper import Group
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
 from dimpro.models import *
+from auditlog.models import LogEntry
 from rest_framework.response import Response
 from auditlog.models import LogEntry
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
@@ -213,5 +214,7 @@ class UserNestedSerializer(UserSerializer):
   def get_last_login_format(self, obj):
     return obj.last_login.strftime('%Y/%m/%d %H:%M') if obj.last_login else 'Ninguno'
 
-class LogsSerializer(serializers.ModelSerializer):
-  pass
+class LogSerializer(serializers.ModelSerializer):
+   class Meta:
+     model = LogEntry
+     fields = '__all__'

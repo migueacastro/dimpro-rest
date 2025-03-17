@@ -72,16 +72,16 @@
 					</a>
 				</li>
 				<li>
-					<a
-						href="/dashboard/orders"
-						class="w-fit my-2 mx-auto h4 font-bold"
-						on:click={hideDrawer}
-					>
+					<a href="/dashboard/orders" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
 						Pedidos
 					</a>
 				</li>
 				<li>
-					<a href="/dashboard/inventory" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a
+						href="/dashboard/inventory"
+						class="w-fit my-2 mx-auto h4 font-bold"
+						on:click={hideDrawer}
+					>
 						Inventario
 					</a>
 				</li>
@@ -92,22 +92,26 @@
 							class="w-fit my-2 mx-auto h4 font-bold"
 							on:click={hideDrawer}
 						>
-						Vendedores
+							Vendedores
 						</a>
 					</li>
 				{/if}
 				{#if checkAdminGroup($user)}
 					<li>
 						<a
-							href="/dashboard/users"
+							href="/dashboard/staff"
 							class="w-fit my-2 mx-auto h4 font-bold"
 							on:click={hideDrawer}
 						>
-						Empleados
+							Empleados
 						</a>
 					</li>
 					<li>
-						<a href="/dashboard/settings" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+						<a
+							href="/dashboard/settings"
+							class="w-fit my-2 mx-auto h4 font-bold"
+							on:click={hideDrawer}
+						>
 							Configuración
 						</a>
 					</li>
@@ -164,9 +168,10 @@
 				<div class="w-1/3 pt-[1rem] pr-[1rem] lg:pr-[2rem] flex flex-row justify-end">
 					<div
 						class="lg:text-xl text-md capitalize text-end font-bold md:text-xl md:flex md:align-middle"
-					><a href="/dashboard/user">       
-						<div>{$user?.name?.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
-            </a>
+					>
+						<a href="/dashboard/user">
+							<div>{$user?.name?.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
+						</a>
 					</div>
 					<div class="hidden lg:flex w-auto ml-4"><LightSwitch /></div>
 				</div>
@@ -256,7 +261,6 @@
 		{/if}
 
 		{#if checkAdminGroup($user)}
-			
 			<a href="/dashboard/staff">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users-gear h3 w-20"></i>

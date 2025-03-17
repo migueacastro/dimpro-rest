@@ -8,6 +8,7 @@
 	import { popup } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
+	import StatusButton from '$lib/components/StatusButton.svelte';
 
 	export let data;
 	let products: any = [];
@@ -427,9 +428,9 @@
 </h1>
 
 <div class="flex flex-col lg:flex-row justify-between mb-3">
-	<h3 class="h3 mb-3 lg:mb-0 lg:my-[2rem]">Items: {items.length}</h3>
-	<div class="lg:space-x-2 flex flex-col lg:flex-row">
-		<div class="flex flex-col w-1/2 w-full lg:max-w-md lg:my-0 my-2">
+	<h3 class="h3 mb-3 lg:mb-0 lg:my-[2rem] lg:w-full">Items: {items.length}</h3>
+	<div class="lg:space-x-2 flex flex-col lg:flex-row lg:w-3/4">
+		<div class="flex flex-col w-1/2 lg:w-1/2 w-full lg:max-w-md lg:my-0 my-2">
 			<label for="select-contact" class="h4">Cliente</label>
 			<input
 				class="input autocomplete"
@@ -450,19 +451,25 @@
 				/>
 			</div>
 		</div>
-		<div class="flex flex-col lg:my-0 mb-3">
-			<label for="" class="h4">Tipo de precio</label>
-			<select
-				class="select w-full lg:max-w-md"
-				name="pricetype"
-				id="pricetype"
-				bind:value={selectedPricetypeId}
-				on:change={updateTablePrices}
-			>
-				{#each pricetypes as pricetype}
-					<option value={pricetype.id}>{pricetype.name}</option>
-				{/each}
-			</select>
+		<div class="flex flex-row space-x-2 w-full">
+			<div class="flex flex-col w-full lg:my-0 mb-3">
+				<label for="" class="h4">Tipo de precio</label>
+				<select
+					class="select w-full lg:max-w-md"
+					name="pricetype"
+					id="pricetype"
+					bind:value={selectedPricetypeId}
+					on:change={updateTablePrices}
+				>
+					{#each pricetypes as pricetype}
+						<option value={pricetype.id}>{pricetype.name}</option>
+					{/each}
+				</select>
+			</div>
+			<div class="flex flex-col w-fit lg:my-0 mb-2">
+				<label for="select-contact" class="h4">Estatus</label>
+				<StatusButton {order} />
+			</div>
 		</div>
 	</div>
 </div>

@@ -10,6 +10,7 @@ from rest_framework import generics
 from django.db.models import Q
 from dimpro.serializers import *
 from dimpro.models import *
+from auditlog.models import LogEntry
 from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission
 from django.utils.translation import gettext as _
 from django.contrib.sessions.models import Session
@@ -235,3 +236,7 @@ class WelcomeSuperUserView(APIView):
     serializer = WelcomeSuperUserSerializer() # El serializador solito agarra los registros, usara UserSerializer
     return Response(serializer.data)
 
+class LogViewSet(SafeViewSet):
+  serializer_class = LogSerializer
+  permission_classes = (IsAdminUser,)
+  queryset = LogEntry.objects.all()
