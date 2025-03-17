@@ -429,7 +429,7 @@
 <div class="flex flex-col lg:flex-row justify-between mb-3">
 	<h3 class="h3 mb-3 lg:mb-0 lg:my-[2rem]">Items: {items.length}</h3>
 	<div class="lg:space-x-2 flex flex-col lg:flex-row">
-		<div class="flex flex-col w-1/2 max-w-md lg:my-0 my-2">
+		<div class="flex flex-col w-1/2 w-full lg:max-w-md lg:my-0 my-2">
 			<label for="select-contact" class="h4">Cliente</label>
 			<input
 				class="input autocomplete"
@@ -453,7 +453,7 @@
 		<div class="flex flex-col lg:my-0 mb-3">
 			<label for="" class="h4">Tipo de precio</label>
 			<select
-				class="select max-w-md"
+				class="select w-full lg:max-w-md"
 				name="pricetype"
 				id="pricetype"
 				bind:value={selectedPricetypeId}
