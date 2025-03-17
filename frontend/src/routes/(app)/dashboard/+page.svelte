@@ -8,7 +8,7 @@
 <title>Dimpro Iluminación</title>
 
 {#if checkStaffGroup($user)}
-	<div class="lg:flex lg:flex-row mb-[1rem]">
+	<div class="lg:flex lg:flex-row mb-[1rem] justify-center">
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[50%] lg:mr-[1rem] my-5 dark:variant-filled-surface variant-filled-tertiary"
 			href="/dashboard/orders"
@@ -46,30 +46,30 @@
 		/>
 	</div>
 {:else}
-	<div class="lg:flex lg:flex-row ml-[3.5rem] mt-5">
+	<div class="lg:flex lg:flex-row mb-[1rem] justify-center">
 		<a
-			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] mx-auto lg:my-auto my-5 dark:variant-filled-surface variant-filled-tertiary"
+			class=" block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 lg:w-[30%] lg:mr-[1rem] dark:variant-filled-surface variant-filled-tertiary"
 			href="/dashboard/add-order"
 		>
-			<div class="flex flex-row">
+			<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 				<p class="font-bold h4">Crear Pedido</p>
 				<i class="fa-solid fa-plus h3 ml-5" />
 			</div>
 		</a>
 		<a
-			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] mx-auto lg:my-auto my-5 dark:variant-filled-surface variant-filled-tertiary"
-			href="/dashboard/edit-order"
+			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 lg:w-[30%] lg:mr-[1rem] dark:variant-filled-surface variant-filled-tertiary"
+			href="/dashboard/orders"
 		>
-			<div class="flex flex-row">
+			<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 				<p class="font-bold h4">Pedidos</p>
 				<i class="fa-solid fa-box h3 ml-5" />
 			</div>
 		</a>
 		<a
-			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] mx-auto lg:my-auto my-5 dark:variant-filled-surface variant-filled-tertiary"
+			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 lg:w-[30%] lg:mr-[1rem] dark:variant-filled-surface variant-filled-tertiary"
 			href="user"
 		>
-			<div class="flex flex-row">
+			<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 				<p class="font-bold h4">Vendedor</p>
 				<i class="fa-solid fa-user h3 ml-5" />
 			</div>

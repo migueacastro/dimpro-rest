@@ -114,8 +114,10 @@
 		<tbody>
 			{#each $rows as row}
 				<tr
-					on:click={() => {
-						if (endpoint['main']) {
+					on:click={() => { 
+            if (endpoint['secondary']) {
+							goto('/dashboard/' + endpoint['secondary'] + '/' + row['id']);
+            } else if (endpoint['main']) {
 							goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
 						}
 					}}
