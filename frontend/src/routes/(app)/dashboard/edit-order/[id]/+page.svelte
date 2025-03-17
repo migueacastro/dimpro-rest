@@ -285,9 +285,14 @@
 		let data: any;
 		let response: any;
 		for (const product of orderObject.products) {
-			response = await fetchData('order_products', 'PATCH', {
-				active: false
-			}, product.id);
+			response = await fetchData(
+				'order_products',
+				'PATCH',
+				{
+					active: false
+				},
+				product.id
+			);
 			if (!response.ok) {
 				data = await response.json();
 				console.log(data);
@@ -383,7 +388,6 @@
 				if (r) {
 					handleSave();
 				}
-				
 			}
 		};
 		modalStore.trigger(modal);
@@ -422,10 +426,10 @@
 	Editar Pedido #{data.id}
 </h1>
 
-<div class="flex flex-row justify-between">
-	<h3 class="h3 my-[2rem]">Items: {items.length}</h3>
-	<div class="space-x-2 flex flex-row">
-		<div class="flex flex-col w-1/2 max-w-md">
+<div class="flex flex-col lg:flex-row justify-between mb-3">
+	<h3 class="h3 mb-3 lg:mb-0 lg:my-[2rem]">Items: {items.length}</h3>
+	<div class="lg:space-x-2 flex flex-col lg:flex-row">
+		<div class="flex flex-col w-1/2 max-w-md lg:my-0 my-2">
 			<label for="select-contact" class="h4">Cliente</label>
 			<input
 				class="input autocomplete"
@@ -446,10 +450,10 @@
 				/>
 			</div>
 		</div>
-		<div class="flex flex-col">
+		<div class="flex flex-col lg:my-0 mb-3">
 			<label for="" class="h4">Tipo de precio</label>
 			<select
-				class="select"
+				class="select max-w-md"
 				name="pricetype"
 				id="pricetype"
 				bind:value={selectedPricetypeId}
