@@ -14,7 +14,7 @@
 
 <div class="flex flex-col">
 	<h4 class="h2 font-bold capitalize my-4">Perfil</h4>
-	<div class="flex flex-row">
+	<div class="flex flex-col lg:flex-row">
 		<div class="card p-[3rem] w-full mb-[2rem] mr-[2rem]">
 			<div class="flex flex-col">
 				<h4 class="h2 font-bold capitalize my-2">{$user?.name ?? 'No definido'}</h4>

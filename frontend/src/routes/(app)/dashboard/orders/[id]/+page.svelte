@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils';
-
+	import StatusButton from '$lib/components/StatusButton.svelte';
 	export let data: any;
 	let order: any;
 	let products: Array<any> = [];
@@ -26,7 +26,7 @@
 </script>
 
 <div class="flex flex-col">
-	<div class="flex flex-row">
+	<div class="flex flex-col lg:flex-row">
 		<div class="card p-[3rem] w-full mb-[2rem]">
 			<div class="flex flex-col">
 				<h1 class="h1 mb-[3rem] font-bold">Pedido #{order?.id}</h1>
@@ -44,13 +44,10 @@
 			</div>
 		</div>
 	</div>
-	<div class="flex flex-row justify-between mb-[2rem]">
-		<h2 class="h2">Items: {order?.products?.length}</h2>
+	<div class="flex flex-row flex-wrap justify-between mb-[2rem]">
+		<h2 class="h2 lg:my-0 my-2">Items: {order?.products?.length}</h2>
 		<div class="flex flex-row">
-			<button class="capitalize btn variant-filled max-w-fit px-[2rem] mx-2" on:click={() => {}}>
-				{order?.status}
-			</button>
-
+			<StatusButton {order} />
 			<button
 				class="btn variant-filled max-w-fit px-[2rem] mx-2"
 				on:click={() => goto('/dashboard/edit-order/' + order?.id)}
