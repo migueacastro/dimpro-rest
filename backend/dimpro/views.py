@@ -3,7 +3,7 @@ from django.contrib.admin.options import get_content_type_for_model
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
@@ -177,7 +177,7 @@ class RefreshCSRFTokenView(APIView):
 
 class StaffViewSet(SafeViewSet):
   permission_classes = (IsAdminUser, )
-  serializer_class = UserSerializer
+  serializer_class = UserNestedSerializer
   queryset = User.objects.filter(groups__name="staff", active=True)
   superuser_only = True
 
@@ -213,6 +213,12 @@ class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProduc
   # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
   # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
   queryset = Order.objects.filter(active=True)
+
+class UserOrderViewSet(SafeViewSet):
+  serializer_class = OrderSerializer
+  permission_classes = (IsAuthenticatedOrReadOnly, )
+  def get_queryset(self):
+    return Order.objects.filter(active=True, user=self.request.user)
 
 class AlegraUserViewSet(SafeViewSet):
   serializer_class = AlegraUserSerializer

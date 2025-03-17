@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { DataHandler } from '@vincjo/datatables';
 	export let handler: DataHandler;
-	const pageNumber = handler.getPageNumber();
-	const pageCount = handler.getPageCount();
-	const pages = handler.getPages({ ellipsis: true });
+	$: pageNumber = handler.getPageNumber();
+	$: pageCount = handler.getPageCount();
+	$: pages = handler.getPages({ ellipsis: true });
 </script>
 
 <!-- Desktop buttons -->
@@ -20,7 +20,7 @@
 		<button
 			type="button"
 			class="hover:variant-soft-primary"
-			class:active={$pageNumber === page}
+			class:variant-soft-secondary={$pageNumber === page}
 			class:ellipse={page === null}
 			on:click={() => handler.setPage(page)}
 		>
