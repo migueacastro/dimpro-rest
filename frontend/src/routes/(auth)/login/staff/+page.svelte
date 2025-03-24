@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { apiURL } from '$lib/api_url';
 	import { authenticate, fetchStaff } from '$lib/auth';
 	import Cookies from 'js-cookie';
 

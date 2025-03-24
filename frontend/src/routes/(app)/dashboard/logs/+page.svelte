@@ -9,7 +9,7 @@
 		await authenticate();
 		let isAdmin = false;
 		$user['groups'].forEach((group: any) => {
-			if (group['name'] === 'admin') {
+			if (group.name === 'admin') {
 				isAdmin = true;
 			}
 		});
@@ -21,8 +21,8 @@
 
 <h1 class="h2 my-4">Registros</h1>
 <Datatable
-	editable={true}
+	editable={false}
 	endpoint={{main:'logs'}}
-	fields={['name', 'email', 'phonenumber']}
-	headings={['Nombre', 'Email', 'Teléfono']}
+	fields={['object_repr', 'changes_text','remote_addr', 'timestamp']}
+	headings={['Autor', 'Cambios','Dirección IP', 'Tiempo de modificación']}
 />

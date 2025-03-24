@@ -77,6 +77,7 @@
 		if (endpoint['main']) {
 			let response = await fetchData(endpoint['main'], 'GET');
 			data = await response.json();
+			//console.log(data);
 			handler = new DataHandler(data, { rowsPerPage: 5 });
 		} else {
 			handler = new DataHandler(source_data, { rowsPerPage: 5 });
