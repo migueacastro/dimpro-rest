@@ -149,7 +149,7 @@ MODE = os.getenv('MODE', None)
 
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{DOMAIN}" if MODE == "production" else "http://localhost:3000", 
+    f"https://{DOMAIN}" if MODE == "production" else "http://localhost", 
 ]
 
 TOKEN_DURATION = timedelta(days=90) 
