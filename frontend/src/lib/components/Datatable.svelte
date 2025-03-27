@@ -1,6 +1,7 @@
 <script lang="ts">
 	//@ts-nocheck
 	//Import local datatable components
+	import { beforeNavigate } from '$app/navigation';
 	import ThSort from '$lib/components/ThSort.svelte';
 	import ThFilter from '$lib/components/ThFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -8,6 +9,7 @@
 	import RowCount from '$lib/components/RowCount.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import { goto } from '$app/navigation';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	//Load local data
 	import { fetchData } from '$lib/utils.ts';
 	import { getData } from './data';
@@ -22,6 +24,7 @@
 		type ModalSettings,
 		type ToastSettings
 	} from '@skeletonlabs/skeleton';
+	//import { loading } from '../../stores/stores';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -33,6 +36,16 @@
 	export let source_data: any = null;
 	export let headings: any = [];
 	export let table_name = '';
+
+	$: loaded = false;
+	$:loading = true;
+
+	beforeNavigate(() => {
+		setTimeout(() => {
+			loaded = true;
+			loading = false;
+		}, 700);
+	});
 
 	// List to use inside each heading so that it can access the Title and the field name to access the object attribute
 	let combinedHeadingsList = headings.map((heading: any, index: any) => {
@@ -74,6 +87,8 @@
 	}
 
 	onMount(async () => {
+		loaded = false;
+		loading = true;
 		if (endpoint['main']) {
 			let response = await fetchData(endpoint['main'], 'GET');
 			data = await response.json();
@@ -83,10 +98,22 @@
 			handler = new DataHandler(source_data, { rowsPerPage: 5 });
 		}
 		rows = handler.getRows();
+		setTimeout(() => {
+			loaded = true;
+			loading = false;
+		}, 1000);
 	});
 </script>
 
-<div class=" overflow-x-auto space-y-4">
+{#if loading}
+<div class="flex justify-center mt-[8rem]">
+	<div class="my-auto">
+		<ProgressRadial />
+	</div>
+</div>
+{/if}
+
+<div class=" overflow-x-auto space-y-4" class:hidden={!loaded}>
 	<!-- Header -->
 	<header class="flex justify-between gap-4">
 		<Search {handler} />
@@ -115,10 +142,10 @@
 		<tbody>
 			{#each $rows as row}
 				<tr
-					on:click={() => { 
-            if (endpoint['secondary']) {
+					on:click={() => {
+						if (endpoint['secondary']) {
 							goto('/dashboard/' + endpoint['secondary'] + '/' + row['id']);
-            } else if (endpoint['main']) {
+						} else if (endpoint['main']) {
 							goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
 						}
 					}}

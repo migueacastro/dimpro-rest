@@ -236,6 +236,11 @@ class WelcomeSuperUserView(APIView):
     serializer = WelcomeSuperUserSerializer() # El serializador solito agarra los registros, usara UserSerializer
     return Response(serializer.data)
 
+class NoteViewSet(SafeViewSet):
+  serializer_class = NoteSerializer
+  permission_classes = (IsAdminUser,)
+  queryset = Note.objects.all()
+
 class LogViewSet(SafeViewSet):
   serializer_class = LogSerializer
   permission_classes = (IsAdminUser,)
