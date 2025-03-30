@@ -36,21 +36,7 @@
 	};
 
 	$: items = [
-		{
-			id: null,
-			item: '',
-			reference: '',
-			quantity: null,
-			availability: null,
-			price: null,
-			cost: null,
-			item_label: '',
-			index: 0,
-			search_error: false,
-			input_disabled: true,
-			hover: false,
-			product_object: null
-		}
+
 	];
 
 	$: totalQuantity = items

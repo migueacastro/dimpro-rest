@@ -1,7 +1,9 @@
 <script lang="ts">
 </script>
 
+
 <div class="flex flex-col">
+	<h1 class="h2 my-4">Configuración</h1>
 	<div class="lg:flex lg:flex-row mb-[1rem] justify-center">
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[50%] lg:mr-[1rem] my-5 dark:variant-filled-surface variant-filled-tertiary"
