@@ -3,7 +3,7 @@
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { setInitialClassState, storePopup } from '@skeletonlabs/skeleton';
 	import { authenticate } from '$lib/auth';
-	import { loading,  user } from '../stores/stores';
+	import { loading } from '../stores/stores';
 	import { onMount } from 'svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -25,8 +25,7 @@
 	onMount(async () => {
         loaded = false;
         loading.set(true);
-		let userData = await authenticate();
-		user.set(userData);
+
 		setTimeout(() => {
 			loaded = true;
 			loading.set(false);
