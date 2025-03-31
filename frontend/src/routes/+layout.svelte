@@ -1,8 +1,7 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { setInitialClassState, storePopup } from '@skeletonlabs/skeleton';
-	import { authenticate } from '$lib/auth';
+	import { storePopup } from '@skeletonlabs/skeleton';
 	import { loading } from '../stores/stores';
 	import { onMount } from 'svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
