@@ -1,40 +1,40 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { apiURL } from '$lib/api_url';
-	import { Temporal } from '@js-temporal/polyfill';
-	import { fetchLogin } from '$lib/auth';
-	import type { Cookies } from '@sveltejs/kit';
-	import { authenticate } from '$lib/auth';
+	import { enhance } from '$app/forms';
 
 	interface FormErrors {
 		email: any;
 		password: any;
 	}
-	let errors: FormErrors = { email: null, password: null };
+	$: errors = { email: [], password: [] };
 
 	let email = '';
 	let password = '';
 
-	async function handleLogin() {
-		let formData = {
-			email: email,
-			password: password
-		};
-		const response = await fetchLogin(formData);
-		const data = await response.json();
-		if (response.ok) {
-			await authenticate();
-			goto('/');
-		} else {
-			errors = data;
-		}
-	}
 	let showPassword = false;
 	function togglePasswordVisibility() {
 		showPassword = !showPassword;
 	}
 	let inputType = 'password';
 	$: inputType = showPassword ? 'text' : 'password';
+
+	function handleEnhance({ formData, action }: { formData: FormData; action: URL }) {
+		fetch(action, {
+			method: 'POST',
+			body: formData
+		})
+			.then(async (response) => {
+				const result = await response.json();
+				if (result.type !== 'success') {
+					// Access errors directly
+					let data = JSON.parse(result.data);
+					data = JSON.parse(data[2]);
+					errors = data;
+				}
+			})
+			.catch((error) => {
+				console.error('Error al enviar el formulario:', error);
+			});
+	}
 </script>
 
 <title>Inicio Sesión</title>
@@ -46,11 +46,19 @@
 		<li class="crumb">Vendedor</li>
 	</ol>
 
-	<form>
+	<form action="?/login" method="post" use:enhance={handleEnhance}>
 		<h3 class="text-4xl mb-[2rem]">Iniciar Sesión</h3>
-		<input class="input my-2" title="Email" type="text" placeholder="Email" bind:value={email} />
+		<input
+			id="email"
+			name="email"
+			class="input my-2"
+			title="Email"
+			type="text"
+			placeholder="Email"
+			bind:value={email}
+		/>
 
-		{#if errors.email}
+		{#if errors.email.length > 0}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
 					{#each errors?.email as error}
@@ -66,6 +74,8 @@
 					class="input"
 					title="Contraseña"
 					type="text"
+					id="password"
+					name="password"
 					placeholder="Contraseña"
 					bind:value={password}
 				/>
@@ -77,6 +87,8 @@
 					class="input"
 					title="Contraseña"
 					type="password"
+					id="password"
+					name="password"
 					placeholder="Contraseña"
 					bind:value={password}
 				/>
@@ -85,7 +97,7 @@
 				>
 			{/if}
 		</div>
-		{#if errors.password}
+		{#if errors.password.length > 0}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
 					{#each errors?.password as error}
@@ -94,7 +106,7 @@
 				</ul>
 			</div>
 		{/if}
-		<button class="btn btn-xl variant-filled-primary my-2 w-full shadow-xl" on:click={handleLogin}
+		<button class="btn btn-xl variant-filled-primary my-2 w-full shadow-xl" type="submit"
 			>Iniciar Sesión</button
 		>
 		<p class="mt-4">

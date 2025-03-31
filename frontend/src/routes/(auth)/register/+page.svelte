@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { fetchRegister, fetchLogin } from '$lib/auth';
+	import { enhance } from '$app/forms';
 	import { FormErrors } from '$lib/FormErrors';
-	import Cookies from 'js-cookie';
-	import { authenticate } from '$lib/auth';
+
+
 
 	const fields = new FormErrors();
 
@@ -16,11 +15,11 @@
 	}
 
 	let errors: FormErrors = {
-		email: null,
-		password: null,
-		confirmPassword: null,
-		name: null,
-		phoneNumber: null
+		email: [],
+		password: [],
+		confirmPassword: [],
+		name: [],
+		phoneNumber: []
 	};
 
 	let email = '';
@@ -39,32 +38,24 @@
 		return valid;
 	}
 
-	async function handleRegister() {
-		if (!validateFields()) {
-			goto('/register');
-			window.location.reload();
-			return null;
-		}
-		let formData = {
-			email: email,
-			name: name,
-			password: password,
-			confirmPassword: confirmPassword,
-			phoneNumber: phoneNumber
-		};
-		await fetchRegister(formData);
-		const response = await fetchLogin(formData);
-		const data = await response.json();
-		if (response.ok) {
-			const token = data?.token;
-			Cookies.set('token', token, { expires: 365, secure: true });
-			await authenticate();
-			goto('/');
-		} else {
-			errors = data;
-		}
+	function handleEnhance({ formData, action }: { formData: FormData; action: URL }) {
+    fetch(action, {
+        method: 'POST',
+        body: formData
+    })
+        .then(async (response) => {
+            const result = await response.json();
+            if (result.type !== "success") {
+                // Access errors directly
+				let data= JSON.parse(result.data);
+				data = JSON.parse(data[2]);
+				errors=data;
+            }
+        })
+        .catch((error) => {
+            console.error('Error al enviar el formulario:', error);
+        });
 	}
-
 	let showPassword = false;
 	function togglePasswordVisibility() {
 		showPassword = !showPassword;
@@ -88,19 +79,21 @@
 		<li class="crumb">Vendedor</li>
 	</ol>
 
-	<form>
+	<form method="post" action="?/register" use:enhance={handleEnhance}>
 		<h3 class="text-4xl mb-[2rem]">Regístre su Vendedor</h3>
 
 		<input
 			class="input"
 			title="Nombre"
 			type="text"
+			id="name"
+			name="name"
 			placeholder="Usuario"
 			bind:value={name}
 			on:input={validateFields}
 		/>
 
-		{#if errors.name}
+		{#if errors?.name?.length > 0}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
 					{#each errors?.name as error}
@@ -114,6 +107,8 @@
 			class="input my-2"
 			title="Email"
 			type="text"
+			id="email"
+			name="email"
 			placeholder="Email"
 			bind:value={email}
 			on:input={validateFields}
@@ -127,7 +122,7 @@
 			{/if}
 		{/if}
 
-		{#if errors.email}
+		{#if errors?.email?.length > 0}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
 					{#each errors?.email as error}
@@ -143,6 +138,8 @@
 					class="input"
 					title="Contraseña"
 					type="text"
+					id="password"
+					name="password"
 					placeholder="Contraseña"
 					bind:value={password}
 				/>
@@ -154,6 +151,8 @@
 					class="input"
 					title="Contraseña"
 					type="password"
+					id="password"
+					name="password"
 					placeholder="Contraseña"
 					bind:value={password}
 				/>
@@ -162,7 +161,7 @@
 				>
 			{/if}
 		</div>
-		{#if errors.password}
+		{#if errors?.password?.length > 0}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
 					{#each errors?.password as error}
@@ -193,6 +192,8 @@
 					class="input"
 					title="Confirmar Contraseña"
 					type="text"
+					id="confirmPassword"
+					name="confirmPassword"
 					placeholder="Confirmar Contraseña"
 					bind:value={confirmPassword}
 				/>
@@ -204,6 +205,8 @@
 					class="input"
 					title="Confirmar Contraseña"
 					type="password"
+					id="confirmPassword"
+					name="confirmPassword"
 					placeholder="Confirmar Contraseña"
 					bind:value={confirmPassword}
 				/>
@@ -219,7 +222,7 @@
 				</div>
 			{/if}
 		{/if}
-		{#if errors.confirmPassword}
+		{#if errors?.confirmPassword?.length > 0 }
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
 					{#each errors?.confirmPassword as error}
@@ -232,6 +235,8 @@
 			class="input"
 			title="telefono"
 			type="text"
+			id="phonenumber"
+			name="phonenumber"
 			placeholder="Número de telefono"
 			bind:value={phoneNumber}
 			on:input={validateFields}
@@ -243,7 +248,7 @@
 				</div>
 			{/if}
 		{/if}
-		{#if errors.phoneNumber}
+		{#if errors?.phoneNumber?.length > 0}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
 				<ul>
 					{#each errors?.phoneNumber as error}
@@ -254,7 +259,6 @@
 		{/if}
 		<button
 			class="btn btn-xl variant-filled-primary my-2 w-full shadow-xl"
-			on:click={handleRegister}
 			disabled={!validatedFields}>Registrarse</button
 		>
 		<p class="mt-4">

@@ -1,5 +1,7 @@
 import { apiURL } from './api_url';
+import { fail } from '@sveltejs/kit';
 import { user, users } from '../stores/stores';
+import { redirect } from '@sveltejs/kit';
 import Cookies from 'js-cookie';
 
 // Simplificar la solicitud http al iniciar sesión
@@ -8,89 +10,52 @@ export let headers: any = {
   "content-type": "application/json",
 };
 
-export async function refreshCSRFToken() {
+export async function fetchCSRFToken() {
   const response = await fetch(apiURL + "csrf");
   const data = await response.json();
-  Cookies.set("csrftoken", data.csrftoken);
-  headers = {
-    "X-CSRFToken": Cookies.get("csrftoken") ?? "",
-    "content-type": "application/json",
-  };
+  return data;
 }
 
 export async function fetchLogin(data: any) {
   const url = apiURL + "login";
-  const response = await window.fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
-    headers: headers,
-    credentials: "include",
-    body: JSON.stringify(data)
+    body: data
   });
-  await refreshCSRFToken();
   return response;
 }
 
 export async function fetchLogout() {
-  await refreshCSRFToken();
   const url = apiURL + "logout";
-  await window.fetch(url, {
+  await fetch(url, {
     method: 'POST',
-    headers: headers,
-    credentials: "include",
   });
 }
 
 
 export async function fetchStaff(data: any) {
   const url = apiURL + "login/staff";
-  const response = await window.fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
-    headers: headers,
-    body: JSON.stringify(data),
-    credentials: "include",
+    body: data,
   });
-  await refreshCSRFToken();
+
   return response;
 }
 
 export async function fetchRegister(data: any) {
   const url = apiURL + "register";
-  const response = await window.fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
-    headers: headers,
-    credentials: "include",
-    body: JSON.stringify(data)
+    body: data
   });
-  await refreshCSRFToken();
   return response;
-}
-
-// Solicitar datos del usuario si hay una cookie de token Bearer, retornará el objeto de usuario
-// De lo contrario, retornará null
-export async function authenticate() {
-  const url = apiURL + "user";
-  const response = await window.fetch(url, {
-    method: 'GET',
-    headers: headers,
-    credentials: "include",
-  });
-  const data = await response.json()
-  if (response.ok) {
-    user.set(data);
-    return data;
-  }
-
-
-  user.set(null);
-  return null;
 }
 
 export async function fetchUsers() {
   const url = apiURL + "users";
-  const response = await window.fetch(url, {
+  const response = await fetch(url, {
     method: 'GET',
-    headers: headers,
-    credentials: "include",
   });
   const data = await response.json()
   if (response.ok) {
@@ -124,3 +89,39 @@ export function checkAdminGroup(user: any) {
     }
   }
 }
+
+export async function login({ cookies, locals, formData, isStaff }: any) {
+	const response = isStaff ? await fetchStaff(formData) : await fetchLogin(formData);
+	const data = await response.json();
+	const setCookieHeader = response.headers.get('set-cookie');
+	if (setCookieHeader) {
+		// Split the Set-Cookie header into individual cookies
+		const cookiePairs = setCookieHeader.split(',').map((cookie) => cookie.split(';')[0]); // Extract only the key=value part
+
+		// Set each cookie in the browser
+		for (const cookiePair of cookiePairs) {
+			const [cookieName, cookieValue] = cookiePair.split('=');
+			if (cookieName && cookieValue) {
+				cookies.set(cookieName.trim(), cookieValue.trim(), {
+					httpOnly: cookieName === 'sessionid', // Make sessionid HttpOnly
+					path: '/',
+					sameSite: 'lax',
+					secure: true, // Use secure cookies if your app is served over HTTPS
+					maxAge: 60 * 60 * 24 * 7 // Example: 7 days
+				});
+			}
+		}
+	}
+	if (response.ok) {
+		locals.user = data;
+		console.log(cookies.getAll());
+		return redirect(303, '/dashboard');
+	} else {
+    return fail(400, {
+      message: 'Login failed',
+      errors: JSON.stringify(data)
+    });
+	}
+}
+
+
