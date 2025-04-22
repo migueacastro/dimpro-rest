@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { authenticate } from '$lib/auth';
+	//import { authenticate } from '$lib/auth';
 	import Form from '$lib/components/Form.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';

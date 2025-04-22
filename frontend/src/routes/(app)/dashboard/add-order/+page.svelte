@@ -2,12 +2,14 @@
 	import { popup } from '@skeletonlabs/skeleton';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 	import { Autocomplete } from '@skeletonlabs/skeleton';
-	import { user } from '../../../../stores/stores';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 	import { fetchData } from '$lib/utils.ts';
 	import { onMount } from 'svelte';
+
+	export let data;
+	let {user} = data;
 
 	const toastStore = getToastStore();
 	const successSettings: ToastSettings = {
@@ -27,7 +29,7 @@
 	async function createOrder() {
 		const response = await fetchData('orders', 'POST', {
 			contact: selectedContactId,
-			user: $user?.id,
+			user: user?.id,
 			status: 'pendiente'
 		});
 		if (response.ok) {

@@ -1,13 +1,13 @@
 <script>
 	import { checkStaffGroup } from '$lib/auth.ts';
-	import { user } from '../../../stores/stores';
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { apiURL } from '$lib/api_url';
+	export let data;
+	let {user} = data;
 </script>
 
 <title>Dimpro Iluminación</title>
 
-{#if checkStaffGroup($user)}
+{#if checkStaffGroup(user)}
 	<div class="lg:flex lg:flex-row mb-[1rem] justify-center">
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[50%] lg:mr-[1rem] my-5 dark:variant-filled-surface variant-filled-tertiary"
