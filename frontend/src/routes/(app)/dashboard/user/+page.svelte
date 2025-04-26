@@ -3,11 +3,9 @@
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils';
 	import { goto } from '$app/navigation';
-	import { authenticate } from '$lib/auth';
 	import { user } from '../../../../stores/stores';
 
 	onMount(async () => {
-		await authenticate();
 		console.log($user);
 	});
 </script>

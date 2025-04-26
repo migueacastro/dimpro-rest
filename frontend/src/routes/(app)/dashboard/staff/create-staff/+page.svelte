@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { authenticate } from '$lib/auth';
 	import Form from '$lib/components/Form.svelte';
 	import { onMount } from 'svelte';
 	import { user } from '../../../../../stores/stores';
@@ -13,7 +12,6 @@
 		{ type: 'hidden', value: [1, 2], name: 'groups', label: '' }
 	];
 	onMount(async () => {
-		await authenticate();
 		let isAdmin = false;
 		$user['groups'].forEach((group: any) => {
 			if (group['name'] === 'admin') {
