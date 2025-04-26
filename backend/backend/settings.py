@@ -152,7 +152,6 @@ CSRF_TRUSTED_ORIGINS = [
     f"https://{DOMAIN}" if MODE == "production" else "http://localhost", 
 ]
 
-TOKEN_DURATION = timedelta(days=90) 
 
 
 CORS_ALLOWED_ORIGINS = [
