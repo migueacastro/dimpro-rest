@@ -378,7 +378,7 @@
 	<div class="flex flex-col lg:flex-row justify-between mb-3">
 		<h3 class="h3 mb-3 lg:mb-0 lg:my-[2rem] lg:w-full">Items: {items.length}</h3>
 		<div class="lg:space-x-2 flex flex-col lg:flex-row lg:w-3/4">
-			<div class="flex flex-col w-1/2 lg:w-1/2 w-full lg:max-w-md lg:my-0 my-2">
+			<div class="flex flex-col lg:w-1/2 w-full lg:max-w-md lg:my-0 my-2">
 				<label for="select-contact" class="h4">Cliente</label>
 				<input
 					class="input autocomplete"
