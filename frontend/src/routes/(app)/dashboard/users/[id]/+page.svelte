@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils';
 	import { goto } from '$app/navigation';
-	import { authenticate } from '$lib/auth';
+	//import { authenticate } from '$lib/auth';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
 	let user: any;
