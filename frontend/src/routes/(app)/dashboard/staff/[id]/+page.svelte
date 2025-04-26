@@ -3,14 +3,12 @@
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils';
 	import { goto } from '$app/navigation';
-	import { authenticate } from '$lib/auth';
 	import { user } from '../../../../../stores/stores';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
 	let staff: any;
 	$: loaded = false;
 	onMount(async () => {
-		await authenticate();
 		let response = await fetchData('staff/' + data.id, 'GET', null, data?.id);
 		staff = await response.json();
 		if (staff['detail'] === 'No encontrado.') {

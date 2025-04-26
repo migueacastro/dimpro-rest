@@ -3,11 +3,9 @@
 	import { onMount } from 'svelte';
 	import { user } from '../../../../stores/stores';
 	import { goto } from '$app/navigation';
-	import { authenticate } from '$lib/auth';
 
 	let endpoint = {"main":"users","edit":"edit-user","add":"create-user"};
 	onMount(async () => {
-		await authenticate();
 		let isStaffOrAdmin = false;
 		$user['groups'].forEach((group: any) => {
 			if (group['name'] === 'staff' || group['name'] === 'admin') {

@@ -3,13 +3,11 @@
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils';
 	import { goto } from '$app/navigation';
-	//import { authenticate } from '$lib/auth';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
 	let user: any;
 	$: loaded = false;
 	onMount(async () => {
-		await authenticate();
 		let response = await fetchData('users/' + data.id, 'GET', null, data.id);
 		user = await response.json();
 		if (user['detail'] === 'No posee los permisos necesarios') {
