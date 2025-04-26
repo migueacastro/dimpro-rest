@@ -15,7 +15,7 @@
 	import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
 	let expandedDrawer = false;
 	export let data;
-	const user = data.user;
+	const user = data.user; 
 	const drawerStore = getDrawerStore();
 	const layoutDrawerSettings = {
 		id: 'layoutDrawer',
@@ -251,7 +251,7 @@
 			</a>
 		{/if}
 
-		{#if checkAdminGroup(user)}
+		{#if checkAdminGroup(user)} 
 			<a href="/dashboard/staff">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users-gear h3 w-20"></i>

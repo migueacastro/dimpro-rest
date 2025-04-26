@@ -2,7 +2,6 @@
 	//@ts-nocheck
 	import { checkAdminGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
-	import { user } from '../../../../../stores/stores';
 	import { fetchData } from '$lib/utils.ts';
 	import {
 		Autocomplete,
@@ -16,28 +15,27 @@
 	import StatusButton from '$lib/components/StatusButton.svelte';
 
 	export let data;
-	let products: any = [];
-	let contacts: any = [];
-	let pricetypes: Array<any> = [];
+	let user = data.user;
+	let products: any = data.products ?? [];
+	let contacts: any = data.contacts ?? [];
+	let pricetypes: Array<any> = data.pricetypes ?? [];
 	let productBlacklist: any = [];
-	let productAutoCompleteList: AutocompleteOption[] = [];
-	let selectedPricetypeId: any;
-	let order: any = {};
-	let initialItemsList: Array<any> = [];
+	let productAutoCompleteList: AutocompleteOption[] = data.productAutoCompleteList ?? [];
+	let selectedPricetypeId: any = data.selectedPricetypeId;
+	let order: any = data.order ?? {};
 	let toastStore = getToastStore();
 	let modalStore = getModalStore();
-	let inputContact: string = '';
+	let inputContact: string = data.inputContact ?? '';
 	let selectedContactId: number;
-	let contactAutoCompleteList: AutocompleteOption<number, string>[] = [];
+	let contactAutoCompleteList: AutocompleteOption<number, string>[] =
+		data.contactAutoCompleteList ?? [];
 	let popupSettings: PopupSettings = {
 		event: 'focus-click',
 		target: 'popupAutocomplete',
 		placement: 'bottom'
 	};
 
-	$: items = [
-
-	];
+	let items: Array<any> = data.items;
 
 	$: totalQuantity = items
 		.reduce((accumulator: number, item: any) => accumulator + (Number(item.quantity) || 0), 0)
@@ -246,31 +244,9 @@
 
 	function loadItems(orderObject: any) {
 		// Create a new array for items
-		items = orderObject.products.map((product: any, index: any) => {
-			const row = {
-				id: product.product.id,
-				item: product.product.id,
-				reference: product.product.reference,
-				quantity: product.quantity,
-				availability: product.product.available_quantity,
-				price: product.price,
-				cost: product.cost,
-				item_label: product.product.item,
-				index: index,
-				search_error: false,
-				input_disabled: true,
-				hover: false,
-				product_object: null
-			};
-			// Load row values (e.g., price, cost) based on the selected pricetype
-
-			return row;
-		});
-		initialItemsList = items;
-		items.forEach((item: any) => {
+		for (let item: any of items) {
 			loadRowItemValues(item, item.id);
-		});
-		items = items;
+		}
 	}
 
 	async function disableInitialItems(orderObject: any) {
@@ -386,30 +362,9 @@
 	}
 	$: loaded = false;
 	onMount(async () => {
-		let response = await fetchData('products', 'GET');
-		products = await response.json();
-		response = await fetchData('orders/' + data.id, 'GET');
-		order = await response.json();
-		response = await fetchData('orders', 'GET');
-		let orders = await response.json();
-
-		if (!order) {
-			goto('/dashboard/orders');
-		}
-		response = await fetchData('contacts', 'GET');
-		contacts = await response.json();
-		response = await fetchData('pricetypes', 'GET');
-		pricetypes = await response.json();
-		selectedPricetypeId = order?.pricetype?.id ?? pricetypes[0]?.id;
-		productAutoCompleteList = products.map((product: any) => {
-			return { label: product.item, value: product.id };
-		});
-		contactAutoCompleteList = contacts.map((contact: any) => {
-			return { label: contact.name, value: contact.id };
-		});
-		inputContact = contacts.find((contact: any) => contact.id == order?.contact)?.name;
 		loadItems(order);
 		loaded = true;
+
 	});
 </script>
 
@@ -595,7 +550,7 @@
 		<div class="card p-[2rem] mt-[2rem]">
 			<h1 class="h3">Recordatorio</h1>
 			<p class="p">Texto de ejemplo</p>
-			{#if checkAdminGroup($user)}
+			{#if checkAdminGroup(user)}
 				<button class="btn mt-[2rem] variant-filled" on:click={addRow}>
 					<i class="fa-solid fa-floppy-disk"></i>
 				</button>
