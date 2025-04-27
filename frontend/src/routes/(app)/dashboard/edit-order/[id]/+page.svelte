@@ -3,6 +3,7 @@
 	import { checkAdminGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils.ts';
+	import Reminder from '$lib/components/Reminder.svelte';
 	import {
 		Autocomplete,
 		getModalStore,
@@ -547,15 +548,9 @@
 		<div class="flex justify-end flex-row">
 			<h1 class="h2 mt-[2rem]">Total: {totalCost}$</h1>
 		</div>
-		<div class="card p-[2rem] mt-[2rem]">
-			<h1 class="h3">Recordatorio</h1>
-			<p class="p">Texto de ejemplo</p>
-			{#if checkAdminGroup(user)}
-				<button class="btn mt-[2rem] variant-filled" on:click={addRow}>
-					<i class="fa-solid fa-floppy-disk"></i>
-				</button>
-			{/if}
-		</div>
+
+		<Reminder user={user}/>
+
 	</div>
 {:else}
 	<div class="flex justify-center mt-[8rem]">
