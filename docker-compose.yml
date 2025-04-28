@@ -18,7 +18,6 @@ services:
     image: postgres:17
     volumes:
       - ./postgres/backups/:/backups
-      - ./postgres/scripts/entrypoint.sh:/initdb.sh
     depends_on:
       db:
         condition: service_healthy
@@ -38,13 +37,10 @@ services:
         else
           echo 'Backup file does not exist. Skipping restore.';
         fi
-
-        # Keep the container running
-        tail -f /dev/null;
         "
     env_file: .env
     pre_stop:
-      - command: ["pg_dump", "-U", "postgres", "-h", "db", "-d", "postgres", "-Fc", "-f", "/backups/backup.dump"]
+      - command: ["pg_dump", "-U", "postgres", "-h", "db", "-d", "postgres", "-Fc", "-j", "4", "-f", "/backups/backup.dump"]
   api:
     build: ./backend
     ports:

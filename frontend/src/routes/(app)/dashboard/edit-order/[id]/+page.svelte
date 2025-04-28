@@ -3,6 +3,7 @@
 	import { checkAdminGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils.ts';
+	import { enhance } from '$app/forms';
 	import {
 		Autocomplete,
 		getModalStore,
@@ -15,6 +16,7 @@
 	import StatusButton from '$lib/components/StatusButton.svelte';
 
 	export let data;
+	let orderForm: HTMLFormElement;
 	let user = data.user;
 	let products: any = data.products ?? [];
 	let contacts: any = data.contacts ?? [];
@@ -249,73 +251,32 @@
 		}
 	}
 
-	async function disableInitialItems(orderObject: any) {
-		let data: any;
-		let response: any;
-		for (const product of orderObject.products) {
-			response = await fetchData(
-				'order_products',
-				'PATCH',
-				{
-					active: false
-				},
-				product.id
-			);
-			if (!response.ok) {
-				data = await response.json();
-				console.log(data);
-			}
-		}
-	}
-
 	async function handleSave() {
-		await disableInitialItems(order);
-		order = {
-			...order,
-			//contact: selectedContactId
-			total: totalCost,
-			pricetype: selectedPricetypeId ?? pricetypes[0]?.id,
-			user: order.user.id,
-			contact: selectedContactId ?? order.contact.id
-		};
-
-		for (const row of items) {
-			console.log(row.cost);
-			let response = await fetchData('order_products', 'POST', {
-				order: parseInt(data.id),
-				product: row.item,
-				price: row.price,
-				quantity: row.quantity,
-				cost: row.cost,
-				active: true
-			});
-			if (!response.ok) {
-				let data = await response.json();
-				console.log(data);
+		return async ({ update, result }: any) => {
+			let toast: ToastSettings;
+			if (result?.type == 'success') {
+				toast = {
+					message: 'El pedido se guardó con exito.',
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};
+				console.log('Successfully saved');
+				toastStore.trigger(toast);
+				goto(`/dashboard/orders/${data.id}`);
+			} else {
+				toast = {
+					message: `¡ERROR! El pedido no se pudo guardar.
+							\nmensaje:${result.data}`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
 			}
-		}
-		let response = await fetchData(`orders`, 'PATCH', order, data.id);
-		if (response.ok) {
-			const toast: ToastSettings = {
-				message: 'El pedido se guardó con exito.',
-				background: 'variant-ghost-success',
-				timeout: 7000
-			};
-			toastStore.trigger(toast);
-			console.log('Successfully saved');
-			goto(`/dashboard/orders/${data.id}`);
-		} else {
-			let errorData = await response.json();
-			const toast: ToastSettings = {
-				message: `¡ERROR! El pedido no se pudo guardar.
-							\nmensaje:${response.statusText}`,
-				background: 'variant-ghost-error',
-				timeout: 7000
-			};
-			toastStore.trigger(toast);
-			console.log(errorData);
-		}
+			console.log(result.data);
+			await update({ reset: false });
+		};
 	}
+
 	async function handleDelete() {
 		const modal: ModalSettings = {
 			type: 'confirm',
@@ -347,14 +308,21 @@
 		modalStore.trigger(modal);
 	}
 
-	async function confirmation() {
+	async function confirmSave() {
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Modificar Pedido`,
 			body: `¿Está seguro de querer modificar este Pedido?`,
 			response: async (r: boolean) => {
 				if (r) {
-					handleSave();
+					order = {
+						...order,
+						total: totalCost,
+						pricetype: selectedPricetypeId ?? pricetypes[0]?.id,
+						user: order.user.id,
+						contact: selectedContactId ?? order.contact.id
+					};
+					orderForm.requestSubmit();
 				}
 			}
 		};
@@ -364,7 +332,6 @@
 	onMount(async () => {
 		loadItems(order);
 		loaded = true;
-
 	});
 </script>
 
@@ -424,120 +391,138 @@
 	<!-- Responsive Container (recommended) -->
 	<div class="table-container">
 		<!-- Native Table Element -->
-		<table class="table table-hover overflow-x-scroll">
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Item</th>
-					<th>Referencia</th>
-					<th>Cantidad</th>
-					<th>Disponibilidad</th>
-					<th>Precio</th>
-					<th>Costo</th>
-					<th class="w-[10rem]"></th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each items as row, index}
-					<tr
-						on:mouseover={() => (row.hover = true)}
-						on:mouseout={() => (row.hover = false)}
-						on:focus={() => {}}
-						on:blur={() => {}}
-					>
-						<td>{row.id || ''}</td>
-						<td>
-							<div
-								class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
-								class:variant-ghost-error={row.search_error}
-							>
-								<input
-									class="input autocomplete"
-									class:variant-ghost-error={row.search_error}
-									type="search"
-									name="autocomplete-search"
-									bind:value={row.item_label}
-									placeholder="Buscar..."
-									use:popup={{
-										event: 'focus-click',
-										target: `popupAutocomplete-${index}`,
-										placement: 'bottom'
-									}}
-									on:input={() => handleItemInput(row)}
-									on:blur={() => handleItemInputBlur(row)}
-									on:keydown={(e) => handleItemEnterPress(row, e)}
-								/>
-								<button type="button" class="input-group-shim" on:click={() => clearItemInput(row)}>
-									<i class="fa-solid fa-xmark"></i>
-								</button>
-							</div>
-							<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
-								<Autocomplete
-									bind:input={row.item_label}
-									options={productAutoCompleteList}
-									on:selection={(e) => {
-										row.item_label = e.detail.label;
-										row.item = e.detail.value;
-										loadRowItemValues(row, e.detail.value);
-									}}
-								/>
-							</div>
-						</td>
-						<td>{row.reference || ''}</td>
-						<td
-							><input
-								type="number"
-								class="input"
-								min="1"
-								disabled={row.input_disabled}
-								bind:value={row.quantity}
-								on:input={() => calculateCost(row)}
-							/></td
-						>
-						<td>{row.availability || ''}</td>
-						<td>{row.price || ''}</td>
-						<td>{row.cost || ''}</td>
-						<td class="hidden lg:flex flex-row">
-							<button
-								class:hidden={!row.hover}
-								class="btn variant-ghost-error"
-								on:click={() => removeRow(row.index)}
-							>
-								<i class="fa-solid fa-trash"></i>
-							</button>
-							<button class:hidden={!row.hover} class="btn ml-2 variant-filled" on:click={addRow}>
-								<i class="fa-solid fa-plus"></i>
-							</button>
-						</td>
-						<td class="flex lg:hidden flex-row">
-							<button class="btn variant-ghost-error" on:click={() => removeRow(row.index)}>
-								<i class="fa-solid fa-trash"></i>
-							</button>
-							<button class="btn ml-2 variant-filled" on:click={addRow}>
-								<i class="fa-solid fa-plus"></i>
-							</button>
-						</td>
+		<form action="?/save" bind:this={orderForm} method="post" use:enhance={handleSave}>
+			<input type="hidden" name="order" value={JSON.stringify(order)} />
+			<input type="hidden" name="items" value={JSON.stringify(items)} />
+			<table class="table table-hover overflow-x-scroll">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Item</th>
+						<th>Referencia</th>
+						<th>Cantidad</th>
+						<th>Disponibilidad</th>
+						<th>Precio</th>
+						<th>Costo</th>
+						<th class="w-[10rem]"></th>
 					</tr>
-				{/each}
-			</tbody>
-			<tfoot>
-				<tr>
-					<th colspan="3">Totales</th>
-					<td class="font-bold">{totalQuantity}</td>
-					<td></td>
-					<td class="font-bold">{totalPrice}</td>
-					<td class="font-bold">{totalCost}</td>
-					<td></td>
-				</tr>
-			</tfoot>
-		</table>
+				</thead>
+				<tbody>
+					{#each items as row, index}
+						<tr
+							on:mouseover={() => (row.hover = true)}
+							on:mouseout={() => (row.hover = false)}
+							on:focus={() => {}}
+							on:blur={() => {}}
+						>
+							<td>{row.id || ''}</td>
+							<td>
+								<div
+									class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
+									class:variant-ghost-error={row.search_error}
+								>
+									<input
+										class="input autocomplete"
+										class:variant-ghost-error={row.search_error}
+										type="search"
+										name="autocomplete-search"
+										bind:value={row.item_label}
+										placeholder="Buscar..."
+										use:popup={{
+											event: 'focus-click',
+											target: `popupAutocomplete-${index}`,
+											placement: 'bottom'
+										}}
+										on:input={() => handleItemInput(row)}
+										on:blur={() => handleItemInputBlur(row)}
+										on:keydown={(e) => handleItemEnterPress(row, e)}
+									/>
+									<button
+										type="button"
+										class="input-group-shim"
+										on:click={() => clearItemInput(row)}
+									>
+										<i class="fa-solid fa-xmark"></i>
+									</button>
+								</div>
+								<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
+									<Autocomplete
+										bind:input={row.item_label}
+										options={productAutoCompleteList}
+										on:selection={(e) => {
+											row.item_label = e.detail.label;
+											row.item = e.detail.value;
+											loadRowItemValues(row, e.detail.value);
+										}}
+									/>
+								</div>
+							</td>
+							<td>{row.reference || ''}</td>
+							<td
+								><input
+									type="number"
+									class="input"
+									min="1"
+									disabled={row.input_disabled}
+									bind:value={row.quantity}
+									on:input={() => calculateCost(row)}
+								/></td
+							>
+							<td>{row.availability || ''}</td>
+							<td>{row.price || ''}</td>
+							<td>{row.cost || ''}</td>
+							<td class="hidden lg:flex flex-row">
+								<button
+									type="button"
+									class:hidden={!row.hover}
+									class="btn variant-ghost-error"
+									on:click={() => removeRow(row.index)}
+								>
+									<i class="fa-solid fa-trash"></i>
+								</button>
+								<button
+									type="button"
+									class:hidden={!row.hover}
+									class="btn ml-2 variant-filled"
+									on:click={addRow}
+								>
+									<i class="fa-solid fa-plus"></i>
+								</button>
+							</td>
+							<td class="flex lg:hidden flex-row">
+								<button
+									type="button"
+									class="btn variant-ghost-error"
+									on:click={() => removeRow(row.index)}
+								>
+									<i class="fa-solid fa-trash"></i>
+								</button>
+								<button type="button" class="btn ml-2 variant-filled" on:click={addRow}>
+									<i class="fa-solid fa-plus"></i>
+								</button>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+				<tfoot>
+					<tr>
+						<th colspan="3">Totales</th>
+						<td class="font-bold">{totalQuantity}</td>
+						<td></td>
+						<td class="font-bold">{totalPrice}</td>
+						<td class="font-bold">{totalCost}</td>
+						<td></td>
+					</tr>
+				</tfoot>
+			</table>
+		</form>
 	</div>
 	<div>
 		<div class="flex flex-row justify-center mt-[2rem]">
 			<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
 				<i class="fa-solid fa-plus"></i><span class="hidden lg:block ml-2">Añadir item</span>
 			</button>
-			<button class="btn ml-2 text-sm variant-filled" on:click={confirmation}>
+			<button class="btn ml-2 text-sm variant-filled" on:click={confirmSave}>
 				<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 			</button>
 			<button class="btn ml-2 text-sm variant-ghost-error" on:click={handleDelete}>
