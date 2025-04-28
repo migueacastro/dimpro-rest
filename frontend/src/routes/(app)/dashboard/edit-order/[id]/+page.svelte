@@ -17,7 +17,7 @@
 	import StatusButton from '$lib/components/StatusButton.svelte';
 
 	export let data;
-	let orderForm: HTMLFormElement;
+	let orderForm, orderDeleteForm: HTMLFormElement;
 	let user = data.user;
 	let products: any = data.products ?? [];
 	let contacts: any = data.contacts ?? [];
@@ -278,35 +278,44 @@
 		};
 	}
 
-	async function handleDelete() {
+	async function confirmDelete() {
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Eliminar pedido`,
 			body: `¿Está seguro de querer eliminar este pedido?`,
 			response: async (r: boolean) => {
 				if (r) {
-					let response = await fetchData('orders/' + data.id, 'DELETE');
-					if (response.ok) {
-						const toast: ToastSettings = {
-							message: `El pedido se eliminó con exito.`,
-							background: 'variant-ghost-success',
-							timeout: 7000
-						};
-						toastStore.trigger(toast);
-					} else {
-						const toast: ToastSettings = {
-							message: `¡ERROR! El pedido no se pudo eliminar.
-							\nmensaje:${response.statusText}`,
-							background: 'variant-ghost-error',
-							timeout: 7000
-						};
-						toastStore.trigger(toast);
-					}
+					orderDeleteForm.requestSubmit();
 				}
-				//goto('/dashboard/orders');
 			}
 		};
 		modalStore.trigger(modal);
+	}
+
+	async function handleDelete() {
+		return async ({ update, result }: any) => {
+			let toast: ToastSettings;
+			if (result?.type == 'success') {
+				toast = {
+					message: 'El pedido se eliminó con exito.',
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};
+				console.log('Successfully deleted');
+				toastStore.trigger(toast);
+				return goto(`/dashboard/orders`);
+			} else {
+				toast = {
+					message: `¡ERROR! El pedido no se pudo eliminar.
+							\nmensaje:${result.data}`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
+			}
+			console.log(result.data);
+			await update({ reset: false });
+		};
 	}
 
 	async function confirmSave() {
@@ -526,16 +535,17 @@
 			<button class="btn ml-2 text-sm variant-filled" on:click={confirmSave}>
 				<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 			</button>
-			<button class="btn ml-2 text-sm variant-ghost-error" on:click={handleDelete}>
-				<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
-			</button>
+			<form action="?/delete" method="post" bind:this={orderDeleteForm} use:enhance={handleDelete}>
+				<input type="hidden" name="id" value={data.id} />
+				<button type="button" class="btn ml-2 text-sm variant-ghost-error" on:click={confirmDelete}>
+					<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
+				</button>
+			</form>
 		</div>
-		<div class="flex justify-end flex-row">
+		<div class="flex justify-end flex-row mb-[5rem]">
 			<h1 class="h2 mt-[2rem]">Total: {totalCost}$</h1>
 		</div>
-
-		<Reminder user={user}/>
-
+		<Reminder {user} reminders={data.reminders} />
 	</div>
 {:else}
 	<div class="flex justify-center mt-[8rem]">

@@ -15,6 +15,9 @@ export async function load({ params, fetch }: any) {
 	response = await fetch(apiURL + 'pricetypes');
 	let pricetypes = await response.json();
 
+  response = await fetch(apiURL + 'notes');
+  let reminders = await response.json();
+
 	let items =
 		order.products.map((product: any, index: any) => {
 			const row = {
@@ -61,7 +64,8 @@ export async function load({ params, fetch }: any) {
 		contactAutoCompleteList,
 		selectedPricetypeId,
 		productAutoCompleteList,
-		items
+		items,
+    reminders
 	};
 }
 
@@ -116,7 +120,26 @@ export const actions: Actions = {
 				data: { order }
 			};
 		}
-	}
+	},
+  delete: async ({ request, fetch }) => {
+    const formData = await request.formData();
+    const id = formData.get('id');
+    const response = await fetch(apiURL + 'orders/' + id+'/', {
+      method: 'DELETE'
+    });
+    if (response.ok) {
+      return {
+        success: true
+      };
+    } else {
+      const data = await response.json();
+      console.log(data);
+      return {
+        success: false,
+        error: { data }
+      };
+    }
+  }
 };
 
 async function disableInitialItems(orderObject: any, fetch: any) {

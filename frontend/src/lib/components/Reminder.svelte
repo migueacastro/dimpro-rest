@@ -1,15 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { fetchReminders } from './Reminder';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { checkAdminGroup } from '$lib/auth';
 
-	export { fetchReminders };
 	let elemCarousel: HTMLDivElement;
 	//TODO: change with real data
-	let reminders: any;
-    let date:any;
-    export let user;
+	export let reminders: any;
+	let date: any;
+	export let user;
 	function carouselLeft(): void {
 		const x =
 			elemCarousel.scrollLeft === 0
@@ -27,28 +24,18 @@
 
 		elemCarousel.scrollTo({ left: x, behavior: 'smooth' });
 	}
-    function convertToDate(date:any){
-        date = date.split("T")[0];
-        return date;
-    }
-	onMount(async () => {
-		reminders = await fetchReminders();
-	});
+	function convertToDate(date: any) {
+		date = date.split('T')[0];
+		return date;
+	}
 </script>
 
-{#if reminders}
-	<div
-		class="card p-4 grid grid-cols-[auto_1fr_auto] gap-4 items-center"
-		style="width: 40rem;height: 15rem;"
-	>
+{#if reminders && reminders.length > 0}
+	<div class="card p-[4rem] grid grid-cols-[auto_1fr_auto] gap-4 items-center w-full">
 		<button type="button" class="btn-icon variant-filled" on:click={carouselLeft}>
 			<i class="fa-solid fa-arrow-left" />
 		</button>
-		<div
-			bind:this={elemCarousel}
-			class="scroll-smooth flex overflow-hidden"
-			style="width: 30rem;height: 10rem;"
-		>
+		<div bind:this={elemCarousel} class="scroll-smooth flex overflow-hidden w-[30rem] h-[15rem]">
 			{#each reminders as reminder}
 				<div class="card flex-none w-full snap-start items-center">
 					<header class="card-header text-center font-bold">{reminder.note}</header>
@@ -60,12 +47,15 @@
 		<button type="button" class="btn-icon variant-filled" on:click={carouselRight}>
 			<i class="fa-solid fa-arrow-right" />
 		</button>
-        {#if checkAdminGroup(user)}
-            <button class="btn variant-filled" on:click={() => {console.log("whoosh")}}>
-                <i class="fa-solid fa-floppy-disk"></i>
-            </button>
-    {/if}
+		{#if checkAdminGroup(user)}
+			<button
+				class="btn variant-filled"
+				on:click={() => {
+					console.log('whoosh');
+				}}
+			>
+				<i class="fa-solid fa-floppy-disk"></i>
+			</button>
+		{/if}
 	</div>
-{:else}
-	<ProgressRadial />
 {/if}
