@@ -6,13 +6,8 @@
 	import StatusButton from '$lib/components/StatusButton.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
-	let order: any;
-	let products: Array<any> = [];
-	$: loaded = false;
-	onMount(async () => {
-		let response = await fetchData('orders/' + data.id, 'GET');
-		order = await response.json();
-		products = await order.products.map((item: any) => {
+	let order = data.order;
+	let products: Array<any> = order?.products.map((item: any) => {
 			return {
 				id: item.product.id,
 				item: item.product.item,
@@ -22,8 +17,8 @@
 				cost: item.cost
 			};
 		});
-		loaded = true;
-	});
+	let loaded = true;
+
 </script>
 
 <div class="flex flex-col">

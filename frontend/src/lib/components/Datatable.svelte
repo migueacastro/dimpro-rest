@@ -11,8 +11,6 @@
 	import { goto } from '$app/navigation';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	//Load local data
-	import { fetchData } from '$lib/utils.ts';
-	import { getData } from './data';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
@@ -24,6 +22,8 @@
 		type ModalSettings,
 		type ToastSettings
 	} from '@skeletonlabs/skeleton';
+	import { Result } from 'postcss';
+	import { enhance } from '$app/forms';
 	//import { loading } from '../../stores/stores';
 
 	const modalStore = getModalStore();
@@ -38,7 +38,7 @@
 	export let table_name = '';
 
 	$: loaded = false;
-	$:loading = true;
+	$: loading = true;
 
 	beforeNavigate(() => {
 		setTimeout(() => {
@@ -55,6 +55,26 @@
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
+	function deleteResult() {
+		return async ({ update, result }: any) => {
+			if (result.type == 'success') {
+				const t: ToastSettings = {
+					message: `El ${table_name} se eliminó con exito.`,
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};
+				toastStore.trigger(t);
+			} else {
+				const toast: ToastSettings = {
+					message: `¡ERROR! El ${table_name} no se pudo eliminar.
+							\nmensaje:${response.statusText}`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
+			}
+		};
+	}
 	function deleteConfirmation(name: any, id: any) {
 		const modal: ModalSettings = {
 			type: 'confirm',
@@ -62,22 +82,9 @@
 			body: `¿Está seguro de querer eliminar este ${table_name}?`,
 			response: async (r: boolean) => {
 				if (r) {
-					let response = await fetchData(endpoint['main'], 'DELETE', null, id);
-					if (response.ok) {
-						const t: ToastSettings = {
-							message: `El ${table_name} se eliminó con exito.`,
-							background: 'variant-ghost-success',
-							timeout: 7000
-						};
-						toastStore.trigger(t);
-					} else {
-						const toast: ToastSettings = {
-							message: `¡ERROR! El ${table_name} no se pudo eliminar.
-							\nmensaje:${response.statusText}`,
-							background: 'variant-ghost-error',
-							timeout: 7000
-						};
-						toastStore.trigger(toast);
+					const form = event.target.closest('form');
+					if (form) {
+						form.requestSubmit();
 					}
 				}
 				goto('/dashboard/' + endpoint['main']);
@@ -89,14 +96,9 @@
 	onMount(async () => {
 		loaded = false;
 		loading = true;
-		if (endpoint['main']) {
-			let response = await fetchData(endpoint['main'], 'GET');
-			data = await response.json();
-			//console.log(data);
-			handler = new DataHandler(data, { rowsPerPage: 5 });
-		} else {
-			handler = new DataHandler(source_data, { rowsPerPage: 5 });
-		}
+		
+		handler = new DataHandler(source_data, { rowsPerPage: 5 });
+		
 		rows = handler.getRows();
 		setTimeout(() => {
 			loaded = true;
@@ -106,11 +108,11 @@
 </script>
 
 {#if loading}
-<div class="flex justify-center mt-[8rem]">
-	<div class="my-auto">
-		<ProgressRadial />
+	<div class="flex justify-center mt-[8rem]">
+		<div class="my-auto">
+			<ProgressRadial />
+		</div>
 	</div>
-</div>
 {/if}
 
 <div class=" overflow-x-auto space-y-4" class:hidden={!loaded}>
@@ -159,12 +161,16 @@
 					{/each}
 					{#if editable}
 						<td class="flex flex-row">
-							<button
-								class="btn variant-filled"
-								on:click={() => deleteConfirmation(row['name'], row['id'])}
-							>
-								<i class="fa-solid fa-trash"></i>
-							</button>
+							<form action="?/handleDelete" method="POST" use:enhance={deleteResult}>
+								<input type="hidden" name="id" value={row['id']} />
+								<button
+									type="button"
+									class="btn variant-filled"
+									on:click={() => deleteConfirmation(row['name'], row['id'])}
+								>
+									<i class="fa-solid fa-trash"></i>
+								</button>
+							</form>
 							<button
 								class="btn ml-2 variant-filled"
 								on:click={() => {
