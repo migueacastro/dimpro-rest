@@ -40,6 +40,7 @@
 	<div>
 		<Datatable
 			editable={false}
+			source_data={data.list}
 			endpoint={{ main: 'orders' }}
 			headings={['ID', 'Usuario', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
 			fields={['id', 'user_name', 'contact_name', 'product_count', 'status', 'date_format']}
