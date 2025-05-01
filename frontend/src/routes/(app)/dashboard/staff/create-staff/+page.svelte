@@ -1,8 +1,10 @@
 <script lang="ts">
 	import Form from '$lib/components/Form.svelte';
 	import { onMount } from 'svelte';
-	import { user } from '../../../../../stores/stores';
 	import { goto } from '$app/navigation';
+	import { checkAdminGroup } from '$lib/auth';
+	export let data;
+	let {user} = data;
 	let fields = [
 		{ type: 'email', value: '', name: 'email', label: 'email' },
 		{ type: 'text', value: '', name: 'name', label: 'Nombre' },
@@ -12,13 +14,7 @@
 		{ type: 'hidden', value: [1, 2], name: 'groups', label: '' }
 	];
 	onMount(async () => {
-		let isAdmin = false;
-		$user['groups'].forEach((group: any) => {
-			if (group['name'] === 'admin') {
-				isAdmin = true;
-			}
-		});
-		if (!isAdmin) {
+		if (!checkAdminGroup(user)) {
 			goto('/dashboard');
 		}
 	});

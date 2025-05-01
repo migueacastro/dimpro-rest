@@ -2,9 +2,9 @@
 	//@ts-nocheck
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { getData } from '$lib/components/data';
 	import { fetchData } from '$lib/utils.ts';
 	import { goto } from '$app/navigation';
+	import { FormErrors } from '$lib/FormErrors';
 	import {
 		getToastStore,
 		getModalStore,
@@ -14,7 +14,7 @@
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
-	export let fields:any = null;
+	export let fields: any = null;
 	export let endpoint = '';
 	export let edit = false;
 	export let method = '';
@@ -27,6 +27,40 @@
 	let inputChipListsDict = {};
 	let valueChipListsDict = {};
 	let inputChipDict = {};
+
+	const error = new FormErrors();
+
+	interface FormErrors {
+		email: any;
+		password: any;
+		name: any;
+		confirmPassword: any;
+		phoneNumber: any;
+	}
+
+	let errors: FormErrors = {
+		email: [],
+		password: [],
+		confirmPassword: [],
+		name: [],
+		phoneNumber: []
+	};
+
+	let email = '';
+	let name = '';
+	let password = '';
+	let confirmPassword = '';
+	let phoneNumber = '';
+	let validatedFields: Boolean = false;
+	function validateFields() {
+		let valid: Boolean = false;
+		valid =
+			error.validateEmail(email) &&
+			error.validatePhoneNumber(phoneNumber) &&
+			error.validatePasswords(password, confirmPassword);
+		validatedFields = valid;
+		return valid;
+	}
 
 	async function isEditable() {
 		if (edit) {
@@ -62,9 +96,9 @@
 
 	async function sendData() {
 		let body = {};
-		fields.forEach((field:any) => {
+		fields.forEach((field: any) => {
 			if (field?.value) {
-				if (field.value.toString().trim() !== "") {
+				if (field.value.toString().trim() !== '') {
 					body[field.name] = field.value;
 				}
 			}
@@ -98,7 +132,7 @@
 	});
 </script>
 
-<form class=" gap-10 flex flex-col lg:flex-row">
+<form class=" gap-10 flex flex-col ml-[13rem] lg:flex-row">
 	<div class="card my-3 p-10 text-start lg:w-[75%] space-y-6">
 		{#each fields as field}
 			<label
@@ -110,7 +144,34 @@
 				{#if field?.type === 'text'}
 					<input class="input" type="text" bind:value={field.value} id={field.name} />
 				{:else if field?.type === 'email'}
-					<input class="input" type="email" bind:value={field.value} id={field.name} />
+					<input
+						class="input my-2"
+						title="Email"
+						type="text"
+						name="email"
+						placeholder="Email"
+						bind:value={field.value}
+						id={field.name}
+						on:input={validateFields}
+					/>
+
+					{#if field.value.length > 0}
+						{#if !error.validateEmail(field.value)}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								{error.NotValidEmail}
+							</div>
+						{/if}
+					{/if}
+
+					{#if errors?.field?.value.length > 0}
+						<div class="card variant-ghost-error p-2 text-sm text-left">
+							<ul>
+								{#each errors?.field?.value as error}
+									<li>{error}</li>
+								{/each}
+							</ul>
+						</div>
+					{/if}
 				{:else if field?.type === 'password'}
 					<input class="input" type="password" bind:value={field.value} id={field.name} />
 				{:else if field?.type === 'decimal'}
