@@ -28,6 +28,7 @@ urlpatterns = [
     path("user", UserProfileView.as_view()),
     path("register", UserRegistrationView.as_view()),
     path("csrf", RefreshCSRFTokenView.as_view()),
+    path("user/change_password", UserChangePasswordView.as_view()),
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

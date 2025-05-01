@@ -5,6 +5,7 @@ import type { Actions } from "@sveltejs/kit";
 export async function load({ params, fetch }) {
   const response = await fetch(apiURL + "orders/" + params.id);
   const order = await response.json();
+  console.log(order);
   return {
     id: params.id,
     order,

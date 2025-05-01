@@ -29,6 +29,15 @@ class UserLoginSerializer(serializers.ModelSerializer):
     model = get_user_model()
     fields = ["email", "password"]
 
+class ChangePasswordSerializer(serializers.ModelSerializer):
+  password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  old_password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  confirm_password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  class Meta:
+    model = get_user_model()
+    fields = ['password', 'confirm_password', 'old_password']
+
+
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -42,7 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
   confirmPassword = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
   class Meta:
     model = get_user_model() 
-    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups','permissions']
+    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups','permissions', 'date_joined', 'last_login']
 
   def create(self, validated_data):
     validated_data.pop('confirmPassword')
