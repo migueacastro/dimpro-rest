@@ -1,14 +1,11 @@
 import { apiURL } from '$lib/api_url.js';
-import { redirect } from '@sveltejs/kit';
+import { redirect, type Actions } from '@sveltejs/kit';
 
 export async function load({locals,fetch}) {
-    let response = await fetch(apiURL+"users");
     if (!locals.user) {
         return redirect(303, '/start');
     }
-    let users = await response.json();
     return {
-        user: locals.user,
-        users: users
+        user: locals.user
     };
 }

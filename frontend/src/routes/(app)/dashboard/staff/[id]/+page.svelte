@@ -1,28 +1,20 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { onMount } from 'svelte';
-	import { fetchData } from '$lib/utils';
 	import { goto } from '$app/navigation';
-	import { user } from '../../../../../stores/stores';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { checkAdminGroup } from '$lib/auth';
 	export let data: any;
+	let {user} = data;
+	let {reqUser} = data;
 	let staff: any;
 	$: loaded = false;
 	onMount(async () => {
-		let response = await fetchData('staff/' + data.id, 'GET', null, data?.id);
-		staff = await response.json();
+		staff = reqUser;
 		if (staff['detail'] === 'No encontrado.') {
 			goto('/dashboard');
-		} else {
-			let isAdmin = false;
-			$user['groups'].forEach((group: any) => {
-				if (group['name'] === 'admin') {
-					isAdmin = true;
-				}
-			});
-			if (!isAdmin) {
-				goto('/dashboard');
-			}
+		} else if (!checkAdminGroup(user)){
+			goto('/dashboard');
 		}
 		loaded = true;
 	});
