@@ -10,7 +10,7 @@
 
 	function handleSubmit() {
 		return async ({ update, result }: any) => {
-			if (result?.type === 'success') {
+			if (result?.type == 'success') {
 				order.status = order?.status == 'pendiente' ? 'preparado' : 'pendiente';
 				const toast: ToastSettings = {
 					message: 'Estatus cambiado con exito.',
@@ -18,7 +18,7 @@
 					timeout: 7000
 				};
 				toastStore.trigger(toast);
-			} else if (result?.type === 'failure') {
+			} else if (result?.type == 'failure') {
 				const toast: ToastSettings = {
 					message: `¡ERROR! El estatus del pedido no se pudo cambiar.`,
 					background: 'variant-ghost-error',

@@ -29,7 +29,7 @@
 	let toastStore = getToastStore();
 	let modalStore = getModalStore();
 	let inputContact: string = data.inputContact ?? '';
-	let selectedContactId: number;
+	let selectedContactId: number = data.selectedContactId ?? '';
 	let contactAutoCompleteList: AutocompleteOption<number, string>[] =
 		data.contactAutoCompleteList ?? [];
 	let popupSettings: PopupSettings = {
@@ -256,6 +256,7 @@
 		return async ({ update, result }: any) => {
 			let toast: ToastSettings;
 			if (result?.type == 'success') {
+				goto(`/dashboard/orders/${order.id}`);
 				toast = {
 					message: 'El pedido se guardó con exito.',
 					background: 'variant-ghost-success',
@@ -263,7 +264,7 @@
 				};
 				console.log('Successfully saved');
 				toastStore.trigger(toast);
-				goto(`/dashboard/orders/${data.id}`);
+				
 			} else {
 				toast = {
 					message: `¡ERROR! El pedido no se pudo guardar.
@@ -273,8 +274,6 @@
 				};
 				toastStore.trigger(toast);
 			}
-			console.log(result.data);
-			await update({ reset: false });
 		};
 	}
 
@@ -302,8 +301,9 @@
 					timeout: 7000
 				};
 				console.log('Successfully deleted');
+				goto(`/dashboard/orders/${order.id}`);
 				toastStore.trigger(toast);
-				return goto(`/dashboard/orders`);
+				
 			} else {
 				toast = {
 					message: `¡ERROR! El pedido no se pudo eliminar.
@@ -313,8 +313,6 @@
 				};
 				toastStore.trigger(toast);
 			}
-			console.log(result.data);
-			await update({ reset: false });
 		};
 	}
 
@@ -404,6 +402,9 @@
 		<form action="?/save" bind:this={orderForm} method="post" use:enhance={handleSave}>
 			<input type="hidden" name="order" value={JSON.stringify(order)} />
 			<input type="hidden" name="items" value={JSON.stringify(items)} />
+			<input type="hidden" name="pricetype" bind:value={selectedPricetypeId} />
+			<input type="hidden" name="contact" bind:value={selectedContactId} />
+			<input type="hidden" name="total" bind:value={totalCost} />
 			<table class="table table-hover overflow-x-scroll">
 				<thead>
 					<tr>

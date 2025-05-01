@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
 
 
@@ -38,23 +39,16 @@
 		return valid;
 	}
 
-	function handleEnhance({ formData, action }: { formData: FormData; action: URL }) {
-    fetch(action, {
-        method: 'POST',
-        body: formData
-    })
-        .then(async (response) => {
-            const result = await response.json();
-            if (result.type !== "success") {
-                // Access errors directly
-				let data= JSON.parse(result.data);
-				data = JSON.parse(data[2]);
-				errors=data;
-            }
-        })
-        .catch((error) => {
-            console.error('Error al enviar el formulario:', error);
-        });
+	function handleEnhance() {
+		return ({ update, result }: any) => {
+			if (result?.type == 'success') {
+				goto("/dashboard/");
+			} else  {
+				errors = result.data.error;
+
+				return update({ reset: false });
+			}
+		};
 	}
 	let showPassword = false;
 	function togglePasswordVisibility() {
@@ -79,11 +73,11 @@
 		<li class="crumb">Vendedor</li>
 	</ol>
 
-	<form method="post" action="?/register" use:enhance={handleEnhance}>
+	<form class="flex flex-col space-y-2" method="post" action="?/register" use:enhance={handleEnhance}>
 		<h3 class="text-4xl mb-[2rem]">Regístre su Vendedor</h3>
 
 		<input
-			class="input"
+			class="input mb-2"
 			title="Nombre"
 			type="text"
 			id="name"
@@ -116,14 +110,14 @@
 
 		{#if email.length > 0}
 			{#if !fields.validateEmail(email)}
-				<div class="card variant-ghost-error p-2 text-sm text-left">
+				<div class="card variant-ghost-error mb-2 p-2 text-sm text-left">
 					{fields.NotValidEmail}
 				</div>
 			{/if}
 		{/if}
 
 		{#if errors?.email?.length > 0}
-			<div class="card variant-ghost-error p-2 text-sm text-left">
+			<div class="card variant-ghost-error mb-2 p-2 text-sm text-left">
 				<ul>
 					{#each errors?.email as error}
 						<li>{error}</li>

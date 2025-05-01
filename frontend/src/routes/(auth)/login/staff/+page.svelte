@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
 	interface FormErrors {
 		email: any;
 		password: any;
 	}
-	$: errors = { email: [], password: [] };
+	let errors: FormErrors = { email: [], password: [] };
 
 	let email = '';
 	let password = '';
@@ -17,24 +18,16 @@
 	let inputType = 'password';
 	$: inputType = showPassword ? 'text' : 'password';
 
-	function handleEnhance({ formData, action }: { formData: FormData; action: URL }) {
-		fetch(action, {
-			method: 'POST',
-			body: formData
-		})
-			.then(async (response) => {
-				const result = await response.json();
-				if (result.type !== 'success') {
-					// Access errors directly
-					console.log(JSON.parse(result.data));
-					let data = JSON.parse(result.data);
-					data = JSON.parse(data[2]);
-					errors = data;
-				}
-			})
-			.catch((error) => {
-				console.error('Error al enviar el formulario:', error);
-			});
+	function handleEnhance() {
+		return ({ update, result }: any) => {
+			if (result.type == 'success') {
+				goto("/dashboard/");
+			} else  {
+				console.error('Error al iniciar sesión:', result.data);
+				errors.email = ['El correo electrónico o la contraseña son incorrectos.'];
+				return update({ reset: false });
+			}
+		};
 	}
 </script>
 
@@ -56,11 +49,10 @@
 			title="Email"
 			type="text"
 			placeholder="Email"
-			bind:value={email}
 		/>
 
 		{#if errors.email.length > 0}
-			<div class="card variant-ghost-error p-2 text-sm text-left">
+			<div class="card variant-ghost-error p-2 text-sm text-left mb-2">
 				<ul>
 					{#each errors?.email as error}
 						<li>{error}</li>
@@ -77,7 +69,6 @@
 					id="password"
 					name="password"
 					placeholder="Contraseña"
-					bind:value={password}
 				/>
 				<button type="button" on:click={togglePasswordVisibility}
 					><i class="fa-regular fa-eye-slash"></i></button

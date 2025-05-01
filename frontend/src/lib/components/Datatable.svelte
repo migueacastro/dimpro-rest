@@ -56,14 +56,19 @@
 	let rows = handler.getRows();
 
 	function deleteResult() {
+		// so, after the form.requestSubmit() which is different than form.submit() because form.submit() submits the form as the server, and form.requestSubmit() submits the form as an user. form.submit()
+
+		// so, this is an enhance function, triggered by the form submission as an user so in every form enhance function
+		// you want to return this. result is the object returned by the action, like this
 		return async ({ update, result }: any) => {
 			if (result.type == 'success') {
+				// this is how you verify it was a successful submission
 				const t: ToastSettings = {
 					message: `El ${table_name} se eliminó con exito.`,
 					background: 'variant-ghost-success',
 					timeout: 7000
 				};
-				toastStore.trigger(t);
+				toastStore.trigger(t); // and then trigger whatever function you want
 			} else {
 				const toast: ToastSettings = {
 					message: `¡ERROR! El ${table_name} no se pudo eliminar.
@@ -71,11 +76,16 @@
 					background: 'variant-ghost-error',
 					timeout: 7000
 				};
-				toastStore.trigger(toast);
+				toastStore.trigger(toast); // just an else, in case there was an error
 			}
 		};
+
+		// kinda get it so far? if any you can base your own on this (copy and adapt xd) you don't have to understand it fully, but atleast now that
+
+		/*     */
 	}
 	function deleteConfirmation(name: any, id: any) {
+		// that button will trigger the confirmation popup, if it has response. Then it will trigger the formSubmission with this little one
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Eliminar: ${name}`,
@@ -96,14 +106,14 @@
 	onMount(async () => {
 		loaded = false;
 		loading = true;
-		
-		handler = new DataHandler(source_data, { rowsPerPage: 5 });
-		
+
+		handler = new DataHandler(source_data, { rowsPerPage: 5 }); // Now it always use source_data
+
 		rows = handler.getRows();
 		setTimeout(() => {
 			loaded = true;
 			loading = false;
-		}, 1000);
+		}, 200);
 	});
 </script>
 

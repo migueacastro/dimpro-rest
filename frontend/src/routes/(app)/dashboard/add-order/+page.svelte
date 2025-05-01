@@ -28,7 +28,7 @@
 			console.log(result);
 			if (result.type == 'success') {
 				toastStore.trigger(successSettings);
-				goto('/dashboard/orders/'+result.data.data.id);
+				goto('/dashboard/edit-order/'+result.data.data.id);
 			} else {
 				toastStore.trigger(errorSettings);
 			}

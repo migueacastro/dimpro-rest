@@ -157,6 +157,27 @@ class UserProfileView(APIView):
       raise AuthenticationFailed({"message": "Acceso no Autorizado."})
     user_serializer = UserSerializer(user)
     return Response(user_serializer.data)
+  
+class UserChangePasswordView(APIView):
+  permission_classes = (IsAuthenticated, )
+  serializer_class = ChangePasswordSerializer
+  def post(self, request):
+    user = request.user
+    serializer = self.serializer_class(data=request.data)
+    if serializer.is_valid():
+      old_password = serializer.validated_data.get("old_password", None)
+      password = serializer.validated_data.get("password", None)
+      confirmPassword = serializer.validated_data.get("confirm_password", None)
+
+      if not user.check_password(old_password):
+        raise AuthenticationFailed({"old_password": ["La contraseña actual no es correcta."]})
+      if password != confirmPassword:
+        raise AuthenticationFailed({"confirm_password": ["Las contraseñas no coinciden."]})
+
+      user.set_password(password)
+      user.save()
+      return Response(status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(SafeViewSet):

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
-	import { fetchData } from '$lib/utils';
 	import StatusButton from '$lib/components/StatusButton.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;

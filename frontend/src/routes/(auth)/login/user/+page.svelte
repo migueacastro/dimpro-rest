@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
 	interface FormErrors {
 		email: any;
 		password: any;
 	}
-	$: errors = { email: [], password: [] };
+	let errors: FormErrors = { email: [], password: [] };
 
 	let email = '';
 	let password = '';
@@ -17,23 +18,16 @@
 	let inputType = 'password';
 	$: inputType = showPassword ? 'text' : 'password';
 
-	function handleEnhance({ formData, action }: { formData: FormData; action: URL }) {
-		fetch(action, {
-			method: 'POST',
-			body: formData
-		})
-			.then(async (response) => {
-				const result = await response.json();
-				if (result.type !== 'success') {
-					// Access errors directly
-					let data = JSON.parse(result.data);
-					data = JSON.parse(data[2]);
-					errors = data;
-				}
-			})
-			.catch((error) => {
-				console.error('Error al enviar el formulario:', error);
-			});
+	function handleEnhance() {
+		return ({ update, result }: any) => {
+			if (result.type == 'success') {
+				goto("/dashboard/");
+			} else  {
+				console.error('Error al iniciar sesión:', result.data);
+				errors.email = ['El correo electrónico o la contraseña son incorrectos.'];
+				return update({ reset: false });
+			}
+		};
 	}
 </script>
 
@@ -59,7 +53,7 @@
 		/>
 
 		{#if errors.email.length > 0}
-			<div class="card variant-ghost-error p-2 text-sm text-left">
+			<div class="card variant-ghost-error mb-2 p-2 text-sm text-left">
 				<ul>
 					{#each errors?.email as error}
 						<li>{error}</li>
@@ -68,7 +62,7 @@
 			</div>
 		{/if}
 
-		<div class="input-group input-group-divider grid-cols-[1fr_auto] p-0">
+		<div class="input-group input-group-divider mb-2 grid-cols-[1fr_auto] p-0">
 			{#if showPassword}
 				<input
 					class="input"
