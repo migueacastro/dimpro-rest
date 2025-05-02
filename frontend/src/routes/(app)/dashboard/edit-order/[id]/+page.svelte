@@ -1,6 +1,6 @@
 <script lang="ts">
 	//@ts-nocheck
-	import { checkAdminGroup } from '$lib/auth';
+	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
 	import { fetchData } from '$lib/utils.ts';
 	import { enhance } from '$app/forms';
@@ -264,7 +264,6 @@
 				};
 				console.log('Successfully saved');
 				toastStore.trigger(toast);
-				
 			} else {
 				toast = {
 					message: `¡ERROR! El pedido no se pudo guardar.
@@ -303,7 +302,6 @@
 				console.log('Successfully deleted');
 				goto(`/dashboard/orders/${order.id}`);
 				toastStore.trigger(toast);
-				
 			} else {
 				toast = {
 					message: `¡ERROR! El pedido no se pudo eliminar.
@@ -389,10 +387,12 @@
 						{/each}
 					</select>
 				</div>
-				<div class="flex flex-col w-fit lg:my-0 mb-2">
-					<label for="select-contact" class="h4">Estatus</label>
-					<StatusButton {order} />
-				</div>
+				{#if checkStaffGroup(user)}
+					<div class="flex flex-col w-fit lg:my-0 mb-2">
+						<label for="select-contact" class="h4">Estatus</label>
+						<StatusButton {order} />
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

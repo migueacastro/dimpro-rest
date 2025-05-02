@@ -180,4 +180,9 @@ CORS_ALLOW_HEADERS = (
 'X-CSRFToken'
 )
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
-
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = MODE == "production"  # True in production, False locally
+SESSION_COOKIE_SAMESITE = 'Lax'  # Or 'None' if using cross-site
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
+SESSION_COOKIE_DOMAIN = DOMAIN if MODE == "production" else None

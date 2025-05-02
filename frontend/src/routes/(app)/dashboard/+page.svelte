@@ -68,7 +68,7 @@
 		</a>
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 lg:w-[30%] lg:mr-[1rem] dark:variant-filled-surface variant-filled-tertiary"
-			href="user"
+			href="/dashboard/user"
 		>
 			<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 				<p class="font-bold h4">Vendedor</p>

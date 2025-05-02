@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import StatusButton from '$lib/components/StatusButton.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { checkStaffGroup } from '$lib/auth';
 	export let data: any;
 	let order = data.order;
 	let products: Array<any> = order?.products.map((item: any) => {
@@ -42,7 +43,10 @@
 		<div class="flex flex-row flex-wrap justify-between mb-[2rem]">
 			<h2 class="h2 lg:my-0 my-2">Items: {order?.products?.length}</h2>
 			<div class="flex flex-row">
-				<StatusButton {order} />
+				{#if checkStaffGroup(data.user)}
+					<StatusButton {order} />
+				{/if}
+				
 				<button
 					class="btn variant-filled max-w-fit px-[2rem] mx-2"
 					on:click={() => goto('/dashboard/edit-order/' + order?.id)}
