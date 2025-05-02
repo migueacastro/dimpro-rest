@@ -9,7 +9,7 @@
 	let {users} = data;
 	let endpoint = {"main":"users","edit":"edit-user","add":"create-user"};
 	onMount(async () => {
-		if (!checkStaffGroup(user) || !checkAdminGroup(user)) {
+		if (!(checkStaffGroup(user) || checkAdminGroup(user))) {
 			goto('/dashboard');
 		}
 	});

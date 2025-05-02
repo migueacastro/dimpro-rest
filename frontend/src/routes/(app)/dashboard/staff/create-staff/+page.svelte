@@ -11,7 +11,7 @@
 		{ type: 'password', value: '', name: 'password', label: 'contraseña' },
 		{ type: 'password', value: '', name: 'confirmPassword', label: 'confirmar contraseña' },
 		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' },
-		{ type: 'hidden', value: [1, 2], name: 'groups', label: '' }
+		{ type: 'hidden', value: '[1,2]', name: 'groups', label: '' }
 	];
 	onMount(async () => {
 		if (!checkAdminGroup(user)) {
@@ -22,7 +22,6 @@
 
 <Form
 	{fields}
-	method={'POST'}
 	edit={false}
 	endpoint={'staff'}
 	table_name={'empleado/administrador'}
