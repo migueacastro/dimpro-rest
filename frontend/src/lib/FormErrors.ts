@@ -5,6 +5,7 @@ export class FormErrors{
     NotValidPhone: string = "Telefono no valido. formato: +589999999999";
     NotUpperCase: string = "La contraseña debe contener mayúsculas.";
     NotMatchingPass: string = "Las contraseñas no coinciden.";
+    SamePassword: string = "La contraseña no puede ser igual a la anterior.";
     hasUpperCase(str: string): boolean {
         return /[A-Z]/.test(str);
     }

@@ -1,17 +1,16 @@
 import { apiURL } from '$lib/api_url';
 import type { Handle, HandleFetch } from '@sveltejs/kit';
-import { fetchCSRFToken } from '$lib/auth';
 
 export const handle: Handle = async ({ event, resolve }) => {
   // and this, nothing else
-  if (!event.locals.user) {
-    // if there is no local with an user
-    if (event.cookies.get('sessionid')) {
-      event.locals.user = await getUserFromCookie(event); // but there is actually a session cookie, retrieve the user from the session cookie, and update the locals
-    } else {
-      event.locals.user = null; // then this means no sessionid cookie, so we are logged out
-    }
+  const sessionid = event.cookies.get('sessionid'); // get the sessionid cookie
+  if (sessionid && !event.locals.user) {
+    event.locals.user = await getUserFromCookie(event); // if there is a sessionid cookie, but no user in locals, then we retrieve the user from the sessionid cookie
+  } else if (!sessionid) {
+    event.locals.user = null; // if there is no sessionid cookie, then we set the user to null
   }
+
+  
   await checkLogout({ event }); // huh, just checks if the page is /logout, it will remove the cookie and the locals about the user so that its just null
 
   // now, hear me out
