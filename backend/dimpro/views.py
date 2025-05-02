@@ -242,7 +242,7 @@ class UserOrderViewSet(SafeViewSet):
   serializer_class = OrderSerializer
   permission_classes = (IsAuthenticatedOrReadOnly, )
   def get_queryset(self):
-    return Order.objects.filter(active=True, user=self.request.user)
+    return Order.objects.filter(active=True, user=self.request.user.id)
 
 class AlegraUserViewSet(SafeViewSet):
   serializer_class = AlegraUserSerializer

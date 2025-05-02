@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
+
 	export let data;
 	export let { user } = data; // I imported user from data, but notice that, in this route there is no +page.server.ts
 	// So, why is the user being imported anyway? ???
@@ -28,6 +30,9 @@
 					<h4 class="h2 font-bold capitalize my-2">
 						{!user?.name || user?.name.trim() == '' ? 'Usuario' : user.name}
 					</h4>
+					<h3 class="h3 font-bold capitalize my-2">
+						{checkStaffGroup(user) ? (checkAdminGroup(user) ? 'Administrador': 'Empleado') : 'Vendedor'}
+					</h3>
 					<h4 class="h4 my-2">
 						<i class="fa-solid fa-envelope text-primary-500 dark:text-surface-50"></i>
 						{user?.email ?? 'No definido'}
@@ -60,10 +65,10 @@
 			<div class="flex flex-col text-start pr-2 space-y-2">
 				<h4 class="h3 font-bold capitalize">Acciones</h4>
 				<div class="flex flex-row space-x-1"></div>
-				<a class="text-primary-500" href="/dashboard/user/edit"
+				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/edit"
 					><i class="fa-solid fa-pen-to-square mr-1"></i>Editar Pefil</a
 				>
-				<a class="text-primary-500" href="/dashboard/user/change-password"
+				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/change-password"
 					><i class="fa-solid fa-key mr-1"></i>Cambiar Contraseña</a
 				>
 				<a class="text-error-500" href="/logout"

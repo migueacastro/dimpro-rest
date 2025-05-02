@@ -2,8 +2,10 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
-
+	import { getToastStore, type ToastSettings } from '@skeletonlabs/skeleton';
 	const fields = new FormErrors();
+
+	const toastStore = getToastStore();
 
 	interface FormErrors {
 		password: any;
@@ -20,32 +22,46 @@
 	let password = '';
 	let confirmPassword = '';
 	let oldPassword = '';
-
-
+	
 	let validatedFields: boolean = false;
 	function validateFields() {
 		validatedFields = fields.validatePasswords(password, confirmPassword);
 	}
 
-	function handleEnhance() {
+	async function handleEnhance() {
 		return ({ update, result }: any) => {
-			if (result.type === 'success') {
-				goto('/dashboard/user');
+			let toast: ToastSettings  = {
+					message: 'Contraseña actualizada con exito.',
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};;
+			if (result?.type === 'success') {
+				toastStore.trigger(toast);
+				return goto('/dashboard/user');
+				
 			} else {
-				console.error('Error changing password:', result.data);
-				errors.oldPassword = [
-					'La contraseña actual es incorrecta. Por favor, inténtelo de nuevo.'
-				];
+				
+				errors.oldPassword = ['La contraseña actual es incorrecta. Por favor, inténtelo de nuevo.'];
+				toast = {
+					message: `¡ERROR! No se pudo actualizar la contraseña.`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
 			}
-			return update({reset: false});
+			return update({ reset: false });
 		};
 	}
 
 	function togglePasswordInput(event: Event) {
-		const button = event.target as HTMLElement;
+		let button = event.target as HTMLElement;
+		if (button.tagName !== 'BUTTON') { // just in case the event.target is the icon and not the button
+			button = button.closest('button') as HTMLElement;
+		}
 		const input = button.closest('.input-group')?.querySelector('input') as HTMLInputElement;
 		input.type = input.type === 'password' ? 'text' : 'password';
-		const icon = button.closest('i') as HTMLElement;
+		console.log(button);
+		const icon = button.querySelector('i') as HTMLElement;
 		icon.classList.toggle('fa-eye');
 		icon.classList.toggle('fa-eye-slash');
 	}
@@ -62,8 +78,8 @@
 				class="input"
 				title="Contraseña"
 				type="password"
-				id="oldPassword"
-				name="oldPassword"
+				id="old_password"
+				name="old_password"
 				placeholder="Contraseña"
 				bind:value={oldPassword}
 				on:input={validateFields}
@@ -72,6 +88,15 @@
 				><i class="fa-regular fa-eye-slash"></i></button
 			>
 		</div>
+		{#if errors?.oldPassword?.length > 0}
+			<div class="card mb-2 variant-ghost-error p-2 text-sm text-left">
+				<ul>
+					{#each errors?.oldPassword as error}
+						<li>{error}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 		<div class="input-group mb-2 input-group-divider grid-cols-[1fr_auto] p-0">
 			<input
 				class="input"
@@ -87,15 +112,7 @@
 				><i class="fa-regular fa-eye-slash"></i></button
 			>
 		</div>
-		{#if errors?.oldPassword?.length > 0}
-			<div class="card variant-ghost-error p-2 text-sm text-left">
-				<ul>
-					{#each errors?.password as error}
-						<li>{error}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
+		
 		{#if password.length > 0}
 			{#if password.length <= 5}
 				<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -109,6 +126,10 @@
 				<div class="card variant-ghost-error p-2 text-sm text-left">
 					{fields.NotUpperCase}
 				</div>
+			{:else if password == oldPassword}
+				<div class="card variant-ghost-error p-2 text-sm text-left">
+					{fields.SamePassword}
+				</div>
 			{/if}
 		{/if}
 
@@ -117,8 +138,8 @@
 				class="input"
 				title="Confirmar Contraseña"
 				type="password"
-				id="confirmPassword"
-				name="confirmPassword"
+				id="confirm_password"
+				name="confirm_password"
 				placeholder="Confirmar Contraseña"
 				bind:value={confirmPassword}
 				on:input={validateFields}
@@ -145,6 +166,7 @@
 		{/if}
 
 		<button
+		type="submit"
 			class="btn btn-xl variant-filled-primary my-2 w-fit shadow-xl"
 			disabled={!validatedFields}>Guardar</button
 		>
