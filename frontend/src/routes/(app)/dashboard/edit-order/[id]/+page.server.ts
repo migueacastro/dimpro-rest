@@ -46,7 +46,7 @@ export async function load({ params, fetch }: any) {
   let contactAutoCompleteList = contacts.map((contact: any) => {
     return { label: contact.name, value: contact.id };
   });
-  let inputContact = order?.contact?.name ?? contacts[0]?.name;
+  let inputContact = order?.contact_name
 
   if (browser) {
     if (!order) {
