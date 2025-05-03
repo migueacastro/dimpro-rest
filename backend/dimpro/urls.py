@@ -29,6 +29,7 @@ urlpatterns = [
     path("register", UserRegistrationView.as_view()),
     path("csrf", RefreshCSRFTokenView.as_view()),
     path("user/change_password", UserChangePasswordView.as_view()),
+    path('export_order_pdf/<int:id>/', export_order_to_pdf),
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

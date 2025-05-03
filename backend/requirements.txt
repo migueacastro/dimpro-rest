@@ -24,3 +24,7 @@ requests==2.32.3
 six==1.17.0
 sqlparse==0.5.3
 urllib3==2.3.0
+chardet==5.2.0
+pillow==11.2.1
+reportlab==4.4.0
+svglib
