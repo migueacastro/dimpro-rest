@@ -303,8 +303,6 @@ class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProdu
         print("Pasó por aqui: ", request.data)
         return super().patch(request, *args, **kwargs)
 
-<<<<<<< HEAD
-=======
 class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProducts
   serializer_class = OrderSerializer 
   permission_classes = (IsAuthenticated, )
@@ -314,7 +312,6 @@ class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProduc
   queryset = Order.objects.filter(active=True)
   def patch(self, request, *args, **kwargs):
     return super().patch(request, *args, **kwargs)
->>>>>>> 9b100826feef3e48455f602677d541759e6ddf50
 
 class UserOrderViewSet(SafeViewSet):
     serializer_class = OrderSerializer
