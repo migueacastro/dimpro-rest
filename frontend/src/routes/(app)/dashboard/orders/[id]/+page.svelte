@@ -2,22 +2,52 @@
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { goto } from '$app/navigation';
 	import StatusButton from '$lib/components/StatusButton.svelte';
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { getToastStore, ProgressRadial } from '@skeletonlabs/skeleton';
 	import { checkStaffGroup } from '$lib/auth';
+	import { enhance } from '$app/forms';
 	export let data: any;
 	let order = data.order;
+	const toastStore = getToastStore();
+
 	let products: Array<any> = order?.products.map((item: any) => {
-			return {
-				id: item.product.id,
-				item: item.product.item,
-				reference: item.product.reference,
-				quantity: item.quantity,
-				price: item.price,
-				cost: item.cost
-			};
-		});
+		return {
+			id: item.product.id,
+			item: item.product.item,
+			reference: item.product.reference,
+			quantity: item.quantity,
+			price: item.price,
+			cost: item.cost
+		};
+	});
 	let loaded = true;
 
+	async function handleExportPDFEnhance() {
+		return async ({ result }: any) => {
+			if (result.type === 'success') {
+				// Extract the file from the response
+				const file = result.data.file;
+
+				// Create a Blob from the file
+				const blob = new Blob([file], { type: 'application/pdf' });
+
+				// Create a URL for the Blob
+				const url = URL.createObjectURL(blob);
+
+				// Create a temporary anchor element to trigger the download
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `pedido_${Date.now()}.pdf`; // Set the filename
+				document.body.appendChild(a);
+				a.click();
+
+				// Clean up
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+			} else {
+				console.error('Failed to download the file.');
+			}
+		};
+	}
 </script>
 
 <div class="flex flex-col">
@@ -46,16 +76,19 @@
 				{#if checkStaffGroup(data.user)}
 					<StatusButton {order} />
 				{/if}
-				
+
 				<button
 					class="btn variant-filled max-w-fit px-[2rem] mx-2"
 					on:click={() => goto('/dashboard/edit-order/' + order?.id)}
 				>
 					<i class="fa-solid fa-pen-to-square"></i>
 				</button>
-				<button class="btn variant-filled max-w-fit px-[2rem] ml-2" on:click={() => {}}>
-					<i class="fa-solid fa-floppy-disk"></i>
-				</button>
+				<form action="/dashboard/orders/exportpdf" method="post">
+					<input type="hidden" name="order_id" value={order?.id} />
+					<button class="btn variant-filled max-w-fit px-[2rem] ml-2 h-full" type="submit">
+						<i class="fa-solid fa-floppy-disk"></i>
+					</button>
+				</form>
 			</div>
 		</div>
 		<Datatable

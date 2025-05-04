@@ -346,89 +346,98 @@ class LogViewSet(SafeViewSet):
     queryset = LogEntry.objects.all()
 
 
-def export_order_to_pdf(request, id):
-    # Create bytestream buffer
-    buf = io.BytesIO()
-    # Create a BaseDocTemplate
-    doc = BaseDocTemplate(buf, pagesize=letter)
-    # Create a frame
-    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="normal")
+class ExportOrderPDFView(APIView):
+    serializer_class = ExportOrderPDFSerializer
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            id = serializer.validated_data.get('order_id', None)
+            if not id:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data={'Error': 'Invalid ID'})
+            # Create bytestream buffer
+            buf = io.BytesIO()
+            # Create a BaseDocTemplate
+            doc = BaseDocTemplate(buf, pagesize=letter)
+            # Create a frame
+            frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="normal")
 
-    # Create a PageTemplate
-    template = PageTemplate(id="test", frames=frame)
+            # Create a PageTemplate
+            template = PageTemplate(id="test", frames=frame)
 
-    # Add PageTemplate to the BaseDocTemplate
-    doc.addPageTemplates([template])
+            # Add PageTemplate to the BaseDocTemplate
+            doc.addPageTemplates([template])
 
-    # Add headings
-    lines = [["ID", "Item", "Referencia", "Cantidad", "Precio", "Subtotal"]]
+            # Add headings
+            lines = [["ID", "Item", "Referencia", "Cantidad", "Precio", "Subtotal"]]
 
-    order = OrderSerializer(Order.objects.get(id=id)).data
-    products = OrderProductSerializer(
-        Order_Product.objects.filter(order_id=id), many=True
-    ).data
+            order = OrderSerializer(Order.objects.get(id=id)).data
+            products = OrderProductSerializer(
+                Order_Product.objects.filter(order_id=id), many=True
+            ).data
 
-    for order_product in products:
-        id = Paragraph(str(order_product["product"]["id"]), styles["Normal"])
-        item = Paragraph(str(order_product["product"]["item"]), styles["Normal"])
-        reference = Paragraph(
-            str(order_product["product"]["reference"]), styles["Normal"]
-        )
-        quantity = Paragraph(str(order_product["quantity"]), styles["Normal"])
-        price = Paragraph(str(order_product["price"]) + "$", styles["Normal"])
-        cost = Paragraph(str(order_product["cost"]) + "$", styles["Normal"])
+            for order_product in products:
+                id = Paragraph(str(order_product["product"]["id"]), styles["Normal"])
+                item = Paragraph(str(order_product["product"]["item"]), styles["Normal"])
+                reference = Paragraph(
+                    str(order_product["product"]["reference"]), styles["Normal"]
+                )
+                quantity = Paragraph(str(order_product["quantity"]), styles["Normal"])
+                price = Paragraph(str(order_product["price"]) + "$", styles["Normal"])
+                cost = Paragraph(str(order_product["cost"]) + "$", styles["Normal"])
 
-        lines.append((id, item, reference, quantity, price, cost))
+                lines.append((id, item, reference, quantity, price, cost))
 
-    col_widths = [10 * mm, 75 * mm, 25 * mm, 17 * mm, 20 * mm, 23 * mm]
+            col_widths = [10 * mm, 75 * mm, 25 * mm, 17 * mm, 20 * mm, 23 * mm]
 
-    table = Table(lines, colWidths=col_widths, rowHeights=10 * mm)
+            table = Table(lines, colWidths=col_widths, rowHeights=10 * mm)
 
-    table.setStyle(
-        TableStyle(
-            [
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE",
-                ),  # Vertically center-align all cells
-                ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.black),
-                ("BOX", (0, 0), (-1, -1), 0.25, colors.black),
-                ("FONTSIZE", (0, 0), (-1, 0), 10),
-                ("FONTSIZE", (0, 1), (-1, -1), 7),
-            ]
-        )
-    )
+            table.setStyle(
+                TableStyle(
+                    [
+                        (
+                            "VALIGN",
+                            (0, 0),
+                            (-1, -1),
+                            "MIDDLE",
+                        ),  # Vertically center-align all cells
+                        ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.black),
+                        ("BOX", (0, 0), (-1, -1), 0.25, colors.black),
+                        ("FONTSIZE", (0, 0), (-1, 0), 10),
+                        ("FONTSIZE", (0, 1), (-1, -1), 7),
+                    ]
+                )
+            )
 
-    drawing = svg2rlg(BASE_DIR / "static_root" / "assets" / "logodimpro.svg")
-    if not drawing:
-        raise FileNotFoundError("The file 'assets/logodimpro.svg' could not be found.")
-    drawing.width = 100
-    drawing.height = 0
-    drawing.hAlign = "CENTER"
+            drawing = svg2rlg(BASE_DIR / "static_root" / "assets" / "logodimpro.svg")
+            if not drawing:
+                raise FileNotFoundError("The file 'assets/logodimpro.svg' could not be found.")
+            drawing.width = 100
+            drawing.height = 0
+            drawing.hAlign = "CENTER"
 
-    # Parse the date string into a datetime object
-    order_date = datetime.strptime(order['date'], '%Y-%m-%dT%H:%M:%S.%f%z')
-    formatted_date = order_date.strftime('%d %B %Y %H:%M')
-    print(order)
-    information = Paragraph(
-        f"<b>ID de pedido:</b> {order['id']}<br/><b>Tipo de precio:</b> {order['pricetype']['name']}<br/><b>Cliente: </b>{order['contact_name']}<br/><b>Vendedor:</b> {order['user_name']}<br/><b>Email del Vendedor:</b> { order['user']['email'] }<br/><b>Items:</b> {len(products)}<br/><b>Total:</b> {order['total']}$<br/><b>Fecha:</b> {formatted_date}",
-        styles["Normal"],
-    )
+            # Parse the date string into a datetime object
+            order_date = datetime.strptime(order['date'], '%Y-%m-%dT%H:%M:%S.%f%z')
+            formatted_date = order_date.strftime('%d %B %Y %H:%M')
+            print(order)
+            information = Paragraph(
+                f"<b>ID de pedido:</b> {order['id']}<br/><b>Tipo de precio:</b> {order['pricetype']['name']}<br/><b>Cliente: </b>{order['contact_name']}<br/><b>Vendedor:</b> {order['user_name']}<br/><b>Email del Vendedor:</b> { order['user']['email'] }<br/><b>Items:</b> {len(products)}<br/><b>Total:</b> {order['total']}$<br/><b>Fecha:</b> {formatted_date}",
+                styles["Normal"],
+            )
 
-    # Create a spacer
-    spacer = Spacer(1, 12)
+            # Create a spacer
+            spacer = Spacer(1, 12)
 
-    # Create story
-    story = [drawing, spacer, information, spacer, table]
+            # Create story
+            story = [drawing, spacer, information, spacer, table]
 
-    # Add table to BaseDocTemplate
-    doc.build(story)
-    buf.seek(0)
+            # Add table to BaseDocTemplate
+            doc.build(story)
+            buf.seek(0)
 
-    return FileResponse(
-        buf,
-        as_attachment=True,
-        filename=f"order{order['id']}{order['contact_name']}-{order_date.strftime('%d-%B-%Y-%H:%M')}.pdf",
-    )
+            return FileResponse(
+                buf,
+                as_attachment=True,
+                filename=f"order{order['id']}{order['contact_name']}-{order_date.strftime('%d-%B-%Y-%H:%M')}.pdf",
+            )
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.error_messages())

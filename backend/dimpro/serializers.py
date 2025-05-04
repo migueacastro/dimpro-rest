@@ -227,6 +227,11 @@ class UserNestedSerializer(UserSerializer):
         return obj.date_joined.strftime('%Y/%m/%d %H:%M') if obj.date_joined else ''
   def get_last_login_format(self, obj):
     return obj.last_login.strftime('%Y/%m/%d %H:%M') if obj.last_login else 'Ninguno'
+  
+class ExportOrderPDFSerializer(serializers.Serializer):
+   order_id = serializers.IntegerField()
+   class Meta:
+      fields = ['order_id']
 
 class LogSerializer(serializers.ModelSerializer):
    class Meta:
