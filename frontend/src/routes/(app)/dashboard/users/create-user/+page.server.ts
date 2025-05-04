@@ -13,6 +13,7 @@ export async function load({ locals }) {
 export const actions: Actions = {
     add: async ({ request, fetch }) => {
         const formData = await request.formData();
+        const endpoint = formData.get("endpoint");
         formData.delete("endpoint");
         const keys = Array.from(formData.keys());
         const values = Array.from(formData.values());
@@ -24,7 +25,7 @@ export const actions: Actions = {
                 body[keys[i]] = values[i];
             }
         }
-        let response = await fetch(apiURL + "users/", {
+        let response = await fetch(apiURL + endpoint, {
             method: 'POST',
             body: JSON.stringify(body)
         });

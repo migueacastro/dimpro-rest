@@ -11,13 +11,14 @@
 		type ModalSettings,
 		type ToastSettings
 	} from '@skeletonlabs/skeleton';
+	import { enhance } from '$app/forms';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
+	export let user = {};
 	export let fields: any = null;
 	export let endpoint = '';
 	export let edit = false;
-	export let method = '';
 	export let table_name = '';
 	let ogValue: any = null;
 	let id = page.params.id;
@@ -62,16 +63,14 @@
 		return valid;
 	}
 
-	async function isEditable() {
+	function isEditable() {
 		if (edit) {
 			action = 'edit';
-			let response = await fetchData(endpoint, 'GET');
-			let data = await response.json();
-			let value = data.filter((values: { id: string }) => values.id == id);
-			ogValue = value[0][`${fields[0].name}`];
+			let value = user;
+			ogValue = value[`${fields[0].name}`];
 			for (let i = 0; i < fields.length; i++) {
 				if (fields[i].name !== 'groups') {
-					fields[i].value = value[0][`${fields[i].name}`];
+					fields[i].value = user[fields[i].name];
 				}
 			}
 		} else {
@@ -79,14 +78,18 @@
 		}
 	}
 
-	function updateConfirmation() {
+	function updateConfirmation(event: any) {
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Modificar: de ${ogValue} a ${fields[0].value}`,
 			body: `¿Está seguro de querer modificar este ${table_name}?`,
-			response: async (r: boolean) => {
+			response: (r: boolean) => {
 				if (r) {
-					sendData();
+					const form = event.target.closest('form');
+					console.log(form);
+					if (form) {
+						form.requestSubmit();
+					}
 				}
 				goto(`/dashboard/${endpoint}`);
 			}
@@ -94,46 +97,46 @@
 		modalStore.trigger(modal);
 	}
 
-	async function sendData() {
-		let body = {};
-		fields.forEach((field: any) => {
-			if (field?.value) {
-				if (field.value.toString().trim() !== '') {
-					body[field.name] = field.value;
-				}
+	function sendData() {
+		return async ({ update, result }: any) => {
+			if (result.data.success) {
+				const toast: ToastSettings = {
+					message: `El ${table_name} se ${action}ó con exito.`,
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
+			} else {
+				const toast: ToastSettings = {
+					message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
+							mensaje:${result.data.error}`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
 			}
-		});
-		console.log(body);
-		let response = await fetchData(endpoint, method, body, id);
-		if (response.ok) {
-			const toast: ToastSettings = {
-				message: `El ${table_name} se ${action}ó con exito.`,
-				background: 'variant-ghost-success',
-				timeout: 7000
-			};
-			toastStore.trigger(toast);
-		} else {
-			console.log(response);
-			const toast: ToastSettings = {
-				message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
-							mensaje:${response.statusText}`,
-				background: 'variant-ghost-error',
-				timeout: 7000
-			};
-			toastStore.trigger(toast);
-		}
-		if (!edit) {
-			goto(`/dashboard/${endpoint}`);
-		}
+			if (!edit) {
+				goto(`/dashboard/${endpoint}`);
+			}
+		};
 	}
 
-	onMount(async () => {
-		await isEditable();
+	onMount(() => {
+		isEditable();
 	});
 </script>
 
-<form class=" gap-10 flex flex-col ml-[13rem] lg:flex-row">
+<form
+	action={!edit ? '?/add' : `?/edit`}
+	method="post"
+	class="gap-10 flex flex-col ml-[13rem] lg:flex-row"
+	use:enhance={sendData}
+>
 	<div class="card my-3 p-10 text-start lg:w-[75%] space-y-6">
+		{#if edit}
+			<input class="input" type="hidden" bind:value={id} name="id" />
+		{/if}
+		<input class="input" type="hidden" bind:value={endpoint} name="endpoint" />
 		{#each fields as field}
 			<label
 				class="label"
@@ -142,20 +145,19 @@
 			>
 				<p class="capitalize">{field.label}</p>
 				{#if field?.type === 'text'}
-					<input class="input" type="text" bind:value={field.value} id={field.name} />
+					<input class="input" type="text" bind:value={field.value} name={field.name} />
 				{:else if field?.type === 'email'}
 					<input
 						class="input my-2"
 						title="Email"
 						type="text"
-						name="email"
 						placeholder="Email"
 						bind:value={field.value}
-						id={field.name}
+						name={field.name}
 						on:input={validateFields}
 					/>
 
-					{#if field.value.length > 0}
+					{#if field?.value?.length > 0}
 						{#if !error.validateEmail(field.value)}
 							<div class="card variant-ghost-error p-2 text-sm text-left">
 								{error.NotValidEmail}
@@ -173,7 +175,7 @@
 						</div>
 					{/if}
 				{:else if field?.type === 'password'}
-					<input class="input" type="password" bind:value={field.value} id={field.name} />
+					<input class="input" type="password" bind:value={field.value} name={field.name} />
 				{:else if field?.type === 'decimal'}
 					<input
 						class="input w-[25%]"
@@ -181,7 +183,7 @@
 						min="0"
 						step="0.01"
 						bind:value={field.value}
-						id={field.name}
+						name={field.name}
 					/>
 				{:else if field?.type === 'integer'}
 					<input
@@ -189,24 +191,24 @@
 						type="number"
 						min="0"
 						bind:value={field.value}
-						id={field.name}
+						name={field.name}
 					/>
 				{:else if field?.type === 'boolean'}
 					<p>bool</p>
 				{:else if field?.type === 'hidden'}
-					<input class="input" type="hidden" bind:value={field.value} id={field.name} />
+					<input class="input" type="text" bind:value={field.value} name={field.name} />
 				{:else if field?.type === 'date'}
-					<input class="input" type="date" bind:value={field.value} id={field.name} />
+					<input class="input" type="date" bind:value={field.value} name={field.name} />
 				{:else if field?.type === 'datetime'}
 					<input
 						class="input"
 						type="datetime-local"
 						placeholder=""
 						bind:value={field.value}
-						id={field.name}
+						name={field.name}
 					/>
 				{:else if field?.type === 'textarea'}
-					<textarea class="textarea" bind:value={field.value} id={field.name} />
+					<textarea class="textarea" bind:value={field.value} name={field.name} />
 				{:else if field?.type == 'foreignKey'}
 					<p>algo foraneo</p>
 				{:else if field?.type == 'manyToMany'}
@@ -229,10 +231,16 @@
 				{/if}
 			</label>
 		{/each}
-		<button
-			type="submit"
-			class="btn variant-filled h-fit w-fit mx-auto btn-xl"
-			on:click={edit ? updateConfirmation : sendData}>Guardar</button
-		>
+		{#if !edit}
+			<button type="submit" class="btn variant-filled h-fit w-fit mx-auto btn-xl">Guardar</button>
+		{:else}
+			<button
+				type="button"
+				class="btn variant-filled h-fit w-fit mx-auto btn-xl"
+				on:click={(e) => {
+					updateConfirmation(e);
+				}}>Guardar</button
+			>
+		{/if}
 	</div>
 </form>

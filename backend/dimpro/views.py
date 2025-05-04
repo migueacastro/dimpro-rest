@@ -303,6 +303,18 @@ class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProdu
         print("Pasó por aqui: ", request.data)
         return super().patch(request, *args, **kwargs)
 
+<<<<<<< HEAD
+=======
+class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProducts
+  serializer_class = OrderSerializer 
+  permission_classes = (IsAuthenticated, )
+  # No hay que preocuparse por lecturas indebidas, 
+  # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
+  # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
+  queryset = Order.objects.filter(active=True)
+  def patch(self, request, *args, **kwargs):
+    return super().patch(request, *args, **kwargs)
+>>>>>>> 9b100826feef3e48455f602677d541759e6ddf50
 
 class UserOrderViewSet(SafeViewSet):
     serializer_class = OrderSerializer

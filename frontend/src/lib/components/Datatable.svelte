@@ -61,7 +61,7 @@
 		// so, this is an enhance function, triggered by the form submission as an user so in every form enhance function
 		// you want to return this. result is the object returned by the action, like this
 		return async ({ update, result }: any) => {
-			if (result.type == 'success') {
+			if (result.data.success) {
 				// this is how you verify it was a successful submission
 				const t: ToastSettings = {
 					message: `El ${table_name} se eliminó con exito.`,
@@ -72,19 +72,22 @@
 			} else {
 				const toast: ToastSettings = {
 					message: `¡ERROR! El ${table_name} no se pudo eliminar.
-							\nmensaje:${response.statusText}`,
+							\nmensaje:${result.data.error}`,
 					background: 'variant-ghost-error',
 					timeout: 7000
 				};
 				toastStore.trigger(toast); // just an else, in case there was an error
 			}
+			setTimeout(() => {
+				window.location.reload();
+			},1000);
 		};
 
 		// kinda get it so far? if any you can base your own on this (copy and adapt xd) you don't have to understand it fully, but atleast now that
 
 		/*     */
 	}
-	function deleteConfirmation(name: any, id: any) {
+	function deleteConfirmation(name: any, id: any, event: any) {
 		// that button will trigger the confirmation popup, if it has response. Then it will trigger the formSubmission with this little one
 		const modal: ModalSettings = {
 			type: 'confirm',
@@ -97,7 +100,6 @@
 						form.requestSubmit();
 					}
 				}
-				goto('/dashboard/' + endpoint['main']);
 			}
 		};
 		modalStore.trigger(modal);
@@ -153,15 +155,7 @@
 		</thead>
 		<tbody>
 			{#each $rows as row}
-				<tr
-					on:click={() => {
-						if (endpoint['secondary']) {
-							goto('/dashboard/' + endpoint['secondary'] + '/' + row['id']);
-						} else if (endpoint['main']) {
-							goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
-						}
-					}}
-				>
+				<tr on:click={() => {if(!editable){goto('/dashboard/' + endpoint['main']+`/${row['id']}`)}}}>
 					{#each fields as field}
 						{#if row[field]}
 							<td class="capitalize">{row[field]}</td>
@@ -169,14 +163,26 @@
 							<td class="capitalize">No Definido</td>
 						{/if}
 					{/each}
+
 					{#if editable}
 						<td class="flex flex-row">
+							<button
+								class="btn mr-2 variant-filled"
+								on:click={() => {
+									setTimeout(() => {
+										goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
+									}, 90);
+								}}
+							>
+								<i class="fa-solid fa-info"></i>
+							</button>
+
 							<form action="?/handleDelete" method="POST" use:enhance={deleteResult}>
 								<input type="hidden" name="id" value={row['id']} />
 								<button
 									type="button"
 									class="btn variant-filled"
-									on:click={() => deleteConfirmation(row['name'], row['id'])}
+									on:click={(e) => deleteConfirmation(row['name'], row['id'], e)}
 								>
 									<i class="fa-solid fa-trash"></i>
 								</button>
