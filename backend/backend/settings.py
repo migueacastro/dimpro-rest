@@ -138,6 +138,7 @@ STATIC_ROOT = BASE_DIR / 'static_root'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -179,6 +180,9 @@ CORS_ALLOW_HEADERS = (
 'authorization',
 'X-CSRFToken'
 )
+
+
+
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_HTTPONLY = True

@@ -51,5 +51,5 @@ echo "Starting in $MODE mode..."
 if [ "$MODE" = "production" ]; then
   exec docker-compose up
 else
-  exec docker-compose up db initdb api django-q nginx frontend
+  exec docker-compose up db initdb api django-q frontend nginx
 fi
