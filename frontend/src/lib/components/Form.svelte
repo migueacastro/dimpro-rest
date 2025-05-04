@@ -86,12 +86,10 @@
 			response: (r: boolean) => {
 				if (r) {
 					const form = event.target.closest('form');
-					console.log(form);
 					if (form) {
 						form.requestSubmit();
 					}
 				}
-				goto(`/dashboard/${endpoint}`);
 			}
 		};
 		modalStore.trigger(modal);
@@ -115,9 +113,7 @@
 				};
 				toastStore.trigger(toast);
 			}
-			if (!edit) {
-				goto(`/dashboard/${endpoint}`);
-			}
+			goto(`/dashboard/${endpoint}`);
 		};
 	}
 

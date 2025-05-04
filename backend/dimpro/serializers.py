@@ -72,6 +72,8 @@ class UserSerializer(serializers.ModelSerializer):
       instance.email = validated_data.get('email')
     if 'password' in validated_data:
         instance.set_password(validated_data.get('password'))
+    if 'phonenumber' in validated_data:
+        instance.phonenumber = validated_data.get('phonenumber')
     if 'groups' in validated_data:
       instance.groups.set(validated_data.pop('groups', None))
     instance.save()
