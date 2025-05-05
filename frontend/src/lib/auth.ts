@@ -1,14 +1,5 @@
 import { apiURL } from './api_url';
 import { fail } from '@sveltejs/kit';
-import { user, users } from '../stores/stores';
-import { redirect } from '@sveltejs/kit';
-import Cookies from 'js-cookie';
-
-// Simplificar la solicitud http al iniciar sesión
-export let headers: any = {
-	'X-CSRFToken': Cookies.get('csrftoken') ?? '',
-	'content-type': 'application/json'
-};
 
 export async function fetchCSRFToken() {
 	const response = await fetch(apiURL + 'csrf');
@@ -32,21 +23,6 @@ export async function fetchRegister(data: any) {
 		body: data
 	});
 	return response;
-}
-
-export async function fetchUsers() {
-	const url = apiURL + 'users';
-	const response = await fetch(url, {
-		method: 'GET'
-	});
-	const data = await response.json();
-	if (response.ok) {
-		users.set(data);
-		return data;
-	}
-
-	users.set(null);
-	return null;
 }
 
 export function checkStaffGroup(user: any) {
