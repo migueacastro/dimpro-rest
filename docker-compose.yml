@@ -16,21 +16,27 @@ services:
       timeout: 5s
       retries: 5
     post_start:
-      - command: ["sh", "-c", "
-            # Restore the database if a backup exists
+      - command: > 
+          bash -c "
+            until pg_isready -U postgres; do
+              echo 'Waiting for PostgreSQL to be ready...';
+              sleep 1;
+            done;
             if [ -f /backups/backup.dump ]; then
               echo 'Backup file exists. Starting restore with --clean option...';
+              export PGPASSWORD=${POSTGRES_PASSWORD};
               pg_restore --clean -U postgres -h db -d postgres -v /backups/backup.dump;
             else
               echo 'Backup file does not exist. Skipping restore.';
             fi
-          "]
-        user: root
-        privileged: true
+          "
     pre_stop:
-      - command: ["echo 'Starting backup'", "&&","pg_dump", "-U", "postgres", "-h", "db", "-d", "postgres", "-Fc", "-j", "8", "-f", "/backups/backup.dump"]
-        privileged: true
-        user: root
+      - command: > 
+          bash -c "
+            echo 'Starting backup';
+            export PGPASSWORD=${POSTGRES_PASSWORD};
+            pg_dump -U postgres -h db -d postgres -Fc -f /backups/backup.dump
+          "
   api:
     build: ./backend
     ports:
