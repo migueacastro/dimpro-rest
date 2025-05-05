@@ -5,6 +5,7 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgres/data/
+      - ./postgres/backups:/backups/
     restart: always
     environment:
       - DB=db
@@ -14,33 +15,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  initdb:
-    image: postgres:17
-    volumes:
-      - ./postgres/backups/:/backups
-    depends_on:
-      db:
-        condition: service_healthy
-    command: >
-      sh -c "
-        export PGPASSWORD=${POSTGRES_PASSWORD};
-
-        # Wait for PostgreSQL to be ready
-        while ! pg_isready -U postgres -h db -p 5432; do
-          sleep 1;
-        done;
-
-        # Restore the database if a backup exists
-        if [ -f /backups/backup.dump ]; then
-          echo 'Backup file exists. Starting restore with --clean option...';
-          pg_restore --clean -U postgres -h db -d postgres -v /backups/backup.dump;
-        else
-          echo 'Backup file does not exist. Skipping restore.';
-        fi
-        "
-    env_file: .env
+    post_start:
+      - command: ["sh", "-c", "
+            # Restore the database if a backup exists
+            if [ -f /backups/backup.dump ]; then
+              echo 'Backup file exists. Starting restore with --clean option...';
+              pg_restore --clean -U postgres -h db -d postgres -v /backups/backup.dump;
+            else
+              echo 'Backup file does not exist. Skipping restore.';
+            fi
+          "]
+        user: root
+        privileged: true
     pre_stop:
-      - command: ["pg_dump", "-U", "postgres", "-h", "db", "-d", "postgres", "-Fc", "-j", "4", "-f", "/backups/backup.dump"]
+      - command: ["echo 'Starting backup'", "&&","pg_dump", "-U", "postgres", "-h", "db", "-d", "postgres", "-Fc", "-j", "8", "-f", "/backups/backup.dump"]
+        privileged: true
+        user: root
   api:
     build: ./backend
     ports:
@@ -71,8 +61,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-      initdb:
-        condition: service_started
     env_file: .env
   frontend:
     build: ./frontend
