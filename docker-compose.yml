@@ -5,42 +5,38 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgres/data/
+      - ./postgres/backups:/backups/
     restart: always
     environment:
       - DB=db
     env_file: .env
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d postgres -U postgres" ]
+      test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
-  initdb:
-    image: postgres:17
-    volumes:
-      - ./postgres/backups/:/backups
-    depends_on:
-      db:
-        condition: service_healthy
-    command: >
-      sh -c "
-        export PGPASSWORD=${POSTGRES_PASSWORD};
-
-        # Wait for PostgreSQL to be ready
-        while ! pg_isready -U postgres -h db -p 5432; do
-          sleep 1;
-        done;
-
-        # Restore the database if a backup exists
-        if [ -f /backups/backup.dump ]; then
-          echo 'Backup file exists. Starting restore with --clean option...';
-          pg_restore --clean -U postgres -h db -d postgres -v /backups/backup.dump;
-        else
-          echo 'Backup file does not exist. Skipping restore.';
-        fi
-        "
-    env_file: .env
+    post_start:
+      - command: > 
+          bash -c "
+            until pg_isready -U postgres; do
+              echo 'Waiting for PostgreSQL to be ready...';
+              sleep 1;
+            done;
+            if [ -f /backups/backup.dump ]; then
+              echo 'Backup file exists. Starting restore with --clean option...';
+              export PGPASSWORD=${POSTGRES_PASSWORD};
+              pg_restore --clean -U postgres -h db -d postgres -v /backups/backup.dump;
+            else
+              echo 'Backup file does not exist. Skipping restore.';
+            fi
+          "
     pre_stop:
-      - command: ["pg_dump", "-U", "postgres", "-h", "db", "-d", "postgres", "-Fc", "-j", "4", "-f", "/backups/backup.dump"]
+      - command: > 
+          bash -c "
+            echo 'Starting backup';
+            export PGPASSWORD=${POSTGRES_PASSWORD};
+            pg_dump -U postgres -h db -d postgres -Fc -f /backups/backup.dump
+          "
   api:
     build: ./backend
     ports:
@@ -71,13 +67,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
-      initdb:
-        condition: service_started
     env_file: .env
   frontend:
     build: ./frontend
     volumes:
       - ./frontend:/frontend
+    command: sh -c "npm run dev"
     ports:
       - 3000:3000
     env_file: .env
