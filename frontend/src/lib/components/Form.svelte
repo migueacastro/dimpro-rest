@@ -141,7 +141,42 @@
 			>
 				<p class="capitalize">{field.label}</p>
 				{#if field?.type === 'text'}
-					<input class="input" type="text" bind:value={field.value} name={field.name} />
+					{#if field.name === 'phonenumber'}
+						<input
+							class="input"
+							title="telefono"
+							type="text"
+							name="phonenumber"
+							placeholder="Número de telefono"
+							bind:value={field.value}
+							on:input={validateFields}
+						/>
+						{#if field?.value?.length > 0}
+							{#if !error.validatePhoneNumber(field.value)}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.NotValidPhone}
+								</div>
+							{/if}
+						{/if}
+						{#if errors?.phoneNumber?.length > 0}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								<ul>
+									{#each errors?.phoneNumber as error}
+										<li>{error}</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
+					{:else}
+						<input class="input" type="text" bind:value={field.value} name={field.name} />
+						{#if field.value.length > 0}
+						{#if !error.validateText(field.value)}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								{error.hasSpecials}
+							</div>
+						{/if}
+					{/if}
+					{/if}
 				{:else if field?.type === 'email'}
 					<input
 						class="input my-2"

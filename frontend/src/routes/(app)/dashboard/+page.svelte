@@ -29,7 +29,7 @@
 		</a>
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[20%] my-5 dark:variant-filled-surface variant-filled-tertiary"
-			href="/"
+			href="/dashboard/user"
 		>
 			<div class="flex flex-row justify-center lg:h-auto h-[2rem]">
 				<p class="font-bold h4">Empleado</p>

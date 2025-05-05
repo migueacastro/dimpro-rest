@@ -59,9 +59,15 @@ export const handleFetch: HandleFetch = async ({ request, fetch, event }) => {
     },
     credentials: 'include', // Ensure cookies are included
     method: request.method,
-    body // Preserve the body for non-GET requests
+    body: request.method === 'DELETE' ? null : body
   });
-  request.headers.set('Content-Type', 'application/json'); // Set the content type to JSON
+
+
+  if (body) {
+    request.headers.set('Content-Type', 'application/json');
+  } else {
+    request.headers.delete('Content-Type');
+  }
 
   return fetch(request);
 };

@@ -1,5 +1,6 @@
 export class FormErrors{
     shortPass: string = "La contraseña es muy corta.";
+    hasSpecials: string = "Este campo no puede contener caracteres especiales o signos.";
     NotNumbers: string = "La contraseña debe tener números.";
     NotValidEmail: string = "Email no valido.";
     NotValidPhone: string = "Telefono no valido. formato: +589999999999";
@@ -14,7 +15,11 @@ export class FormErrors{
     }
     validateEmail(email:string ): boolean {
         const emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(email)
+        return emailRegex.test(email);
+    }
+    validateText(text:string ): boolean {
+        const textRegex = /^[a-zA-Z0-9 ]+$/;
+        return textRegex.test(text);
     }
     validatePhoneNumber(phone:string ): boolean {
         const phoneRegex = /^\+?58?\d{11,15}$/;
