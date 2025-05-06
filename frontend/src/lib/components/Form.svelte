@@ -116,7 +116,18 @@
 			goto(`/dashboard/${endpoint}`);
 		};
 	}
-
+	function togglePasswordInput(event: Event) {
+		let button = event.target as HTMLElement;
+		if (button.tagName !== 'BUTTON') {
+			// just in case the event.target is the icon and not the button
+			button = button.closest('button') as HTMLElement;
+		}
+		const input = button.closest('.input-group')?.querySelector('input') as HTMLInputElement;
+		input.type = input.type === 'password' ? 'text' : 'password';
+		const icon = button.querySelector('i') as HTMLElement;
+		icon.classList.toggle('fa-eye');
+		icon.classList.toggle('fa-eye-slash');
+	}
 	onMount(() => {
 		isEditable();
 	});
@@ -170,12 +181,12 @@
 					{:else}
 						<input class="input" type="text" bind:value={field.value} name={field.name} />
 						{#if field.value.length > 0}
-						{#if !error.validateText(field.value)}
-							<div class="card variant-ghost-error p-2 text-sm text-left">
-								{error.hasSpecials}
-							</div>
+							{#if !error.validateText(field.value)}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.hasSpecials}
+								</div>
+							{/if}
 						{/if}
-					{/if}
 					{/if}
 				{:else if field?.type === 'email'}
 					<input
@@ -206,7 +217,12 @@
 						</div>
 					{/if}
 				{:else if field?.type === 'password'}
-					<input class="input" type="password" bind:value={field.value} name={field.name} />
+					<div class="input-group mb-2 input-group-divider grid-cols-[1fr_auto] p-0">
+						<input class="input" type="password" bind:value={field.value} name={field.name} />
+						<button type="button" on:click={togglePasswordInput}
+							><i class="fa-regular fa-eye-slash"></i></button
+						>
+					</div>
 				{:else if field?.type === 'decimal'}
 					<input
 						class="input w-[25%]"

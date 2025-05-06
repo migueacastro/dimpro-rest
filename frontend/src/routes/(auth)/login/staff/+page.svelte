@@ -69,6 +69,7 @@
 					id="password"
 					name="password"
 					placeholder="Contraseña"
+					bind:value={password}
 				/>
 				<button type="button" on:click={togglePasswordVisibility}
 					><i class="fa-regular fa-eye-slash"></i></button

@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
 	import { getToastStore, type ToastSettings } from '@skeletonlabs/skeleton';
+	export let data;
+	let {oldPassword} = data;
 	const fields = new FormErrors();
 
 	const toastStore = getToastStore();
@@ -21,7 +23,6 @@
 
 	let password = '';
 	let confirmPassword = '';
-	let oldPassword = '';
 	
 	let validatedFields: boolean = false;
 	function validateFields() {
@@ -41,7 +42,6 @@
 				
 			} else {
 				
-				errors.oldPassword = ['La contraseña actual es incorrecta. Por favor, inténtelo de nuevo.'];
 				toast = {
 					message: `¡ERROR! No se pudo actualizar la contraseña.`,
 					background: 'variant-ghost-error',
@@ -60,7 +60,6 @@
 		}
 		const input = button.closest('.input-group')?.querySelector('input') as HTMLInputElement;
 		input.type = input.type === 'password' ? 'text' : 'password';
-		console.log(button);
 		const icon = button.querySelector('i') as HTMLElement;
 		icon.classList.toggle('fa-eye');
 		icon.classList.toggle('fa-eye-slash');
@@ -73,21 +72,6 @@
 	<form method="post" action="?/changepassword" use:enhance={handleEnhance}>
 		<h3 class="text-4xl mb-[2rem]">Cambiar contraseña</h3>
 
-		<div class="input-group mb-2 input-group-divider grid-cols-[1fr_auto] p-0">
-			<input
-				class="input"
-				title="Contraseña"
-				type="password"
-				id="old_password"
-				name="old_password"
-				placeholder="Contraseña"
-				bind:value={oldPassword}
-				on:input={validateFields}
-			/>
-			<button type="button" on:click={togglePasswordInput}
-				><i class="fa-regular fa-eye-slash"></i></button
-			>
-		</div>
 		{#if errors?.oldPassword?.length > 0}
 			<div class="card mb-2 variant-ghost-error p-2 text-sm text-left">
 				<ul>

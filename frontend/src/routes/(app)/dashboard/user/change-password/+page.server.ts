@@ -1,6 +1,18 @@
 import { apiURL } from '$lib/api_url';
 import { checkStaffGroup, login } from '$lib/auth';
-import { fail, type Actions } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
+
+export async function load({cookies}:any) {
+	if(cookies.get("old_password")){
+		const oldPassword = cookies.get("old_password");
+		cookies.delete('old_password', { path: '/dashboard/user/change-password' });
+		return {
+			oldPassword
+		}
+	}else{
+		return redirect(303, '/dashboard');
+	}
+}
 
 export const actions: Actions = {
 	changepassword: async ({ request, fetch, locals, cookies }) => {
@@ -23,7 +35,6 @@ export const actions: Actions = {
 				cookies,
 			});
 		}
-		console.log(await response.text())
 		return fail(400, {
 			error: 'Error al cambiar la contraseña',
 			success: false

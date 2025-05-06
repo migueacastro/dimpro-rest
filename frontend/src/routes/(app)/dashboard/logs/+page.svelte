@@ -1,17 +1,13 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { onMount } from 'svelte';
-	import { user } from '../../../../stores/stores';
 	import { goto } from '$app/navigation';
+	import { checkAdminGroup } from '$lib/auth';
+	export let data;
+	let {user} = data;
 
-	onMount(async () => {
-		let isAdmin = false;
-		$user['groups'].forEach((group: any) => {
-			if (group.name === 'admin') {
-				isAdmin = true;
-			}
-		});
-		if (!isAdmin) {
+	onMount(() => {
+		if (!checkAdminGroup(user)) {
 			goto('/dashboard');
 		}
 	});

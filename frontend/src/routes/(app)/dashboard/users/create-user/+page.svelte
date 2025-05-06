@@ -11,7 +11,7 @@
 		{ type: 'password', value: '', name: 'password', label: 'contraseña' },
 		{ type: 'password', value: '', name: 'confirmPassword', label: 'confirmar contraseña' },
 		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' },
-		{ type: 'hidden', value:'[1]', name: 'groups', label: '' }
+		{ type: 'hidden', value:'[3]', name: 'groups', label: '' }
 	];
 	onMount( () => {
 		if (!(checkAdminGroup(user) || checkStaffGroup(user))) {

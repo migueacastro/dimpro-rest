@@ -219,14 +219,9 @@ class UserChangePasswordView(APIView):
         user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            old_password = serializer.validated_data.get("old_password", None)
             password = serializer.validated_data.get("password", None)
             confirmPassword = serializer.validated_data.get("confirm_password", None)
 
-            if not user.check_password(old_password):
-                raise AuthenticationFailed(
-                    {"old_password": ["La contraseña actual no es correcta."]}
-                )
             if password != confirmPassword:
                 raise AuthenticationFailed(
                     {"confirm_password": ["Las contraseñas no coinciden."]}
@@ -237,6 +232,20 @@ class UserChangePasswordView(APIView):
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserVerifyPasswordView(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = VerifyPasswordSerializer
+
+    def post(self, request):
+        user = request.user
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            old_password = serializer.validated_data.get("old_password", None)
+            if not user.check_password(old_password):
+                raise AuthenticationFailed(
+                    {"old_password": ["La contraseña actual no es correcta."]}
+                )
+        return Response(status=status.HTTP_200_OK)
 
 class UserViewSet(SafeViewSet):
     permission_classes = (IsAuthenticated, IsStaff)

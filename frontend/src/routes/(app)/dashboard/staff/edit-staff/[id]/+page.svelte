@@ -11,8 +11,7 @@
 		{ type: 'text', value: '', name: 'name', label: 'Nombre' },
 		{ type: 'password', value: '', name: 'password', label: 'contraseña' },
 		{ type: 'password', value: '', name: 'confirmPassword', label: 'confirmar contraseña' },
-		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' },
-		{ type: 'hidden', value: '[1]', name: 'groups', label: '' }
+		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' }
 	];
 	onMount(async () => {
 
