@@ -23,16 +23,23 @@ export const actions: Actions = {
         const values = Array.from(formData.values());
         let body: any = {};
         for (let i = 0; i < keys.length; i++) {
-            try {
-                body[keys[i]] = JSON.parse(values[i] as string);
-            } catch {
-                body[keys[i]] = values[i];
-            }
+            if (values[i].toString().trim() !== "") {
+                try {
+                    body[keys[i]] = JSON.parse(values[i] as string);
+                } catch {
+                    body[keys[i]] = values[i];
+                }
+            } 
+            
         }
+        
         let response = await fetch(apiURL + endpoint + `/${id}/`, {
             method: 'PATCH',
             body: JSON.stringify(body)
         });
+        if (!response.ok) {
+            console.log(await response.text());
+        }
         return {
             success: response.ok,
             error:response.statusText
