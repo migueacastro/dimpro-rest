@@ -3,10 +3,8 @@
 	import { onMount } from 'svelte';
 	import { user } from '../../../../stores/stores';
 	import { goto } from '$app/navigation';
-	import { authenticate } from '$lib/auth';
 
 	onMount(async () => {
-		await authenticate();
 		let isAdmin = false;
 		$user['groups'].forEach((group: any) => {
 			if (group.name === 'admin') {

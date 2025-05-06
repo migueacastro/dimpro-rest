@@ -1,38 +1,44 @@
 <script lang="ts">
 	//@ts-nocheck
-	import { checkAdminGroup } from '$lib/auth';
+	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
-	import { user } from '../../../../../stores/stores';
 	import { fetchData } from '$lib/utils.ts';
-	import { Autocomplete, getModalStore, getToastStore } from '@skeletonlabs/skeleton';
+	import { enhance } from '$app/forms';
+	import Reminder from '$lib/components/Reminder.svelte';
+	import {
+		Autocomplete,
+		getModalStore,
+		getToastStore,
+		ProgressRadial
+	} from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 	import type { AutocompleteOption, PopupSettings } from '@skeletonlabs/skeleton';
 	import StatusButton from '$lib/components/StatusButton.svelte';
 
 	export let data;
-	let products: any = [];
-	let contacts: any = [];
-	let pricetypes: Array<any> = [];
+	let orderForm, orderDeleteForm: HTMLFormElement;
+	let user = data.user;
+	let products: any = data.products ?? [];
+	let contacts: any = data.contacts ?? [];
+	let pricetypes: Array<any> = data.pricetypes ?? [];
 	let productBlacklist: any = [];
-	let productAutoCompleteList: AutocompleteOption[] = [];
-	let selectedPricetypeId: any;
-	let order: any = {};
-	let initialItemsList: Array<any> = [];
+	let productAutoCompleteList: AutocompleteOption[] = data.productAutoCompleteList ?? [];
+	let selectedPricetypeId: any = data.selectedPricetypeId;
+	let order: any = data.order ?? {};
 	let toastStore = getToastStore();
 	let modalStore = getModalStore();
-	let inputContact: string = '';
-	let selectedContactId: number;
-	let contactAutoCompleteList: AutocompleteOption<number, string>[] = [];
+	let inputContact: string = data.inputContact ?? '';
+	let selectedContactId: number = data.selectedContactId ?? '';
+	let contactAutoCompleteList: AutocompleteOption<number, string>[] =
+		data.contactAutoCompleteList ?? [];
 	let popupSettings: PopupSettings = {
 		event: 'focus-click',
 		target: 'popupAutocomplete',
 		placement: 'bottom'
 	};
 
-	$: items = [
-
-	];
+	let items: Array<any> = data.items;
 
 	$: totalQuantity = items
 		.reduce((accumulator: number, item: any) => accumulator + (Number(item.quantity) || 0), 0)
@@ -241,357 +247,311 @@
 
 	function loadItems(orderObject: any) {
 		// Create a new array for items
-		items = orderObject.products.map((product: any, index: any) => {
-			const row = {
-				id: product.product.id,
-				item: product.product.id,
-				reference: product.product.reference,
-				quantity: product.quantity,
-				availability: product.product.available_quantity,
-				price: product.price,
-				cost: product.cost,
-				item_label: product.product.item,
-				index: index,
-				search_error: false,
-				input_disabled: true,
-				hover: false,
-				product_object: null
-			};
-			// Load row values (e.g., price, cost) based on the selected pricetype
-
-			return row;
-		});
-		initialItemsList = items;
-		items.forEach((item: any) => {
+		for (let item: any of items) {
 			loadRowItemValues(item, item.id);
-		});
-		items = items;
-	}
-
-	async function disableInitialItems(orderObject: any) {
-		let data: any;
-		let response: any;
-		for (const product of orderObject.products) {
-			response = await fetchData(
-				'order_products',
-				'PATCH',
-				{
-					active: false
-				},
-				product.id
-			);
-			if (!response.ok) {
-				data = await response.json();
-				console.log(data);
-			}
 		}
 	}
 
 	async function handleSave() {
-		await disableInitialItems(order);
-		order = {
-			...order,
-			//contact: selectedContactId
-			total: totalCost,
-			pricetype: selectedPricetypeId ?? pricetypes[0]?.id,
-			user: order.user.id,
-			contact: selectedContactId ?? order.contact.id
-		};
-
-		for (const row of items) {
-			console.log(row.cost);
-			let response = await fetchData('order_products', 'POST', {
-				order: parseInt(data.id),
-				product: row.item,
-				price: row.price,
-				quantity: row.quantity,
-				cost: row.cost,
-				active: true
-			});
-			if (!response.ok) {
-				let data = await response.json();
-				console.log(data);
+		return async ({ update, result }: any) => {
+			let toast: ToastSettings;
+			if (result?.type == 'success') {
+				goto(`/dashboard/orders/${order.id}`);
+				toast = {
+					message: 'El pedido se guardó con exito.',
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};
+				console.log('Successfully saved');
+				toastStore.trigger(toast);
+			} else {
+				toast = {
+					message: `¡ERROR! El pedido no se pudo guardar.
+							\nmensaje:${result.data}`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
 			}
-		}
-		let response = await fetchData(`orders`, 'PATCH', order, data.id);
-		if (response.ok) {
-			const toast: ToastSettings = {
-				message: 'El pedido se guardó con exito.',
-				background: 'variant-ghost-success',
-				timeout: 7000
-			};
-			toastStore.trigger(toast);
-			console.log('Successfully saved');
-			goto(`/dashboard/orders/${data.id}`);
-		} else {
-			let errorData = await response.json();
-			const toast: ToastSettings = {
-				message: `¡ERROR! El pedido no se pudo guardar.
-							\nmensaje:${response.statusText}`,
-				background: 'variant-ghost-error',
-				timeout: 7000
-			};
-			toastStore.trigger(toast);
-			console.log(errorData);
-		}
+		};
 	}
-	async function handleDelete() {
+
+	async function confirmDelete() {
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Eliminar pedido`,
 			body: `¿Está seguro de querer eliminar este pedido?`,
 			response: async (r: boolean) => {
 				if (r) {
-					let response = await fetchData('orders/' + data.id, 'DELETE');
-					if (response.ok) {
-						const toast: ToastSettings = {
-							message: `El pedido se eliminó con exito.`,
-							background: 'variant-ghost-success',
-							timeout: 7000
-						};
-						toastStore.trigger(toast);
-					} else {
-						const toast: ToastSettings = {
-							message: `¡ERROR! El pedido no se pudo eliminar.
-							\nmensaje:${response.statusText}`,
-							background: 'variant-ghost-error',
-							timeout: 7000
-						};
-						toastStore.trigger(toast);
-					}
+					orderDeleteForm.requestSubmit();
 				}
-				//goto('/dashboard/orders');
 			}
 		};
 		modalStore.trigger(modal);
 	}
 
-	async function confirmation() {
+	async function handleDelete() {
+		return async ({ update, result }: any) => {
+			let toast: ToastSettings;
+			if (result?.type == 'success') {
+				toast = {
+					message: 'El pedido se eliminó con exito.',
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};
+				console.log('Successfully deleted');
+				goto(`/dashboard/orders/${order.id}`);
+				toastStore.trigger(toast);
+			} else {
+				toast = {
+					message: `¡ERROR! El pedido no se pudo eliminar.
+							\nmensaje:${result.data}`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast);
+			}
+		};
+	}
+
+	async function confirmSave() {
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Modificar Pedido`,
 			body: `¿Está seguro de querer modificar este Pedido?`,
 			response: async (r: boolean) => {
 				if (r) {
-					handleSave();
+					order = {
+						...order,
+						total: totalCost,
+						pricetype: selectedPricetypeId ?? pricetypes[0]?.id,
+						user: order.user.id,
+						contact: selectedContactId ?? order.contact.id
+					};
+					orderForm.requestSubmit();
 				}
 			}
 		};
 		modalStore.trigger(modal);
 	}
-
+	$: loaded = false;
 	onMount(async () => {
-		let response = await fetchData('products', 'GET');
-		products = await response.json();
-		response = await fetchData('orders/' + data.id, 'GET');
-		order = await response.json();
-		response = await fetchData('orders', 'GET');
-		let orders = await response.json();
-
-		if (!order) {
-			goto('/dashboard/orders');
-		}
-		response = await fetchData('contacts', 'GET');
-		contacts = await response.json();
-		response = await fetchData('pricetypes', 'GET');
-		pricetypes = await response.json();
-		selectedPricetypeId = order?.pricetype?.id ?? pricetypes[0]?.id;
-		productAutoCompleteList = products.map((product: any) => {
-			return { label: product.item, value: product.id };
-		});
-		contactAutoCompleteList = contacts.map((contact: any) => {
-			return { label: contact.name, value: contact.id };
-		});
-		inputContact = contacts.find((contact: any) => contact.id == order?.contact)?.name;
 		loadItems(order);
+		loaded = true;
 	});
 </script>
 
 <title>Editar Pedidos</title>
 
-<h1 class="h2 my-4">
-	Editar Pedido #{data.id}
-</h1>
+{#if loaded}
+	<h1 class="h2 my-4">
+		Editar Pedido #{data.id}
+	</h1>
 
-<div class="flex flex-col lg:flex-row justify-between mb-3">
-	<h3 class="h3 mb-3 lg:mb-0 lg:my-[2rem] lg:w-full">Items: {items.length}</h3>
-	<div class="lg:space-x-2 flex flex-col lg:flex-row lg:w-3/4">
-		<div class="flex flex-col w-1/2 lg:w-1/2 w-full lg:max-w-md lg:my-0 my-2">
-			<label for="select-contact" class="h4">Cliente</label>
-			<input
-				class="input autocomplete"
-				type="search"
-				name="autocomplete-search"
-				bind:value={inputContact}
-				placeholder="Buscar..."
-				use:popup={popupSettings}
-			/>
-			<div data-popup="popupAutocomplete" class="max-w-md w-full card">
-				<Autocomplete
-					bind:input={inputContact}
-					options={contactAutoCompleteList}
-					on:selection={(e) => {
-						inputContact = e.detail.label;
-						selectedContactId = e.detail.value;
-					}}
+	<div class="flex flex-col lg:flex-row justify-between mb-3">
+		<h3 class="h3 mb-3 lg:mb-0 lg:my-[2rem] lg:w-full">Items: {items.length}</h3>
+		<div class="lg:space-x-2 flex flex-col lg:flex-row lg:w-3/4">
+			<div class="flex flex-col lg:w-1/2 w-full lg:max-w-md lg:my-0 my-2">
+				<label for="select-contact" class="h4">Cliente</label>
+				<input
+					class="input autocomplete"
+					type="search"
+					name="autocomplete-search"
+					bind:value={inputContact}
+					placeholder="Buscar..."
+					use:popup={popupSettings}
 				/>
+				<div data-popup="popupAutocomplete" class="max-w-md w-full card">
+					<Autocomplete
+						bind:input={inputContact}
+						options={contactAutoCompleteList}
+						on:selection={(e) => {
+							inputContact = e.detail.label;
+							selectedContactId = e.detail.value;
+						}}
+					/>
+				</div>
 			</div>
-		</div>
-		<div class="flex flex-row space-x-2 w-full">
-			<div class="flex flex-col w-full lg:my-0 mb-3">
-				<label for="" class="h4">Tipo de precio</label>
-				<select
-					class="select w-full lg:max-w-md"
-					name="pricetype"
-					id="pricetype"
-					bind:value={selectedPricetypeId}
-					on:change={updateTablePrices}
-				>
-					{#each pricetypes as pricetype}
-						<option value={pricetype.id}>{pricetype.name}</option>
-					{/each}
-				</select>
-			</div>
-			<div class="flex flex-col w-fit lg:my-0 mb-2">
-				<label for="select-contact" class="h4">Estatus</label>
-				<StatusButton {order} />
-			</div>
-		</div>
-	</div>
-</div>
-<!-- Responsive Container (recommended) -->
-<div class="table-container">
-	<!-- Native Table Element -->
-	<table class="table table-hover overflow-x-scroll">
-		<thead>
-			<tr>
-				<th>ID</th>
-				<th>Item</th>
-				<th>Referencia</th>
-				<th>Cantidad</th>
-				<th>Disponibilidad</th>
-				<th>Precio</th>
-				<th>Costo</th>
-				<th class="w-[10rem]"></th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each items as row, index}
-				<tr
-					on:mouseover={() => (row.hover = true)}
-					on:mouseout={() => (row.hover = false)}
-					on:focus={() => {}}
-					on:blur={() => {}}
-				>
-					<td>{row.id || ''}</td>
-					<td>
-						<div
-							class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
-							class:variant-ghost-error={row.search_error}
-						>
-							<input
-								class="input autocomplete"
-								class:variant-ghost-error={row.search_error}
-								type="search"
-								name="autocomplete-search"
-								bind:value={row.item_label}
-								placeholder="Buscar..."
-								use:popup={{
-									event: 'focus-click',
-									target: `popupAutocomplete-${index}`,
-									placement: 'bottom'
-								}}
-								on:input={() => handleItemInput(row)}
-								on:blur={() => handleItemInputBlur(row)}
-								on:keydown={(e) => handleItemEnterPress(row, e)}
-							/>
-							<button type="button" class="input-group-shim" on:click={() => clearItemInput(row)}>
-								<i class="fa-solid fa-xmark"></i>
-							</button>
-						</div>
-						<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
-							<Autocomplete
-								bind:input={row.item_label}
-								options={productAutoCompleteList}
-								on:selection={(e) => {
-									row.item_label = e.detail.label;
-									row.item = e.detail.value;
-									loadRowItemValues(row, e.detail.value);
-								}}
-							/>
-						</div>
-					</td>
-					<td>{row.reference || ''}</td>
-					<td
-						><input
-							type="number"
-							class="input"
-							min="1"
-							disabled={row.input_disabled}
-							bind:value={row.quantity}
-							on:input={() => calculateCost(row)}
-						/></td
+			<div class="flex flex-row space-x-2 w-full">
+				<div class="flex flex-col w-full lg:my-0 mb-3">
+					<label for="" class="h4">Tipo de precio</label>
+					<select
+						class="select w-full lg:max-w-md"
+						name="pricetype"
+						id="pricetype"
+						bind:value={selectedPricetypeId}
+						on:change={updateTablePrices}
 					>
-					<td>{row.availability || ''}</td>
-					<td>{row.price || ''}</td>
-					<td>{row.cost || ''}</td>
-					<td class="hidden lg:flex flex-row">
-						<button
-							class:hidden={!row.hover}
-							class="btn variant-ghost-error"
-							on:click={() => removeRow(row.index)}
+						{#each pricetypes as pricetype}
+							<option value={pricetype.id}>{pricetype.name}</option>
+						{/each}
+					</select>
+				</div>
+				{#if checkStaffGroup(user)}
+					<div class="flex flex-col w-fit lg:my-0 mb-2">
+						<label for="select-contact" class="h4">Estatus</label>
+						<StatusButton {order} />
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+	<!-- Responsive Container (recommended) -->
+	<div class="table-container">
+		<!-- Native Table Element -->
+		<form action="?/save" bind:this={orderForm} method="post" use:enhance={handleSave}>
+			<input type="hidden" name="order" value={JSON.stringify(order)} />
+			<input type="hidden" name="items" value={JSON.stringify(items)} />
+			<input type="hidden" name="pricetype" bind:value={selectedPricetypeId} />
+			<input type="hidden" name="contact" bind:value={selectedContactId} />
+			<input type="hidden" name="total" bind:value={totalCost} />
+			<table class="table table-hover overflow-x-scroll">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Item</th>
+						<th>Referencia</th>
+						<th>Cantidad</th>
+						<th>Disponibilidad</th>
+						<th>Precio</th>
+						<th>Costo</th>
+						<th class="w-[10rem]"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each items as row, index}
+						<tr
+							on:mouseover={() => (row.hover = true)}
+							on:mouseout={() => (row.hover = false)}
+							on:focus={() => {}}
+							on:blur={() => {}}
 						>
-							<i class="fa-solid fa-trash"></i>
-						</button>
-						<button class:hidden={!row.hover} class="btn ml-2 variant-filled" on:click={addRow}>
-							<i class="fa-solid fa-plus"></i>
-						</button>
-					</td>
-					<td class="flex lg:hidden flex-row">
-						<button class="btn variant-ghost-error" on:click={() => removeRow(row.index)}>
-							<i class="fa-solid fa-trash"></i>
-						</button>
-						<button class="btn ml-2 variant-filled" on:click={addRow}>
-							<i class="fa-solid fa-plus"></i>
-						</button>
-					</td>
-				</tr>
-			{/each}
-		</tbody>
-		<tfoot>
-			<tr>
-				<th colspan="3">Totales</th>
-				<td class="font-bold">{totalQuantity}</td>
-				<td></td>
-				<td class="font-bold">{totalPrice}</td>
-				<td class="font-bold">{totalCost}</td>
-				<td></td>
-			</tr>
-		</tfoot>
-	</table>
-</div>
-<div>
-	<div class="flex flex-row justify-center mt-[2rem]">
-		<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
-			<i class="fa-solid fa-plus"></i><span class="hidden lg:block ml-2">Añadir item</span>
-		</button>
-		<button class="btn ml-2 text-sm variant-filled" on:click={confirmation}>
-			<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
-		</button>
-		<button class="btn ml-2 text-sm variant-ghost-error" on:click={handleDelete}>
-			<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
-		</button>
+							<td>{row.id || ''}</td>
+							<td>
+								<div
+									class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
+									class:variant-ghost-error={row.search_error}
+								>
+									<input
+										class="input autocomplete"
+										class:variant-ghost-error={row.search_error}
+										type="search"
+										name="autocomplete-search"
+										bind:value={row.item_label}
+										placeholder="Buscar..."
+										use:popup={{
+											event: 'focus-click',
+											target: `popupAutocomplete-${index}`,
+											placement: 'bottom'
+										}}
+										on:input={() => handleItemInput(row)}
+										on:blur={() => handleItemInputBlur(row)}
+										on:keydown={(e) => handleItemEnterPress(row, e)}
+									/>
+									<button
+										type="button"
+										class="input-group-shim"
+										on:click={() => clearItemInput(row)}
+									>
+										<i class="fa-solid fa-xmark"></i>
+									</button>
+								</div>
+								<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
+									<Autocomplete
+										bind:input={row.item_label}
+										options={productAutoCompleteList}
+										on:selection={(e) => {
+											row.item_label = e.detail.label;
+											row.item = e.detail.value;
+											loadRowItemValues(row, e.detail.value);
+										}}
+									/>
+								</div>
+							</td>
+							<td>{row.reference || ''}</td>
+							<td
+								><input
+									type="number"
+									class="input"
+									min="1"
+									disabled={row.input_disabled}
+									bind:value={row.quantity}
+									on:input={() => calculateCost(row)}
+								/></td
+							>
+							<td>{row.availability || ''}</td>
+							<td>{row.price || ''}</td>
+							<td>{row.cost || ''}</td>
+							<td class="hidden lg:flex flex-row">
+								<button
+									type="button"
+									class:hidden={!row.hover}
+									class="btn variant-ghost-error"
+									on:click={() => removeRow(row.index)}
+								>
+									<i class="fa-solid fa-trash"></i>
+								</button>
+								<button
+									type="button"
+									class:hidden={!row.hover}
+									class="btn ml-2 variant-filled"
+									on:click={addRow}
+								>
+									<i class="fa-solid fa-plus"></i>
+								</button>
+							</td>
+							<td class="flex lg:hidden flex-row">
+								<button
+									type="button"
+									class="btn variant-ghost-error"
+									on:click={() => removeRow(row.index)}
+								>
+									<i class="fa-solid fa-trash"></i>
+								</button>
+								<button type="button" class="btn ml-2 variant-filled" on:click={addRow}>
+									<i class="fa-solid fa-plus"></i>
+								</button>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+				<tfoot>
+					<tr>
+						<th colspan="3">Totales</th>
+						<td class="font-bold">{totalQuantity}</td>
+						<td></td>
+						<td class="font-bold">{totalPrice}</td>
+						<td class="font-bold">{totalCost}</td>
+						<td></td>
+					</tr>
+				</tfoot>
+			</table>
+		</form>
 	</div>
-	<div class="flex justify-end flex-row">
-		<h1 class="h2 mt-[2rem]">Total: {totalCost}$</h1>
-	</div>
-	<div class="card p-[2rem] mt-[2rem]">
-		<h1 class="h3">Recordatorio</h1>
-		<p class="p">Texto de ejemplo</p>
-		{#if checkAdminGroup($user)}
-			<button class="btn mt-[2rem] variant-filled" on:click={addRow}>
-				<i class="fa-solid fa-floppy-disk"></i>
+	<div>
+		<div class="flex flex-row justify-center mt-[2rem]">
+			<button class="btn ml-2 text-sm variant-filled" on:click={addRow}>
+				<i class="fa-solid fa-plus"></i><span class="hidden lg:block ml-2">Añadir item</span>
 			</button>
-		{/if}
+			<button class="btn ml-2 text-sm variant-filled" on:click={confirmSave}>
+				<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
+			</button>
+			<form action="?/delete" method="post" bind:this={orderDeleteForm} use:enhance={handleDelete}>
+				<input type="hidden" name="id" value={data.id} />
+				<button type="button" class="btn ml-2 text-sm variant-ghost-error" on:click={confirmDelete}>
+					<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
+				</button>
+			</form>
+		</div>
+		<div class="flex justify-end flex-row mb-[5rem]">
+			<h1 class="h2 mt-[2rem]">Total: {totalCost}$</h1>
+		</div>
+		<Reminder {user} reminders={data.reminders} />
 	</div>
-</div>
+{:else}
+	<div class="flex justify-center mt-[8rem]">
+		<div class="my-auto">
+			<ProgressRadial />
+		</div>
+	</div>
+{/if}

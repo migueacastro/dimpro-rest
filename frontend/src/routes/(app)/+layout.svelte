@@ -12,12 +12,10 @@
 	import logo from '$lib/assets/logodimpro.svg';
 	import logolight from '$lib/assets/logodimprolight.svg';
 	import icon from '$lib/assets/iconlight.svg';
-	import { onMount } from 'svelte';
-	import { authenticate } from '$lib/auth';
-	import { user } from '../../stores/stores';
-	import { goto } from '$app/navigation';
 	import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
 	let expandedDrawer = false;
+	export let data;
+	const user = data.user; 
 	const drawerStore = getDrawerStore();
 	const layoutDrawerSettings = {
 		id: 'layoutDrawer',
@@ -30,13 +28,6 @@
 		expandedDrawer = false;
 		setTimeout(drawerStore.close, 100);
 	}
-
-	onMount(async () => {
-		await authenticate();
-		if (!$user) {
-			await goto('/start');
-		}
-	});
 </script>
 
 <Modal height="h-auto" regionBody="h-auto overflow-hidden"></Modal>
@@ -85,7 +76,7 @@
 						Inventario
 					</a>
 				</li>
-				{#if checkStaffGroup($user)}
+				{#if checkStaffGroup(user)}
 					<li>
 						<a
 							href="/dashboard/users"
@@ -96,7 +87,7 @@
 						</a>
 					</li>
 				{/if}
-				{#if checkAdminGroup($user)}
+				{#if checkAdminGroup(user)}
 					<li>
 						<a
 							href="/dashboard/staff"
@@ -170,7 +161,7 @@
 						class="lg:text-xl text-md capitalize text-end font-bold md:text-xl md:flex md:align-middle"
 					>
 						<a href="/dashboard/user">
-							<div>{$user?.name?.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
+							<div>{user?.name?.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
 						</a>
 					</div>
 					<div class="hidden lg:flex w-auto ml-4"><LightSwitch /></div>
@@ -244,7 +235,7 @@
 			</div>
 		</a>
 
-		{#if checkStaffGroup($user)}
+		{#if checkStaffGroup(user)}
 			<a href="/dashboard/users">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
@@ -260,7 +251,7 @@
 			</a>
 		{/if}
 
-		{#if checkAdminGroup($user)}
+		{#if checkAdminGroup(user)} 
 			<a href="/dashboard/staff">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users-gear h3 w-20"></i>

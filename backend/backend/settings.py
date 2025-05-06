@@ -138,6 +138,7 @@ STATIC_ROOT = BASE_DIR / 'static_root'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -152,7 +153,6 @@ CSRF_TRUSTED_ORIGINS = [
     f"https://{DOMAIN}" if MODE == "production" else "http://localhost", 
 ]
 
-TOKEN_DURATION = timedelta(days=90) 
 
 
 CORS_ALLOWED_ORIGINS = [
@@ -180,5 +180,13 @@ CORS_ALLOW_HEADERS = (
 'authorization',
 'X-CSRFToken'
 )
-SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
+
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = MODE == "production"  # True in production, False locally
+SESSION_COOKIE_SAMESITE = 'Lax'  # Or 'None' if using cross-site
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
+SESSION_COOKIE_DOMAIN = DOMAIN if MODE == "production" else None

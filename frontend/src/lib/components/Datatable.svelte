@@ -1,6 +1,7 @@
 <script lang="ts">
 	//@ts-nocheck
 	//Import local datatable components
+	import { beforeNavigate } from '$app/navigation';
 	import ThSort from '$lib/components/ThSort.svelte';
 	import ThFilter from '$lib/components/ThFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -8,9 +9,8 @@
 	import RowCount from '$lib/components/RowCount.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import { goto } from '$app/navigation';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	//Load local data
-	import { fetchData } from '$lib/utils.ts';
-	import { getData } from './data';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
@@ -22,6 +22,9 @@
 		type ModalSettings,
 		type ToastSettings
 	} from '@skeletonlabs/skeleton';
+	import { Result } from 'postcss';
+	import { enhance } from '$app/forms';
+	//import { loading } from '../../stores/stores';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -34,6 +37,16 @@
 	export let headings: any = [];
 	export let table_name = '';
 
+	$: loaded = false;
+	$: loading = true;
+
+	beforeNavigate(() => {
+		setTimeout(() => {
+			loaded = true;
+			loading = false;
+		}, 700);
+	});
+
 	// List to use inside each heading so that it can access the Title and the field name to access the object attribute
 	let combinedHeadingsList = headings.map((heading: any, index: any) => {
 		return { heading: heading, field: fields[index] };
@@ -42,51 +55,79 @@
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
 	let rows = handler.getRows();
 
-	function deleteConfirmation(name: any, id: any) {
+	function deleteResult() {
+		// so, after the form.requestSubmit() which is different than form.submit() because form.submit() submits the form as the server, and form.requestSubmit() submits the form as an user. form.submit()
+
+		// so, this is an enhance function, triggered by the form submission as an user so in every form enhance function
+		// you want to return this. result is the object returned by the action, like this
+		return async ({ update, result }: any) => {
+			if (result.data.success) {
+				// this is how you verify it was a successful submission
+				const t: ToastSettings = {
+					message: `El ${table_name} se eliminó con exito.`,
+					background: 'variant-ghost-success',
+					timeout: 7000
+				};
+				toastStore.trigger(t); // and then trigger whatever function you want
+			} else {
+				const toast: ToastSettings = {
+					message: `¡ERROR! El ${table_name} no se pudo eliminar.
+							\nmensaje:${result.data.error}`,
+					background: 'variant-ghost-error',
+					timeout: 7000
+				};
+				toastStore.trigger(toast); // just an else, in case there was an error
+			}
+			setTimeout(() => {
+				window.location.reload();
+			},1000);
+		};
+
+		// kinda get it so far? if any you can base your own on this (copy and adapt xd) you don't have to understand it fully, but atleast now that
+
+		/*     */
+	}
+	function deleteConfirmation(name: any, id: any, event: any) {
+		// that button will trigger the confirmation popup, if it has response. Then it will trigger the formSubmission with this little one
 		const modal: ModalSettings = {
 			type: 'confirm',
 			title: `Eliminar: ${name}`,
 			body: `¿Está seguro de querer eliminar este ${table_name}?`,
 			response: async (r: boolean) => {
 				if (r) {
-					let response = await fetchData(endpoint['main'], 'DELETE', null, id);
-					if (response.ok) {
-						const t: ToastSettings = {
-							message: `El ${table_name} se eliminó con exito.`,
-							background: 'variant-ghost-success',
-							timeout: 7000
-						};
-						toastStore.trigger(t);
-					} else {
-						const toast: ToastSettings = {
-							message: `¡ERROR! El ${table_name} no se pudo eliminar.
-							\nmensaje:${response.statusText}`,
-							background: 'variant-ghost-error',
-							timeout: 7000
-						};
-						toastStore.trigger(toast);
+					const form = event.target.closest('form');
+					if (form) {
+						form.requestSubmit();
 					}
 				}
-				goto('/dashboard/' + endpoint['main']);
 			}
 		};
 		modalStore.trigger(modal);
 	}
 
 	onMount(async () => {
-		if (endpoint['main']) {
-			let response = await fetchData(endpoint['main'], 'GET');
-			data = await response.json();
-			//console.log(data);
-			handler = new DataHandler(data, { rowsPerPage: 5 });
-		} else {
-			handler = new DataHandler(source_data, { rowsPerPage: 5 });
-		}
+		loaded = false;
+		loading = true;
+
+		handler = new DataHandler(source_data, { rowsPerPage: 5 }); // Now it always use source_data
+
 		rows = handler.getRows();
+		setTimeout(() => {
+			loaded = true;
+			loading = false;
+		}, 200);
 	});
 </script>
 
-<div class=" overflow-x-auto space-y-4">
+{#if loading}
+	<div class="flex justify-center mt-[8rem]">
+		<div class="my-auto">
+			<ProgressRadial />
+		</div>
+	</div>
+{/if}
+
+<div class=" overflow-x-auto space-y-4" class:hidden={!loaded}>
 	<!-- Header -->
 	<header class="flex justify-between gap-4">
 		<Search {handler} />
@@ -114,15 +155,7 @@
 		</thead>
 		<tbody>
 			{#each $rows as row}
-				<tr
-					on:click={() => { 
-            if (endpoint['secondary']) {
-							goto('/dashboard/' + endpoint['secondary'] + '/' + row['id']);
-            } else if (endpoint['main']) {
-							goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
-						}
-					}}
-				>
+				<tr on:click={() => {if(!editable){goto('/dashboard/' + endpoint['main']+`/${row['id']}`)}}}>
 					{#each fields as field}
 						{#if row[field]}
 							<td class="capitalize">{row[field]}</td>
@@ -130,14 +163,30 @@
 							<td class="capitalize">No Definido</td>
 						{/if}
 					{/each}
+
 					{#if editable}
 						<td class="flex flex-row">
 							<button
-								class="btn variant-filled"
-								on:click={() => deleteConfirmation(row['name'], row['id'])}
+								class="btn mr-2 variant-filled"
+								on:click={() => {
+									setTimeout(() => {
+										goto('/dashboard/' + endpoint['main'] + '/' + row['id']);
+									}, 90);
+								}}
 							>
-								<i class="fa-solid fa-trash"></i>
+								<i class="fa-solid fa-info"></i>
 							</button>
+
+							<form action="?/handleDelete" method="POST" use:enhance={deleteResult}>
+								<input type="hidden" name="id" value={row['id']} />
+								<button
+									type="button"
+									class="btn variant-filled"
+									on:click={(e) => deleteConfirmation(row['name'], row['id'], e)}
+								>
+									<i class="fa-solid fa-trash"></i>
+								</button>
+							</form>
 							<button
 								class="btn ml-2 variant-filled"
 								on:click={() => {

@@ -1,20 +1,15 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { onMount } from 'svelte';
-	import { user } from '../../../../stores/stores';
 	import { goto } from '$app/navigation';
-	import { authenticate } from '$lib/auth';
+	import { checkAdminGroup, checkStaffGroup } from '$lib/auth.js';
 
+	export let data;
+	let {user} = data;
+	let {users} = data;
 	let endpoint = {"main":"users","edit":"edit-user","add":"create-user"};
 	onMount(async () => {
-		await authenticate();
-		let isStaffOrAdmin = false;
-		$user['groups'].forEach((group: any) => {
-			if (group['name'] === 'staff' || group['name'] === 'admin') {
-				isStaffOrAdmin = true;
-			}
-		});
-		if (!isStaffOrAdmin) {
+		if (!(checkStaffGroup(user) || checkAdminGroup(user))) {
 			goto('/dashboard');
 		}
 	});
@@ -24,6 +19,7 @@
 <Datatable
 	editable={true}
 	endpoint={endpoint}
+	source_data={users}
 	table_name={'vendedor'}
 	fields={['name', 'email', 'phonenumber']}
 	headings={['Nombre', 'Email', 'Teléfono']}

@@ -1,9 +1,7 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { setInitialClassState, storePopup } from '@skeletonlabs/skeleton';
-	import { authenticate } from '$lib/auth';
-	import { loading,  user } from '../stores/stores';
+	import { storePopup } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -14,27 +12,27 @@
 
 	initializeStores();
 	$: loaded = false;
+	$: loading = true;
 
 	beforeNavigate(() => {
 		setTimeout(() => {
             loaded = true;
-			loading.set(false);
+			loading = (false);
 		}, 700);
 	});
 
 	onMount(async () => {
         loaded = false;
-        loading.set(true);
-		let userData = await authenticate();
-		user.set(userData);
+        loading = true;
+
 		setTimeout(() => {
 			loaded = true;
-			loading.set(false);
+			loading = false;
 		}, 1000);
 	});
 </script>
 
-{#if $loading}
+{#if loading}
 	<div class="flex justify-center mt-[15rem]">
 		<div class="my-auto">
 			<ProgressRadial />

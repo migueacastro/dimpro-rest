@@ -9,7 +9,7 @@ class CustomUserManager(UserManager):
             raise ValueError("No has ingresado una direccion e-mail valida.")
 
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = self.model(email=email,phonenumber=phonenumber, **extra_fields)
         user.set_password(password)
         user.phonenumber = phonenumber
         user.save(using=self._db)
@@ -19,6 +19,7 @@ class CustomUserManager(UserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        user.phonenumber = phonenumber
         user.save(using=self._db)
         user_group, created = Group.objects.get_or_create(name="user")        
         user.groups.add(user_group)

@@ -29,6 +29,15 @@ class UserLoginSerializer(serializers.ModelSerializer):
     model = get_user_model()
     fields = ["email", "password"]
 
+class ChangePasswordSerializer(serializers.ModelSerializer):
+  password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  old_password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  confirm_password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  class Meta:
+    model = get_user_model()
+    fields = ['password', 'confirm_password', 'old_password']
+
+
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -42,7 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
   confirmPassword = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True) 
   class Meta:
     model = get_user_model() 
-    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups','permissions']
+    fields = ['id', 'email', 'name', 'password', 'confirmPassword', 'phonenumber', 'groups','permissions', 'date_joined', 'last_login']
 
   def create(self, validated_data):
     validated_data.pop('confirmPassword')
@@ -63,6 +72,8 @@ class UserSerializer(serializers.ModelSerializer):
       instance.email = validated_data.get('email')
     if 'password' in validated_data:
         instance.set_password(validated_data.get('password'))
+    if 'phonenumber' in validated_data:
+        instance.phonenumber = validated_data.get('phonenumber')
     if 'groups' in validated_data:
       instance.groups.set(validated_data.pop('groups', None))
     instance.save()
@@ -103,6 +114,11 @@ class PriceTypeSerializer(serializers.ModelSerializer):
   class Meta:
     model = PriceType
     fields = ['id', 'name']
+
+class NoteSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Note
+    fields = ['note', 'name','date']
 
 class ContactSerializer(serializers.ModelSerializer):
   class Meta:
@@ -213,6 +229,11 @@ class UserNestedSerializer(UserSerializer):
         return obj.date_joined.strftime('%Y/%m/%d %H:%M') if obj.date_joined else ''
   def get_last_login_format(self, obj):
     return obj.last_login.strftime('%Y/%m/%d %H:%M') if obj.last_login else 'Ninguno'
+  
+class ExportOrderPDFSerializer(serializers.Serializer):
+   order_id = serializers.IntegerField()
+   class Meta:
+      fields = ['order_id']
 
 class LogSerializer(serializers.ModelSerializer):
    class Meta:

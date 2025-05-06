@@ -1,13 +1,13 @@
 <script>
 	import { checkStaffGroup } from '$lib/auth.ts';
-	import { user } from '../../../stores/stores';
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { apiURL } from '$lib/api_url';
+	export let data;
+	let {user} = data;
 </script>
 
 <title>Dimpro Iluminación</title>
 
-{#if checkStaffGroup($user)}
+{#if checkStaffGroup(user)}
 	<div class="lg:flex lg:flex-row mb-[1rem] justify-center">
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[50%] lg:mr-[1rem] my-5 dark:variant-filled-surface variant-filled-tertiary"
@@ -29,7 +29,7 @@
 		</a>
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[20%] my-5 dark:variant-filled-surface variant-filled-tertiary"
-			href="/"
+			href="/dashboard/user"
 		>
 			<div class="flex flex-row justify-center lg:h-auto h-[2rem]">
 				<p class="font-bold h4">Empleado</p>
@@ -40,6 +40,7 @@
 	<div>
 		<Datatable
 			editable={false}
+			source_data={data.list}
 			endpoint={{ main: 'orders' }}
 			headings={['ID', 'Usuario', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
 			fields={['id', 'user_name', 'contact_name', 'product_count', 'status', 'date_format']}
@@ -67,7 +68,7 @@
 		</a>
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] my-5 lg:w-[30%] lg:mr-[1rem] dark:variant-filled-surface variant-filled-tertiary"
-			href="user"
+			href="/dashboard/user"
 		>
 			<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 				<p class="font-bold h4">Vendedor</p>

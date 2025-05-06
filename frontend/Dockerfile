@@ -1,12 +1,9 @@
-FROM node:21.7.3-alpine
+FROM node:23-alpine
 
 WORKDIR /frontend
 
 COPY . .
 RUN npm install -g vite
 RUN npm install
-# RUN npm run build
-
+RUN npm i svelte-check --save-dev
 EXPOSE 3000
-
-CMD ["npm", "run", "dev"]

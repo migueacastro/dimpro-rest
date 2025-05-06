@@ -28,13 +28,12 @@ if [ -f "$ENV_FILE" ]; then
   else
     echo "MODE=$MODE" >> "$ENV_FILE"
   fi
-
+  
   if grep -q "^VITE_MODE=" "$ENV_FILE"; then
     sed -i.bak "s/^VITE_MODE=.*/VITE_MODE=$MODE/" "$ENV_FILE"
   else
     echo "VITE_MODE=$MODE" >> "$ENV_FILE"
   fi
-
   # Remove backup file created by sed
   rm -f "${ENV_FILE}.bak"
 else
@@ -51,5 +50,5 @@ echo "Starting in $MODE mode..."
 if [ "$MODE" = "production" ]; then
   exec docker-compose up
 else
-  exec docker-compose up db initdb api django-q nginx frontend
+  exec docker-compose up db api django-q frontend nginx
 fi
