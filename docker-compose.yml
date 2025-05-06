@@ -25,7 +25,7 @@ services:
             if [ -f /backups/backup.dump ]; then
               echo 'Backup file exists. Starting restore with --clean option...';
               export PGPASSWORD=${POSTGRES_PASSWORD};
-              pg_restore --clean --if-exists  -U postgres -h db -d postgres -v /backups/backup.dump;
+              pg_restore --clean --if-exists -U postgres -h db -d postgres -v /backups/backup.dump;
             else
               echo 'Backup file does not exist. Skipping restore.';
             fi
