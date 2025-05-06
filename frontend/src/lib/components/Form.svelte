@@ -2,7 +2,6 @@
 	//@ts-nocheck
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { fetchData } from '$lib/utils.ts';
 	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
 	import {
