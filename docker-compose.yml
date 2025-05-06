@@ -76,6 +76,8 @@ services:
     ports:
       - 3000:3000
     env_file: .env
+    environment:
+      - VITE_ORIGIN=https://${DOMAIN}
   nginx:
     image: nginx:1.13
     restart: on-failure
