@@ -2,7 +2,6 @@
 	//@ts-nocheck
 	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
-	import { fetchData } from '$lib/utils.ts';
 	import { enhance } from '$app/forms';
 	import Reminder from '$lib/components/Reminder.svelte';
 	import {
