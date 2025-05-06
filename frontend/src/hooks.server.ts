@@ -2,6 +2,8 @@ import { apiURL } from '$lib/api_url';
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
+  await checkLogout({ event }); // huh, just checks if the page is /logout, it will remove the cookie and the locals about the user so that its just null
+
   // and this, nothing else
   const sessionid = event.cookies.get('sessionid'); // get the sessionid cookie
   if (sessionid && !event.locals.user) {
@@ -11,7 +13,6 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   
-  await checkLogout({ event }); // huh, just checks if the page is /logout, it will remove the cookie and the locals about the user so that its just null
 
   // now, hear me out
 
@@ -92,7 +93,7 @@ export async function getUserFromCookie(event: { cookies: any; fetch: typeof fet
 }
 
 export async function checkLogout({ event }: any) {
-  if (event.url.pathname === '/logout') {
+  if (event.url.pathname.startsWith('/logout')) {
     event.cookies.delete('sessionid', { path: '/' });
     event.locals.user = null;
   }

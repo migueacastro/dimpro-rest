@@ -4,11 +4,8 @@
 	import StatusButton from '$lib/components/StatusButton.svelte';
 	import { getToastStore, ProgressRadial } from '@skeletonlabs/skeleton';
 	import { checkStaffGroup } from '$lib/auth';
-	import { enhance } from '$app/forms';
 	export let data: any;
 	let order = data.order;
-	const toastStore = getToastStore();
-
 	let products: Array<any> = order?.products.map((item: any) => {
 		return {
 			id: item.product.id,
