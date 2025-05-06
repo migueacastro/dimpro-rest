@@ -58,7 +58,7 @@ export async function login({ fetch, locals, formData, isStaff, cookies }: any) 
 	});
 
 	if (!response.ok) {
-		const data = await response.json();
+		const data = await response.text();
 		console.log(data);
 		return fail(400, { error: data, success: false });
 	}
