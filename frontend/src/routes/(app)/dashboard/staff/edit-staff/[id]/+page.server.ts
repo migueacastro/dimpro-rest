@@ -1,7 +1,7 @@
 import { apiURL } from '$lib/api_url.js';
 import { redirect, type Actions } from '@sveltejs/kit';
 
-export async function load({ fetch,locals,params }:any) {
+export async function load({ fetch, locals, params }: any) {
     const response = await fetch(apiURL + `staff/${params.id}`);
     const data = await response.json();
     if (!locals.user) {
@@ -9,7 +9,7 @@ export async function load({ fetch,locals,params }:any) {
     }
     return {
         user: locals.user,
-        reqUser:data
+        reqUser: data
     };
 }
 
@@ -23,10 +23,12 @@ export const actions: Actions = {
         const values = Array.from(formData.values());
         let body: any = {};
         for (let i = 0; i < keys.length; i++) {
-            try {
-                body[keys[i]] = JSON.parse(values[i] as string);
-            } catch {
-                body[keys[i]] = values[i];
+            if (values[i].toString().trim() !== "") {
+                try {
+                    body[keys[i]] = JSON.parse(values[i] as string);
+                } catch {
+                    body[keys[i]] = values[i];
+                }
             }
         }
         let response = await fetch(apiURL + endpoint + `/${id}/`, {
@@ -35,7 +37,7 @@ export const actions: Actions = {
         });
         return {
             success: response.ok,
-            error:response.statusText
+            error: response.statusText
         }
     }
 }

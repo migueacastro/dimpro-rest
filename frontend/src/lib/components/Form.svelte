@@ -1,5 +1,6 @@
 <script lang="ts">
 	//@ts-nocheck
+	//TODO: clean this form in the end
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -52,6 +53,9 @@
 	let confirmPassword = '';
 	let phoneNumber = '';
 	let validatedFields: Boolean = false;
+	let passwordError: any = null;
+	let repPasswordError: any = null;
+	let hasErrors: boolean = false;
 	function validateFields() {
 		let valid: Boolean = false;
 		valid =
@@ -61,7 +65,14 @@
 		validatedFields = valid;
 		return valid;
 	}
-
+	function activatedErrors() {
+		hasErrors = true;
+		return '';
+	}
+	function deactivatedErrors() {
+		hasErrors = false;
+		return '';
+	}
 	function isEditable() {
 		if (edit) {
 			action = 'edit';
@@ -78,20 +89,29 @@
 	}
 
 	function updateConfirmation(event: any) {
-		const modal: ModalSettings = {
-			type: 'confirm',
-			title: `Modificar: de ${ogValue} a ${fields[0].value}`,
-			body: `¿Está seguro de querer modificar este ${table_name}?`,
-			response: (r: boolean) => {
-				if (r) {
-					const form = event.target.closest('form');
-					if (form) {
-						form.requestSubmit();
+		if (hasErrors) {
+			const toast: ToastSettings = {
+				message: 'No es posible proceder si hay errores.',
+				background: 'variant-ghost-error',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
+		} else {
+			const modal: ModalSettings = {
+				type: 'confirm',
+				title: `Modificar: de ${ogValue} a ${fields[0].value}`,
+				body: `¿Está seguro de querer modificar este ${table_name}?`,
+				response: (r: boolean) => {
+					if (r) {
+						const form = event.target.closest('form');
+						if (form) {
+							form.requestSubmit();
+						}
 					}
 				}
-			}
-		};
-		modalStore.trigger(modal);
+			};
+			modalStore.trigger(modal);
+		}
 	}
 
 	function sendData() {
@@ -115,7 +135,22 @@
 			goto(`/dashboard/${endpoint}`);
 		};
 	}
-	function togglePasswordInput(event: Event) {
+	function handleForm(event: Event) {
+		if (hasErrors) {
+			const toast: ToastSettings = {
+				message: 'No es posible proceder si hay errores.',
+				background: 'variant-ghost-error',
+				timeout: 7000
+			};
+			toastStore.trigger(toast);
+		} else {
+			const form = event.target.closest('form');
+			if (form) {
+				form.requestSubmit();
+			}
+		}
+	}
+	function togglePassword(event: Event) {
 		let button = event.target as HTMLElement;
 		if (button.tagName !== 'BUTTON') {
 			// just in case the event.target is the icon and not the button
@@ -126,6 +161,45 @@
 		const icon = button.querySelector('i') as HTMLElement;
 		icon.classList.toggle('fa-eye');
 		icon.classList.toggle('fa-eye-slash');
+	}
+	function validateRepPassword(event: Event) {
+		let target = event.target as HTMLElement;
+		const input = target.closest('input');
+		let password = (input as HTMLInputElement).value;
+		const originalPassword = (document.getElementsByName('password') as HTMLFormElement)[0].value;
+		if (password.length > 0) {
+			if (password.length <= 5) {
+				repPasswordError = error.shortPass;
+			} else if (!error.hasNumbers(password)) {
+				repPasswordError = error.NotNumbers;
+			} else if (!error.hasUpperCase(password)) {
+				repPasswordError = error.NotUpperCase;
+			} else if (password !== originalPassword) {
+				repPasswordError = error.NotMatchingPass;
+			} else {
+				repPasswordError = null;
+			}
+		} else {
+			repPasswordError = null;
+		}
+	}
+	function validatePassword(event: Event) {
+		let target = event.target as HTMLElement;
+		const input = target.closest('input');
+		let password = (input as HTMLInputElement).value;
+		if (password.length > 0) {
+			if (password.length <= 5) {
+				passwordError = error.shortPass;
+			} else if (!error.hasNumbers(password)) {
+				passwordError = error.NotNumbers;
+			} else if (!error.hasUpperCase(password)) {
+				passwordError = error.NotUpperCase;
+			} else {
+				passwordError = null;
+			}
+		} else {
+			passwordError = null;
+		}
 	}
 	onMount(() => {
 		isEditable();
@@ -163,9 +237,12 @@
 						/>
 						{#if field?.value?.length > 0}
 							{#if !error.validatePhoneNumber(field.value)}
+								{activatedErrors()}
 								<div class="card variant-ghost-error p-2 text-sm text-left">
 									{error.NotValidPhone}
 								</div>
+							{:else}
+								{deactivatedErrors()}
 							{/if}
 						{/if}
 						{#if errors?.phoneNumber?.length > 0}
@@ -181,9 +258,17 @@
 						<input class="input" type="text" bind:value={field.value} name={field.name} />
 						{#if field.value.length > 0}
 							{#if !error.validateText(field.value)}
+								{activatedErrors()}
 								<div class="card variant-ghost-error p-2 text-sm text-left">
 									{error.hasSpecials}
 								</div>
+							{:else if field.value.length > 70}
+								{activatedErrors()}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.tooLong}
+								</div>
+							{:else}
+								{deactivatedErrors()}
 							{/if}
 						{/if}
 					{/if}
@@ -200,9 +285,12 @@
 
 					{#if field?.value?.length > 0}
 						{#if !error.validateEmail(field.value)}
+							{activatedErrors()}
 							<div class="card variant-ghost-error p-2 text-sm text-left">
 								{error.NotValidEmail}
 							</div>
+						{:else}
+							{deactivatedErrors()}
 						{/if}
 					{/if}
 
@@ -217,11 +305,34 @@
 					{/if}
 				{:else if field?.type === 'password'}
 					<div class="input-group mb-2 input-group-divider grid-cols-[1fr_auto] p-0">
-						<input class="input" type="password" bind:value={field.value} name={field.name} />
-						<button type="button" on:click={togglePasswordInput}
+						<input
+							class="input"
+							type="password"
+							bind:value={field.value}
+							name={field.name}
+							on:input={field.name === 'password' ? validatePassword : validateRepPassword}
+						/>
+						<button type="button" on:click={togglePassword}
 							><i class="fa-regular fa-eye-slash"></i></button
 						>
 					</div>
+					{#if passwordError && field.name === 'password'}
+						{activatedErrors()}
+						<div class="card variant-ghost-error p-2 text-sm text-left">
+							<ul>
+								<li>{passwordError}</li>
+							</ul>
+						</div>
+					{:else if repPasswordError && field.name === 'confirmPassword'}
+						{activatedErrors()}
+						<div class="card variant-ghost-error p-2 text-sm text-left">
+							<ul>
+								<li>{repPasswordError}</li>
+							</ul>
+						</div>
+					{:else}
+						{deactivatedErrors() && ''}
+					{/if}
 				{:else if field?.type === 'decimal'}
 					<input
 						class="input w-[25%]"
@@ -278,7 +389,11 @@
 			</label>
 		{/each}
 		{#if !edit}
-			<button type="submit" class="btn variant-filled h-fit w-fit mx-auto btn-xl">Guardar</button>
+			<button
+				type="button"
+				class="btn variant-filled h-fit w-fit mx-auto btn-xl"
+				on:click={handleForm}>Guardar</button
+			>
 		{:else}
 			<button
 				type="button"
