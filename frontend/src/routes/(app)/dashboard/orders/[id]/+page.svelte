@@ -2,7 +2,7 @@
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { goto } from '$app/navigation';
 	import StatusButton from '$lib/components/StatusButton.svelte';
-	import { getToastStore, ProgressRadial } from '@skeletonlabs/skeleton';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { checkStaffGroup } from '$lib/auth';
 	export let data: any;
 	let order = data.order;
@@ -17,34 +17,6 @@
 		};
 	});
 	let loaded = true;
-
-	async function handleExportPDFEnhance() {
-		return async ({ result }: any) => {
-			if (result.type === 'success') {
-				// Extract the file from the response
-				const file = result.data.file;
-
-				// Create a Blob from the file
-				const blob = new Blob([file], { type: 'application/pdf' });
-
-				// Create a URL for the Blob
-				const url = URL.createObjectURL(blob);
-
-				// Create a temporary anchor element to trigger the download
-				const a = document.createElement('a');
-				a.href = url;
-				a.download = `pedido_${Date.now()}.pdf`; // Set the filename
-				document.body.appendChild(a);
-				a.click();
-
-				// Clean up
-				document.body.removeChild(a);
-				URL.revokeObjectURL(url);
-			} else {
-				console.error('Failed to download the file.');
-			}
-		};
-	}
 </script>
 
 <div class="flex flex-col">
@@ -81,7 +53,7 @@
 					<i class="fa-solid fa-pen-to-square"></i>
 				</button>
 				<form action="/dashboard/orders/exportpdf" method="post">
-					<input type="hidden" name="order_id" value={order?.id} />
+					<input type="hidden" name="order_id" value={order?.id} /> 
 					<button class="btn variant-filled max-w-fit px-[2rem] ml-2 h-full" type="submit">
 						<i class="fa-solid fa-floppy-disk"></i>
 					</button>

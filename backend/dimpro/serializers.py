@@ -243,3 +243,8 @@ class LogSerializer(serializers.ModelSerializer):
    class Meta:
      model = LogEntry
      fields = '__all__'
+
+class AlegraAPITokenSerializer(serializers.ModelSerializer):
+   class Meta:
+      model = AlegraUser
+      fields = ['email', 'token']

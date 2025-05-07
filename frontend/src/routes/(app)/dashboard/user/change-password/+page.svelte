@@ -66,7 +66,7 @@
 	}
 </script>
 
-<title>Registrar Vendedor</title>
+<title>Cambiar contraseña</title>
 
 <div class=" mx-auto flex flex-col lg:w-1/2 w-full">
 	<form method="post" action="?/changepassword" use:enhance={handleEnhance}>

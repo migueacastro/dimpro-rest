@@ -1,0 +1,39 @@
+- Fix docker +
+- Fix node compiling
+- Inventory Exportation
+- User Change Password
+- Settings +
+- Change api key setting
+- UpdateDB Setting +
+- Reminders
+- Fix logs
+- Fix bugs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
