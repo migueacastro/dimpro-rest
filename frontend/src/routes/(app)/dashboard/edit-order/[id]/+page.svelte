@@ -252,6 +252,7 @@
 	}
 
 	async function handleSave() {
+		loaded = false;
 		return async ({ update, result }: any) => {
 			let toast: ToastSettings;
 			if (result?.type == 'success') {
@@ -261,6 +262,7 @@
 					background: 'variant-ghost-success',
 					timeout: 7000
 				};
+				loaded = true;
 				console.log('Successfully saved');
 				toastStore.trigger(toast);
 			} else {

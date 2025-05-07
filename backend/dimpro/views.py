@@ -12,6 +12,7 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
+from dimpro.tasks import updatedb
 from rest_framework import status
 from rest_framework import generics
 from django.db.models import Q
@@ -240,10 +241,10 @@ class UserVerifyPasswordView(APIView):
         user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            old_password = serializer.validated_data.get("old_password", None)
-            if not user.check_password(old_password):
+            password = serializer.validated_data.get("password", None)
+            if not user.check_password(password):
                 raise AuthenticationFailed(
-                    {"old_password": ["La contraseña actual no es correcta."]}
+                    {"password": ["La contraseña actual no es correcta."]}
                 )
         return Response(status=status.HTTP_200_OK)
 
@@ -459,3 +460,12 @@ class ExportOrderPDFView(APIView):
                 filename=f"order{order['id']}{order['contact_name']}-{order_date.strftime('%d-%B-%Y-%H:%M')}.pdf",
             )
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.error_messages())
+
+
+class UpdateDBView(APIView):
+    def get(self, request):
+        try:
+            updatedb()
+            return Response(status=status.HTTP_200_OK, data="Database Updated")
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=e)

@@ -2,7 +2,8 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
-
+	import { onMount } from 'svelte';
+	export let data;
 	const fields = new FormErrors();
 
 	interface FormErrors {
@@ -30,12 +31,17 @@
 	async function handleEnhance() {
 		return ({ result }: any) => {
 			if (result?.data?.success) {
-				return goto('/dashboard/user/change-password');
+				return goto(data.redirectTo);
 			} else {
 				errors.oldPassword = ['La contraseña actual es incorrecta. Por favor, inténtelo de nuevo.'];
 			}
 		};
 	}
+	onMount(async() => {
+		if (data.redirectTo === "") {
+			window.history.back();
+		}
+	})
 </script>
 
 <div class=" mx-auto flex flex-col lg:w-1/2 w-full">
@@ -46,8 +52,8 @@
 				class="input"
 				title="Contraseña"
 				type="password"
-				id="old_password"
-				name="old_password"
+				id="password"
+				name="password"
 				placeholder="Contraseña"
 				bind:value={oldPassword}
 			/>

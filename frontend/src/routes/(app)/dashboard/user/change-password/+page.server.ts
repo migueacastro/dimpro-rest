@@ -2,15 +2,22 @@ import { apiURL } from '$lib/api_url';
 import { checkStaffGroup, login } from '$lib/auth';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 
-export async function load({cookies}:any) {
-	if(cookies.get("old_password")){
-		const oldPassword = cookies.get("old_password");
-		cookies.delete('old_password', { path: '/dashboard/user/change-password' });
+export async function load({ cookies }: any) {
+	if (cookies.get('password')) {
+		const oldPassword = cookies.get('password');
+		cookies.delete('password', { path: '/' });
+		cookies.delete('redirectTo', { path: '/' });
 		return {
 			oldPassword
-		}
-	}else{
-		return redirect(303, '/dashboard');
+		};
+	} else {
+		cookies.set('redirectTo', '/dashboard/user/change-password', {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: import.meta.env.VITE_API_URL === 'production'
+		});
+		return redirect(303, '/dashboard/user/verify-password');
 	}
 }
 
@@ -27,12 +34,13 @@ export const actions: Actions = {
 			body: JSON.stringify(Object.fromEntries(formData))
 		});
 		if (response.ok) {
+			
 			return login({
 				fetch,
 				locals,
 				formData: userFormData,
 				isStaff,
-				cookies,
+				cookies
 			});
 		}
 		return fail(400, {

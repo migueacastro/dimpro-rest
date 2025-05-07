@@ -37,10 +37,10 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
     fields = ['password', 'confirm_password']
 
 class VerifyPasswordSerializer(serializers.ModelSerializer):
-  old_password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
+  password = serializers.CharField(max_length=100, style={"input_type":"password"}, write_only=True)
   class Meta:
     model = get_user_model()
-    fields = ['old_password']
+    fields = ['password']
 
 
 class GroupSerializer(serializers.ModelSerializer):

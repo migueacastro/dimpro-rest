@@ -35,7 +35,7 @@
 					message: 'Contraseña actualizada con exito.',
 					background: 'variant-ghost-success',
 					timeout: 7000
-				};;
+				};
 			if (result?.type === 'success') {
 				toastStore.trigger(toast);
 				return goto('/dashboard/user');
