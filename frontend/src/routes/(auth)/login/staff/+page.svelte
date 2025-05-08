@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 
+	$: loaded = true
 	interface FormErrors {
 		email: any;
 		password: any;
@@ -19,20 +21,24 @@
 	$: inputType = showPassword ? 'text' : 'password';
 
 	function handleEnhance() {
+		// outside the return update
+		loaded = false;
 		return ({ update, result }: any) => {
 			if (result.type == 'success') {
 				goto("/dashboard/");
 			} else  {
+				// after the result
+				loaded = true;
 				console.error('Error al iniciar sesión:', result.data);
 				errors.email = ['El correo electrónico o la contraseña son incorrectos.'];
-				return update({ reset: false });
+				return update({ reset: false }); // this line will apply the changes
 			}
 		};
 	}
 </script>
 
 <title>Inicio Sesión</title>
-
+{#if loaded}
 <div class="flex flex-col">
 	<ol class="breadcrumb mb-[3rem]">
 		<li class="crumb"><a class="anchor" href="/start">Inicio</a></li>
@@ -104,3 +110,10 @@
 		>
 	</form>
 </div>
+{:else}
+	<div class="flex justify-center mt-[8rem]">
+		<div class="my-auto">
+			<ProgressRadial />
+		</div>
+	</div>
+{/if}

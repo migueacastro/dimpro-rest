@@ -2,9 +2,9 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 
-
-
+	$: loaded = true; 
 	const fields = new FormErrors();
 
 	interface FormErrors {
@@ -40,12 +40,13 @@
 	}
 
 	function handleEnhance() {
+		loaded = false;
 		return ({ update, result }: any) => {
 			if (result?.type == 'success') {
 				goto("/dashboard/");
 			} else  {
 				errors = result.data.error;
-
+				loaded = true;
 				return update({ reset: false });
 			}
 		};
@@ -66,6 +67,7 @@
 
 <title>Registrar Vendedor</title>
 
+{#if loaded }
 <div class="flex flex-col">
 	<ol class="breadcrumb mb-[3rem]">
 		<li class="crumb"><a class="anchor" href="/start">Inicio</a></li>
@@ -260,3 +262,10 @@
 		</p>
 	</form>
 </div>
+{:else}
+	<div class="flex justify-center mt-[8rem]">
+		<div class="my-auto">
+			<ProgressRadial />
+		</div>
+	</div>
+{/if}

@@ -35,7 +35,7 @@
 					message: 'Contraseña actualizada con exito.',
 					background: 'variant-ghost-success',
 					timeout: 7000
-				};;
+				};
 			if (result?.type === 'success') {
 				toastStore.trigger(toast);
 				return goto('/dashboard/user');
@@ -66,7 +66,7 @@
 	}
 </script>
 
-<title>Registrar Vendedor</title>
+<title>Cambiar contraseña</title>
 
 <div class=" mx-auto flex flex-col lg:w-1/2 w-full">
 	<form method="post" action="?/changepassword" use:enhance={handleEnhance}>

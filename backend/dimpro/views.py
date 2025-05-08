@@ -12,6 +12,7 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
+from dimpro.tasks import updatedb
 from rest_framework import status
 from rest_framework import generics
 from django.db.models import Q
@@ -240,10 +241,10 @@ class UserVerifyPasswordView(APIView):
         user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            old_password = serializer.validated_data.get("old_password", None)
-            if not user.check_password(old_password):
+            password = serializer.validated_data.get("password", None)
+            if not user.check_password(password):
                 raise AuthenticationFailed(
-                    {"old_password": ["La contraseña actual no es correcta."]}
+                    {"password": ["La contraseña actual no es correcta."]}
                 )
         return Response(status=status.HTTP_200_OK)
 
@@ -390,9 +391,7 @@ class ExportOrderPDFView(APIView):
             lines = [["ID", "Item", "Referencia", "Cantidad", "Precio", "Subtotal"]]
 
             order = OrderSerializer(Order.objects.get(id=id)).data
-            products = OrderProductSerializer(
-                Order_Product.objects.filter(order_id=id), many=True
-            ).data
+            products = order["products"]
 
             for order_product in products:
                 id = Paragraph(str(order_product["product"]["id"]), styles["Normal"])
@@ -457,5 +456,33 @@ class ExportOrderPDFView(APIView):
                 buf,
                 as_attachment=True,
                 filename=f"order{order['id']}{order['contact_name']}-{order_date.strftime('%d-%B-%Y-%H:%M')}.pdf",
-            )
+            ) # The file response that returns a buffer as an attachment
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.error_messages())
+
+
+class UpdateDBView(APIView):
+    permission_classes = (IsAdminUser,)
+    def get(self, request):
+        try:
+            updatedb()
+            return Response(status=status.HTTP_200_OK, data="Database Updated")
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=e)
+
+
+class AlegraTokenView(APIView):
+    serializer_class = AlegraAPITokenSerializer
+    def get(self, request):
+        alegra_object = AlegraUser.objects.get(id=1)
+        alegra_serialized = AlegraAPITokenSerializer(alegra_object).data
+        return Response(status=status.HTTP_200_OK, data=alegra_serialized)
+    def patch(self, request):
+        try:
+            alegra_object = AlegraUser.objects.get(id=1)
+        except AlegraUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "Alegra user not found."})
+        serializer = self.serializer_class(alegra_object, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK, data=serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)

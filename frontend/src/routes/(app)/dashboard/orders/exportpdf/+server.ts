@@ -16,15 +16,18 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
   if (response.ok) {
     // Stream the PDF file back to the client
-    const pdfBlob = await response.blob();
-    return new Response(pdfBlob, {
+    const pdfBlob = await response.blob(); // here you transform your response into a blob, but you cant serialize that,
+    //if you try to pass that in result, it would be lost
+
+
+    return new Response(pdfBlob, { // instead, return a response, that mimics the fileResponse
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="pedido_${order_id}_${Date.now().toString()}.pdf"`,
       },
     });
   } else {
-    const errorText = await response.text();
+    const errorText = await response.text(); // also, response.text() gives you data about 500 internal server error
     return new Response(errorText, { status: response.status });
   }
 };

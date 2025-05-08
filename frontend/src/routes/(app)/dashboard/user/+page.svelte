@@ -68,7 +68,7 @@
 				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/edit"
 					><i class="fa-solid fa-pen-to-square mr-1"></i>Editar Perfil</a
 				>
-				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/verify-password"
+				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/change-password"
 					><i class="fa-solid fa-key mr-1"></i>Cambiar Contraseña</a
 				>
 				<a class="text-error-500" href="/logout"
