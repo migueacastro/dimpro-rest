@@ -25,6 +25,7 @@ from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
 from django.contrib.staticfiles import finders
 from datetime import datetime
+from django_q.tasks import async_task
 
 # Create your views here.
 
@@ -461,13 +462,16 @@ class ExportOrderPDFView(APIView):
 
 
 class UpdateDBView(APIView):
-    permission_classes = (IsAdminUser,)
     def get(self, request):
         try:
-            updatedb()
-            return Response(status=status.HTTP_200_OK, data="Database Updated")
+            # Schedule the updatedb task asynchronously.
+            task_id = async_task("dimpro.tasks.updatedb", sync=True)
+            return Response(
+                status=status.HTTP_200_OK,
+                data={"message": "Database update task scheduled.", "task_id": task_id}
+            )
         except Exception as e:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=str(e))
 
 
 class AlegraTokenView(APIView):

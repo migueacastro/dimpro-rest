@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { getToastStore } from '@skeletonlabs/skeleton';
+	import { getToastStore, ProgressRadial } from '@skeletonlabs/skeleton';
 	import type { ToastStore } from '@skeletonlabs/skeleton';
 	const toastStore: ToastStore = getToastStore();
 	let updateDBForm: HTMLFormElement;
 
+	$: loaded = true;
 	function handleUpdateDBEnhance() {
+		loaded = false;
 		return async ({ result, update }: any) => {
 			if (result.type === 'success') {
 				toastStore.trigger({
@@ -21,6 +23,7 @@
 					timeout: 7000
 				});
 			}
+			loaded = true;
 			return update({reset:false});
 		};
 	}
@@ -34,6 +37,7 @@
 	}
 </script>
 
+{#if loaded}
 <div class="flex flex-col">
 	<h1 class="h2 my-4">Configuración</h1>
 	<div class="lg:flex lg:flex-row mb-[1rem] flex-wrap lg:justify-start justify-center">
@@ -86,3 +90,12 @@
 		</a>
 	</div>
 </div>
+{:else}
+	<div class="flex justify-center mt-[8rem]">
+		<div class="my-auto">
+			<h2 class="h2 text-center mb-8">Actualizando la base de datos</h2>
+			<div class="w-full justify-center flex"><ProgressRadial/></div>
+			
+		</div>
+	</div>
+{/if}

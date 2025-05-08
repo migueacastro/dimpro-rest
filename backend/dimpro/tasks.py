@@ -1,7 +1,7 @@
 from .models import *
 from alegra.client import Client as c
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
+from django.db import transaction, connection
 import base64
 
 
@@ -16,20 +16,96 @@ def encodeduser():
     return encoded_string
 
 def updatedb():
-    alegra_user = AlegraUser.objects.get(id=1)
-    client = c(alegra_user.email, alegra_user.token)
+    try:
+        alegra_user = AlegraUser.objects.get(id=1)
+        client = c(alegra_user.email, alegra_user.token)
 
-    with transaction.atomic():
-        update_products(client)
-        update_contacts(client)
+        with transaction.atomic():
+            update_products(client)
+            update_contacts(client)
+    except Exception as e:
+        print(e)
 
 
 def update_products(client):
     items = fetch_all_items(client)
+    # Mark all products as inactive first if needed
     deactivate_all_products()
-
+    
+    # Collect product data for each item
+    product_data_list = []
     for row in items:
-        process_product(row)
+        data = extract_product_data(row)
+        product_data_list.append(data)
+    
+    # Bulk update/create products
+    bulk_update_or_create_products(product_data_list)
+
+def extract_product_data(row):
+    """
+    Extract structured product data from a row.
+    """
+    product_id = row['id']
+    item = row['name']
+    details = row.get('description', '')
+    reference = row.get('reference', '')
+    prices = extract_prices(row.get('price', []))
+    available_quantity = extract_available_quantity(row.get('inventory', {}))
+    active = available_quantity > 0 and row['price'][0]['price'] > 0
+
+    # You can also update price types if needed:
+    if item == 'BOMBILLO LED 12W':
+        update_price_types(row['price'])
+    
+    return {
+        'product_id': product_id,
+        'item': item,
+        'details': details,
+        'reference': reference,
+        'available_quantity': available_quantity,
+        'prices': prices,
+        'active': active,
+    }
+
+def bulk_update_or_create_products(product_data_list):
+    # Get the list of references for incoming products
+    list_ids = [data['id'] for data in product_data_list]
+    
+    # Query existing products that match any of those references
+    existing_products = Product.objects.filter(id__in=list_ids)
+    existing_products_map = {prod.id: prod for prod in existing_products}
+    
+    to_create = []
+    to_update = []
+    
+    for data in product_data_list:
+        # Check if product with the same reference already exists
+        if data['id'] in existing_products_map:
+            prod = existing_products_map[data['id']]
+            prod.item = data['item']
+            prod.details = data['details']
+            prod.available_quantity = data['available_quantity']
+            prod.prices = data['prices']
+            prod.active = data['active']
+            to_update.append(prod)
+        else:
+            new_prod = Product(
+                id=data['id'],  # Optional, if id is provided
+                item=data['item'],
+                details=data['details'],
+                reference=data['reference'],
+                available_quantity=data['available_quantity'],
+                prices=data['prices'],
+                active=data['active']
+            )
+            to_create.append(new_prod)
+    
+    if to_create:
+        Product.objects.bulk_create(to_create)
+    if to_update:
+        # Specify the fields you want to update
+        Product.objects.bulk_update(to_update, fields=['item', 'details', 'available_quantity', 'prices', 'active'])
+
 
 def update_contacts(client):
     contacts = fetch_all_contacts(client)
@@ -63,22 +139,8 @@ def fetch_all_contacts(client):
 
 
 def deactivate_all_products():
-    Product.objects.all().update(active=False)
-
-
-def process_product(row):
-    id = row['id']
-    item = row['name']
-    details = row.get('description', '')
-    reference = row.get('reference', '')
-    prices = extract_prices(row.get('price', []))
-    available_quantity = extract_available_quantity(row.get('inventory', {}))
-
-    active = available_quantity > 0 and row['price'][0]['price'] > 0
-    if item == 'BOMBILLO LED 12W':
-        update_price_types(row['price'])
-
-    update_or_create_product(id, item, details, reference, available_quantity, prices, active)
+    with connection.cursor() as cursor:
+        cursor.execute("UPDATE dimpro_product SET active = false")
 
 
 def extract_prices(price_list):
@@ -104,33 +166,10 @@ def update_price_types(price_list):
         )
 
 
-def update_or_create_product(product_id, item, details, reference, available_quantity, prices, active):
-    try:
-        product = Product.objects.get(reference=reference)
-        product.item = item
-        product.details = details
-        product.reference = reference
-        product.available_quantity = available_quantity
-        product.prices = prices
-        product.active = active
-        product.save()
-    except ObjectDoesNotExist:
-        Product.objects.update_or_create(
-            id=product_id,
-            defaults={
-                'item': item,
-                'details': details,
-                'reference': reference,
-                'available_quantity': available_quantity,
-                'prices': prices,
-                'active': active
-            }
-        )
-
 def process_contact(row):
     name = row['name']
     Contact.objects.update_or_create(name=name, defaults={'active': True})
-        
+
 
 
 
