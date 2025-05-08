@@ -476,7 +476,7 @@ class AlegraTokenView(APIView):
         alegra_object = AlegraUser.objects.get(id=1)
         alegra_serialized = AlegraAPITokenSerializer(alegra_object).data
         return Response(status=status.HTTP_200_OK, data=alegra_serialized)
-    def put(self, request):
+    def patch(self, request):
         try:
             alegra_object = AlegraUser.objects.get(id=1)
         except AlegraUser.DoesNotExist:

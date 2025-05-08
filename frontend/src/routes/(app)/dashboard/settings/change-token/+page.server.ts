@@ -1,5 +1,5 @@
 import { apiURL } from '$lib/api_url';
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 
 export async function load({ cookies, fetch }: any) {
 	if (cookies.get('password')) {
@@ -22,3 +22,25 @@ export async function load({ cookies, fetch }: any) {
 		return redirect(303, '/dashboard/user/verify-password');
 	}
 }
+
+export const actions: Actions = {
+	changetoken: async ({fetch, request}) => {
+		const formData = await request.formData();
+		const data = Object.fromEntries(formData);
+		const response = await fetch(apiURL+'alegratoken', {
+			method: "PATCH",
+			body: JSON.stringify(data),
+		});
+		
+		await response.text()
+		if (response.ok) {
+			return {
+				success: true
+			}
+		} else {
+			return fail(400, {
+				error: await response.text()
+			})
+		}
+	}
+};

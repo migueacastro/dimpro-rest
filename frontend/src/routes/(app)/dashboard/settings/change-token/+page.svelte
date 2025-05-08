@@ -2,12 +2,15 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
-	import { getToastStore, type ToastSettings } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore, ProgressRadial, type ModalSettings, type ToastSettings } from '@skeletonlabs/skeleton';
 
+  $: loaded = true;
 	export let data;
 	const fields = new FormErrors();
+  const modalStore = getModalStore();
 
 	const toastStore = getToastStore();
+  let form: HTMLFormElement;
 
 	interface FormErrors {
     email: any
@@ -27,7 +30,39 @@
 		validatedFields = token.length > 0 && email.length > 0;
 	}
 
+  async function confirmSave() {
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Modificar Token de Alegra`,
+			body: `¿Está seguro de cambiar el Token de Alegra?`,
+
+			response: async (r: boolean) => {
+				if (r) {
+					
+					warningConfirm();
+				}
+			}
+		};
+		modalStore.trigger(modal);
+	}
+  async function warningConfirm() {
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Modificar Token de Alegra`,
+			body: `Si coloca el token equivocado, no podrá acceder a la información en Alegra, ni actualizar la base de datos.`,
+
+			response: async (r: boolean) => {
+				if (r) {
+					
+					form.requestSubmit();
+				}
+			}
+		};
+		modalStore.trigger(modal);
+	}
+
 	async function handleEnhance() {
+    loaded = false;
 		return ({ update, result }: any) => {
 			let toast: ToastSettings  = {
 					message: 'Token actualizado con exito.',
@@ -47,6 +82,7 @@
 				};
 				toastStore.trigger(toast);
 			}
+      loaded = true;
 			return update({ reset: false });
 		};
 	}
@@ -66,8 +102,9 @@
 
 <title>Cambiar Token de Alegra</title>
 
+{#if loaded}
 <div class=" mx-auto flex flex-col lg:w-1/2 w-full">
-	<form method="post" action="?/changepassword" use:enhance={handleEnhance}>
+	<form method="post" action="?/changetoken" use:enhance={handleEnhance} bind:this={form}>
 		<h3 class="text-4xl mb-[2rem]">Cambiar Token de Alegra</h3>
 		<div class="input-group input-group-divider grid-cols-[1fr_auto] my-2">
 			<input
@@ -116,9 +153,17 @@
 		</div>
 
 		<button
-			type="submit"
+      on:click={confirmSave}
+			type="button"
 			class="btn btn-xl variant-filled-primary my-2 w-fit shadow-xl"
 			disabled={!validatedFields}>Guardar</button
 		>
 	</form>
 </div>
+{:else}
+	<div class="flex justify-center mt-[8rem]">
+		<div class="my-auto">
+			<ProgressRadial/>
+		</div>
+	</div>
+{/if}
