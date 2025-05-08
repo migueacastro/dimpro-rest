@@ -1,6 +1,7 @@
 export class FormErrors{
     shortPass: string = "La contraseña es muy corta.";
     hasSpecials: string = "Este campo no puede contener caracteres especiales o signos.";
+    tooLong: string = "Este campo excede el límite de caracteres";
     NotNumbers: string = "La contraseña debe tener números.";
     NotValidEmail: string = "Email no valido.";
     NotValidPhone: string = "Telefono no valido. formato: +589999999999";

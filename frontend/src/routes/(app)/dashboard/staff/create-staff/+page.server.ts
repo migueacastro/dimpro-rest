@@ -14,6 +14,7 @@ export const actions: Actions = {
     add: async ({ request, fetch }) => {
         const formData = await request.formData();
         formData.delete("endpoint");
+        formData.set("groups","[2,3]");
         const keys = Array.from(formData.keys());
         const values = Array.from(formData.values());
         let body: any = {};
