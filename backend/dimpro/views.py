@@ -421,6 +421,7 @@ class ExportOrderPDFView(APIView):
                         ),  # Vertically center-align all cells
                         ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.black),
                         ("BOX", (0, 0), (-1, -1), 0.25, colors.black),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                         ("FONTSIZE", (0, 0), (-1, 0), 10),
                         ("FONTSIZE", (0, 1), (-1, -1), 7),
                     ]
@@ -460,6 +461,80 @@ class ExportOrderPDFView(APIView):
             ) # The file response that returns a buffer as an attachment
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.error_messages())
 
+class ExportInventoryPDFView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        buf = io.BytesIO()
+        doc = BaseDocTemplate(buf, pagesize=letter)
+        frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="normal")
+
+        template = PageTemplate(id="test", frames=frame)
+
+        doc.addPageTemplates([template])
+
+        lines = [["ID", "Item", "Detalles", "Referencia", "Cantidad","precio"]]
+        products = Product.objects.all()
+        if not products.exists():
+            return Response({"error": "No products found."}, status=404)
+
+        serialized_products = ProductSerializer(products, many=True).data
+
+        for product in serialized_products:
+            id = Paragraph(str(product["id"]), styles["Normal"])
+            item = Paragraph(str(product["item"]), styles["Normal"])
+            details = Paragraph(str(product["details"]), styles["Normal"])
+            reference = Paragraph(str(product["reference"]), styles["Normal"])
+            quantity = Paragraph(str(product["available_quantity"]), styles["Normal"])
+            price = Paragraph(str(product["price"]["name"]) + "$", styles["Normal"])
+
+            lines.append((id, item, details, reference, quantity,price))
+
+        col_widths = [20 * mm, 40 * mm, 80 * mm, 30 * mm, 25 * mm]
+
+        table = Table(lines, colWidths=col_widths, rowHeights=10 * mm)
+
+        table.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.black),
+                    ("BOX", (0, 0), (-1, -1), 0.25, colors.black),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("FONTSIZE", (0, 1), (-1, -1), 7),
+                ]
+            )
+        )
+
+        drawing = svg2rlg(BASE_DIR / "static_root" / "assets" / "logodimpro.svg")
+        if not drawing:
+            raise FileNotFoundError("The file 'assets/logodimpro.svg' could not be found.")
+        drawing.width = 100
+        drawing.height = 0
+        drawing.hAlign = "CENTER"
+
+        spacer = Spacer(1, 12)
+
+        information = Paragraph(
+            f"<p>Listado de productos presentes en el inventario actual</p>",
+            styles["Normal"],
+        )
+        current_date = Paragraph(
+            f"<h4><b>Fecha:</b> {str(datetime.date(datetime.now()))}</h4>",
+            styles["Normal"],
+        )
+
+        story = [drawing, spacer,information,current_date, spacer, table]
+
+        doc.build(story)
+        buf.seek(0)
+        
+        return FileResponse(
+            buf,
+            as_attachment=True,
+            filename=f"inventory-{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+        )
 
 class UpdateDBView(APIView):
     def get(self, request):

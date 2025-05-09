@@ -37,7 +37,7 @@
 			<h2 class="h2">Pedidos: {reqUser?.orders?.length}</h2>
 		</div>
 		<Datatable
-			endpoint={{ secondary: 'orders' }}
+			endpoint={{ main: 'orders' }}
 			source_data={reqUser?.orders}
 			headings={['ID', 'Contacto', 'Cantidad productos', 'Estado', 'Realización']}
 			fields={['id', 'contact_name', 'product_count', 'status', 'date_format']}

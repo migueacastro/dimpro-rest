@@ -17,6 +17,7 @@
 		};
 	});
 	let loaded = true;
+	console.log(order);
 </script>
 
 <div class="flex flex-col">
@@ -32,7 +33,7 @@
 					<h4 class="h4 capitalize my-2">Total: {order?.total}$</h4>
 					<h4 class="h4 capitalize my-2">Fecha: {order?.date_format}</h4>
 					<h4 class="h4 my-2">
-						<a class="text-primary-500" href={'/dashboard/users/' + order?.user?.id}
+						<a class="text-primary-500" href={`/dashboard/${checkStaffGroup(order?.user)?"staff":"users"}/` + order?.user?.id}
 							>Email: {order?.user?.email}</a
 						>
 					</h4>
