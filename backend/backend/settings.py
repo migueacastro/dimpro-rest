@@ -190,3 +190,5 @@ SESSION_COOKIE_SECURE = MODE == "production"  # True in production, False locall
 SESSION_COOKIE_SAMESITE = 'Lax'  # Or 'None' if using cross-site
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
 SESSION_COOKIE_DOMAIN = DOMAIN if MODE == "production" else None
+
+FRONTEND_URL = ("https://" if MODE == "production" else "http://") + DOMAIN

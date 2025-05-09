@@ -95,8 +95,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_superuser(self):
         return User.objects.get(id=self.id).groups.filter(name="admin").exists()
-
 auditlog.register(User, exclude_fields=["password"]) #adding this will log the model
+
 
 class Product(models.Model): 
     item = models.CharField(max_length=64, unique=False)
@@ -123,16 +123,19 @@ class Product(models.Model):
         }
 auditlog.register(Product)
 
+
 class Image(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     url = models.CharField(max_length=256)
 auditlog.register(Image)
+
 
 class AlegraUser(models.Model):
     email = models.CharField(max_length=128)
     token = models.CharField(max_length=256)
     active = models.BooleanField(null = False, default=True) 
 auditlog.register(AlegraUser)
+
 
 class Contact(models.Model): 
     name = models.CharField(max_length=128)
@@ -142,11 +145,12 @@ class Contact(models.Model):
         return str(self.id)
 auditlog.register(Contact)
 
-# TODO: viewset para Order
+
 class PriceType(models.Model):
     name = models.CharField(max_length = 128)
     active= models.BooleanField(default=True)
 auditlog.register(PriceType)
+
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', null=True)
@@ -166,7 +170,6 @@ class Order(models.Model):
     def __str__(self):
         return str(self.id)
 auditlog.register(Order)
-
 
 
 class Order_Product(models.Model):

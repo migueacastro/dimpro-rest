@@ -4,8 +4,12 @@ from django.contrib.auth import get_user_model
 from dimpro.models import *
 from auditlog.models import LogEntry
 from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
 from auditlog.models import LogEntry
 from drf_writable_nested.serializers import WritableNestedModelSerializer # java ahh class
+from django.utils.encoding import force_str
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_decode
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
   password = serializers.CharField(write_only=True, style={"input_type":"password"}, min_length=8, max_length=100)
@@ -248,3 +252,38 @@ class AlegraAPITokenSerializer(serializers.ModelSerializer):
    class Meta:
       model = AlegraUser
       fields = ['email', 'token']
+
+
+class ResetPasswordEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    class Meta:
+        fields = ['email']
+
+
+class SetNewPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=100, style={'input_type': 'password'}, write_only=True)
+    token = serializers.CharField(min_length=1, write_only=True)
+    uidb64 = serializers.CharField(min_length=1, write_only=True)
+
+    class Meta:
+        fields=['password', 'token', 'uidb64']
+
+    def validate(self, attrs):
+        try:
+            password = attrs.get('password')
+            
+            token = attrs.get('token')
+            uidb64 = attrs.get('uidb64')
+
+            id=force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                raise AuthenticationFailed('The reset link is invalid', 401)
+            
+            user.set_password(password)
+            user.save()
+            return user
+        except Exception as e:
+            raise AuthenticationFailed('The reset link is invalid', 401)

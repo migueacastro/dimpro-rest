@@ -30,6 +30,10 @@ urlpatterns = [
     path("csrf", RefreshCSRFTokenView.as_view()),
     path("user/change_password", UserChangePasswordView.as_view()),
     path("user/verify_password", UserVerifyPasswordView.as_view()),
+    path('request-reset-email', RequestPasswordResetView.as_view(), name='request-reset-email'),
+    path('password-reset/<uidb64>/<token>', PasswordTokenCheckView.as_view(), name='password-reset'),
+    path('password-reset-complete', SetNewPasswordAPIView.as_view(), name='password-reset-complete'),
+
     path("export_order_pdf", ExportOrderPDFView.as_view()),
     path("export_inventory_pdf", ExportInventoryPDFView.as_view()),
     path("updatedb", UpdateDBView.as_view()),

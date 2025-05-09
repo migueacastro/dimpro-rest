@@ -3,7 +3,7 @@ from django.contrib.admin.options import get_content_type_for_model
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
-from backend.settings import BASE_DIR
+from backend.settings import BASE_DIR, FRONTEND_URL
 import os
 from rest_framework.permissions import (
     AllowAny,
@@ -19,13 +19,15 @@ from django.db.models import Q
 from dimpro.serializers import *
 from dimpro.models import *
 from auditlog.models import LogEntry
-from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission
+from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission, Util, EmailMessage
 from django.utils.translation import gettext as _
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
 from django.contrib.staticfiles import finders
 from datetime import datetime
 from django_q.tasks import async_task
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import *
 
 # Create your views here.
 
@@ -143,10 +145,8 @@ class UserLogoutView(
 ):  # You might add this request into the Logout function inside svelte, just a fetch, doesnt have to return anything, although perhaps at somepoint we will use refresh-token to logout all users that are using a specific token, for avoiding a very risky vulnerability of JWT.
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         user_instance = request.user
-        logout(request)
-
         Session.objects.filter(session_key=request.session.session_key).delete()
         LogEntry.objects.create(
             content_type=get_content_type_for_model(User),
@@ -155,6 +155,9 @@ class UserLogoutView(
             object_pk=user_instance.id,
             object_id=user_instance.id,
         )
+        logout(request)
+
+        
         return Response(status=status.HTTP_200_OK)
 
 
@@ -565,3 +568,56 @@ class AlegraTokenView(APIView):
             serializer.save()
             return Response(status=status.HTTP_200_OK, data=serializer.data)
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+    
+
+class RequestPasswordResetView(generics.GenericAPIView):
+
+    serializer_class = ResetPasswordEmailSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        email = request.data.get('email', None)
+
+        if User.objects.filter(email=email).exists():
+            
+            user = User.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(str(user.id).encode())
+            token = PasswordResetTokenGenerator().make_token(user)
+
+            current_site = FRONTEND_URL
+            relativeLink = f'password-reset/{uidb64}/{token}'
+            absurl = current_site + relativeLink
+
+            email_body = f'Hello {user.name.split()[0]}, \n Use the link below to reset your password  \n' + absurl
+            data = {
+                'email_body': email_body,
+                'to_email': user.email,
+                'email_subject': 'Reset your password'
+            }
+            Util.send_email(data)
+            return Response({'message': 'Password reset link has been sent to your email'}, status=status.HTTP_200_OK)
+
+        return Response({'message': 'Email not found'}, status=status.HTTP_400_BAD_REQUEST)
+        
+class PasswordTokenCheckView(generics.GenericAPIView):
+    def get(self, request, uidb64, token):
+        try:
+            id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                Response({'message': 'Token is not valid', 'uidb64': uidb64, 'token': token}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'message': 'Credentials are valid', 'uidb64': uidb64, 'token': token}, status=status.HTTP_200_OK)
+
+        except DjangoUnicodeDecodeError as identifier:
+            return Response({'message': 'Token is not valid', 'uidb64': uidb64, 'token': token}, status=status.HTTP_400_BAD_REQUEST)
+        
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'success':True,'message': 'Password reset success'}, status=status.HTTP_200_OK)
