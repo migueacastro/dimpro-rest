@@ -265,7 +265,7 @@ class UserViewSet(SafeViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.filter(active=True).exclude(
         groups__name="staff"
-    )  # If this line does not work i will nuke Copilot
+    ).order_by("name")  # If this line does not work i will nuke Copilot
 
     def retrieve(self, request, *args, **kwargs):
         object_instance = self.get_object()
@@ -282,7 +282,7 @@ class RefreshCSRFTokenView(APIView):
 class StaffViewSet(SafeViewSet):
     permission_classes = (IsAdminUser,)
     serializer_class = UserNestedSerializer
-    queryset = User.objects.filter(groups__name="staff", active=True)
+    queryset = User.objects.filter(groups__name="staff", active=True).order_by("name")
     superuser_only = True
 
 
@@ -292,13 +292,13 @@ class StaffViewSet(SafeViewSet):
 class ProductViewSet(SafeViewSet):
     serializer_class = ProductSerializer
     permission_classes = (IsAuthenticated, UserReadOnlyPermission)
-    queryset = Product.objects.filter(active=True)  # Aqui no por ejemplo
+    queryset = Product.objects.filter(active=True).order_by("item")  # Aqui no por ejemplo
 
 
 class ContactViewSet(SafeViewSet):
     serializer_class = ContactSerializer
     permission_classes = (IsAuthenticated, UserReadOnlyPermission)
-    queryset = Contact.objects.filter(active=True)
+    queryset = Contact.objects.filter(active=True).order_by("name")
 
 
 class OrderProductViewSet(SafeViewSet):
@@ -319,22 +319,10 @@ class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProdu
     # No hay que preocuparse por lecturas indebidas,
     # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
     # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
-    queryset = Order.objects.filter(active=True)
+    queryset = Order.objects.filter(active=True).order_by("status").order_by("-date")
 
     def patch(self, request, *args, **kwargs):
         print("Pasó por aqui: ", request.data)
-        return super().patch(request, *args, **kwargs)
-
-
-class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProducts
-    serializer_class = OrderSerializer
-    permission_classes = (IsAuthenticated,)
-    # No hay que preocuparse por lecturas indebidas,
-    # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
-    # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
-    queryset = Order.objects.filter(active=True)
-
-    def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
 
 
@@ -343,7 +331,7 @@ class UserOrderViewSet(SafeViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        return Order.objects.filter(active=True, user=self.request.user.id)
+        return Order.objects.filter(active=True, user=self.request.user.id).order_by("-date")
 
 
 class AlegraUserViewSet(SafeViewSet):
