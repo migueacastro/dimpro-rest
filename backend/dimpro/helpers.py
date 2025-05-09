@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.mixins import Response
 from rest_framework import permissions
-
-
+from django.core.mail import EmailMessage
+import threading
 
 
 class SafeViewSet(viewsets.ModelViewSet):
@@ -23,6 +23,7 @@ class IsStaff(permissions.BasePermission):
           return False
       return True
 
+
 class UserReadOnlyPermission(permissions.BasePermission):
     message = "No posee los permisos necesarios"
     def has_permission(self, request, view):
@@ -31,6 +32,30 @@ class UserReadOnlyPermission(permissions.BasePermission):
       if (not user_is_staff and request.method in allowed_methods) or user_is_staff:
          return True
 
+
 def add_to_group(user,group_name):
     group = Group.objects.get_or_create(name=group_name)
     user.groups.add(group)
+
+
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
+
+
+class Util:
+    @staticmethod
+    def send_email(data):
+        email = EmailMessage(
+            subject=data['email_subject'], 
+            body=data['email_body'], 
+            to=[data['to_email']])
+        if data['email_file']:
+            email.attach('image.jpg', data['email_file'].read(), 'image/png')
+        if data['content_type'] == 'html':
+            email.content_subtype = 'html'
+        email.send()

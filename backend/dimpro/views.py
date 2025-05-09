@@ -3,7 +3,7 @@ from django.contrib.admin.options import get_content_type_for_model
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
-from backend.settings import BASE_DIR
+from backend.settings import BASE_DIR, FRONTEND_URL
 import os
 from rest_framework.permissions import (
     AllowAny,
@@ -19,13 +19,21 @@ from django.db.models import Q
 from dimpro.serializers import *
 from dimpro.models import *
 from auditlog.models import LogEntry
-from dimpro.helpers import SafeViewSet, IsStaff, UserReadOnlyPermission
+from dimpro.helpers import (
+    SafeViewSet,
+    IsStaff,
+    UserReadOnlyPermission,
+    Util,
+    EmailMessage,
+)
 from django.utils.translation import gettext as _
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
 from django.contrib.staticfiles import finders
-from datetime import datetime
+import datetime
 from django_q.tasks import async_task
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import *
 
 # Create your views here.
 
@@ -35,6 +43,7 @@ import io
 from reportlab.lib import colors
 from reportlab.lib.units import mm
 from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import (
     BaseDocTemplate,
     PageTemplate,
@@ -143,10 +152,8 @@ class UserLogoutView(
 ):  # You might add this request into the Logout function inside svelte, just a fetch, doesnt have to return anything, although perhaps at somepoint we will use refresh-token to logout all users that are using a specific token, for avoiding a very risky vulnerability of JWT.
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         user_instance = request.user
-        logout(request)
-
         Session.objects.filter(session_key=request.session.session_key).delete()
         LogEntry.objects.create(
             content_type=get_content_type_for_model(User),
@@ -155,6 +162,8 @@ class UserLogoutView(
             object_pk=user_instance.id,
             object_id=user_instance.id,
         )
+        logout(request)
+
         return Response(status=status.HTTP_200_OK)
 
 
@@ -234,6 +243,7 @@ class UserChangePasswordView(APIView):
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class UserVerifyPasswordView(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VerifyPasswordSerializer
@@ -249,12 +259,13 @@ class UserVerifyPasswordView(APIView):
                 )
         return Response(status=status.HTTP_200_OK)
 
+
 class UserViewSet(SafeViewSet):
     permission_classes = (IsAuthenticated, IsStaff)
     serializer_class = UserSerializer
     queryset = User.objects.filter(active=True).exclude(
         groups__name="staff"
-    )  # If this line does not work i will nuke Copilot
+    ).order_by("name")  # If this line does not work i will nuke Copilot
 
     def retrieve(self, request, *args, **kwargs):
         object_instance = self.get_object()
@@ -271,7 +282,7 @@ class RefreshCSRFTokenView(APIView):
 class StaffViewSet(SafeViewSet):
     permission_classes = (IsAdminUser,)
     serializer_class = UserNestedSerializer
-    queryset = User.objects.filter(groups__name="staff", active=True)
+    queryset = User.objects.filter(groups__name="staff", active=True).order_by("name")
     superuser_only = True
 
 
@@ -281,13 +292,13 @@ class StaffViewSet(SafeViewSet):
 class ProductViewSet(SafeViewSet):
     serializer_class = ProductSerializer
     permission_classes = (IsAuthenticated, UserReadOnlyPermission)
-    queryset = Product.objects.filter(active=True)  # Aqui no por ejemplo
+    queryset = Product.objects.filter(active=True).order_by("item")  # Aqui no por ejemplo
 
 
 class ContactViewSet(SafeViewSet):
     serializer_class = ContactSerializer
     permission_classes = (IsAuthenticated, UserReadOnlyPermission)
-    queryset = Contact.objects.filter(active=True)
+    queryset = Contact.objects.filter(active=True).order_by("name")
 
 
 class OrderProductViewSet(SafeViewSet):
@@ -308,28 +319,19 @@ class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProdu
     # No hay que preocuparse por lecturas indebidas,
     # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
     # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
-    queryset = Order.objects.filter(active=True)
+    queryset = Order.objects.filter(active=True).order_by("status").order_by("-date")
 
     def patch(self, request, *args, **kwargs):
         print("Pasó por aqui: ", request.data)
         return super().patch(request, *args, **kwargs)
 
-class OrderViewSet(SafeViewSet): # Te muestra de una vez sus propios OrderProducts
-  serializer_class = OrderSerializer 
-  permission_classes = (IsAuthenticated, )
-  # No hay que preocuparse por lecturas indebidas, 
-  # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
-  # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
-  queryset = Order.objects.filter(active=True)
-  def patch(self, request, *args, **kwargs):
-    return super().patch(request, *args, **kwargs)
 
 class UserOrderViewSet(SafeViewSet):
     serializer_class = OrderSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        return Order.objects.filter(active=True, user=self.request.user.id)
+        return Order.objects.filter(active=True, user=self.request.user.id).order_by("-date")
 
 
 class AlegraUserViewSet(SafeViewSet):
@@ -369,18 +371,34 @@ class LogViewSet(SafeViewSet):
 class ExportOrderPDFView(APIView):
     serializer_class = ExportOrderPDFSerializer
     permission_classes = (IsAuthenticated,)
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            id = serializer.validated_data.get('order_id', None)
+            id = serializer.validated_data.get("order_id", None)
             if not id:
-                return Response(status=status.HTTP_400_BAD_REQUEST, data={'Error': 'Invalid ID'})
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST, data={"Error": "Invalid ID"}
+                )
+
+            # New small paragraph font style
+            small_style = ParagraphStyle(
+                "small",
+                parent=styles["Normal"],
+                fontSize=7,
+                leading=8,  # adjust as needed
+                spaceBefore=0,
+                spaceAfter=0,
+            )
+
             # Create bytestream buffer
             buf = io.BytesIO()
             # Create a BaseDocTemplate
             doc = BaseDocTemplate(buf, pagesize=letter)
             # Create a frame
-            frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="normal")
+            frame = Frame(
+                doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="normal"
+            )
 
             # Create a PageTemplate
             template = PageTemplate(id="test", frames=frame)
@@ -395,20 +413,29 @@ class ExportOrderPDFView(APIView):
             products = order["products"]
 
             for order_product in products:
-                id = Paragraph(str(order_product["product"]["id"]), styles["Normal"])
-                item = Paragraph(str(order_product["product"]["item"]), styles["Normal"])
-                reference = Paragraph(
-                    str(order_product["product"]["reference"]), styles["Normal"]
+                id = Paragraph(str(order_product["product"]["id"]), small_style)
+                item = Paragraph(
+                    str(order_product["product"]["item"]), small_style
                 )
-                quantity = Paragraph(str(order_product["quantity"]), styles["Normal"])
-                price = Paragraph(str(order_product["price"]) + "$", styles["Normal"])
-                cost = Paragraph(str(order_product["cost"]) + "$", styles["Normal"])
+                reference = Paragraph(
+                    str(order_product["product"]["reference"]), small_style
+                )
+                quantity = Paragraph(str(order_product["quantity"]), small_style)
+                price = Paragraph(str(order_product["price"]) + "$", small_style)
+                cost = Paragraph(str(order_product["cost"]) + "$", small_style)
 
                 lines.append((id, item, reference, quantity, price, cost))
+            available_width = doc.width
+            col_widths = [
+                available_width * 0.1,
+                available_width * 0.25,
+                available_width * 0.2,
+                available_width * 0.15,
+                available_width * 0.15,
+                available_width * 0.15,
+            ]
 
-            col_widths = [10 * mm, 75 * mm, 25 * mm, 17 * mm, 20 * mm, 23 * mm]
-
-            table = Table(lines, colWidths=col_widths, rowHeights=10 * mm)
+            table = Table(lines, colWidths=col_widths)
 
             table.setStyle(
                 TableStyle(
@@ -430,14 +457,18 @@ class ExportOrderPDFView(APIView):
 
             drawing = svg2rlg(BASE_DIR / "static_root" / "assets" / "logodimpro.svg")
             if not drawing:
-                raise FileNotFoundError("The file 'assets/logodimpro.svg' could not be found.")
+                raise FileNotFoundError(
+                    "The file 'assets/logodimpro.svg' could not be found."
+                )
             drawing.width = 100
             drawing.height = 0
             drawing.hAlign = "CENTER"
 
             # Parse the date string into a datetime object
-            order_date = datetime.strptime(order['date'], '%Y-%m-%dT%H:%M:%S.%f%z')
-            formatted_date = order_date.strftime('%d %B %Y %H:%M')
+            order_date = datetime.datetime.strptime(
+                order["date"], "%Y-%m-%dT%H:%M:%S.%f%z"
+            )
+            formatted_date = order_date.strftime("%d %B %Y %H:%M")
             print(order)
             information = Paragraph(
                 f"<b>ID de pedido:</b> {order['id']}<br/><b>Tipo de precio:</b> {order['pricetype']['name']}<br/><b>Cliente: </b>{order['contact_name']}<br/><b>Vendedor:</b> {order['user_name']}<br/><b>Email del Vendedor:</b> { order['user']['email'] }<br/><b>Items:</b> {len(products)}<br/><b>Total:</b> {order['total']}$<br/><b>Fecha:</b> {formatted_date}",
@@ -457,9 +488,12 @@ class ExportOrderPDFView(APIView):
             return FileResponse(
                 buf,
                 as_attachment=True,
-                filename=f"order{order['id']}{order['contact_name']}-{order_date.strftime('%d-%B-%Y-%H:%M')}.pdf",
-            ) # The file response that returns a buffer as an attachment
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.error_messages())
+                filename=f"order{order['id']}{order['contact_name']}-{order_date.strftime('%Y%m%d_%H%M%S')}.pdf",
+            )  # The file response that returns a buffer as an attachment
+        return Response(
+            status=status.HTTP_400_BAD_REQUEST, data=serializer.error_messages()
+        )
+
 
 class ExportInventoryPDFView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -467,32 +501,55 @@ class ExportInventoryPDFView(APIView):
     def post(self, request):
         buf = io.BytesIO()
         doc = BaseDocTemplate(buf, pagesize=letter)
-        frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="normal")
+        frame = Frame(
+            doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="normal"
+        )
 
+        small_style = ParagraphStyle(
+            "small",
+            parent=styles["Normal"],
+            fontSize=7,
+            leading=8,  # adjust as needed
+            spaceBefore=0,
+            spaceAfter=0,
+        )
         template = PageTemplate(id="test", frames=frame)
 
         doc.addPageTemplates([template])
 
-        lines = [["ID", "Item", "Detalles", "Referencia", "Cantidad","precio"]]
-        products = Product.objects.all()
+        lines = [["ID", "Item", "Detalles", "Referencia", "Cantidad", "precio"]]
+        products = Product.objects.filter(active=True).order_by("item")
         if not products.exists():
             return Response({"error": "No products found."}, status=404)
 
         serialized_products = ProductSerializer(products, many=True).data
 
         for product in serialized_products:
-            id = Paragraph(str(product["id"]), styles["Normal"])
-            item = Paragraph(str(product["item"]), styles["Normal"])
-            details = Paragraph(str(product["details"]), styles["Normal"])
-            reference = Paragraph(str(product["reference"]), styles["Normal"])
-            quantity = Paragraph(str(product["available_quantity"]), styles["Normal"])
-            price = Paragraph(str(product["price"]["name"]) + "$", styles["Normal"])
+            id = Paragraph(str(product["id"]), small_style)
+            item = Paragraph(str(product["item"]), small_style)
+            details = Paragraph(str(product["details"] or "Ninguno"), small_style)
+            reference = Paragraph(str(product["reference"] or "Ninguno"), small_style)
+            quantity = Paragraph(str(product["available_quantity"]), small_style)
+            if product.get("prices") and len(product["prices"]) > 0:
+                price_value = str(list(list(product["prices"])[0].values())[0]) + "$"
+            else:
+                price_value = "Ninguno"
 
-            lines.append((id, item, details, reference, quantity,price))
+            price = Paragraph(price_value, small_style)
 
-        col_widths = [20 * mm, 40 * mm, 80 * mm, 30 * mm, 25 * mm]
+            lines.append((id, item, details, reference, quantity, price))
 
-        table = Table(lines, colWidths=col_widths, rowHeights=10 * mm)
+        available_width = doc.width
+        col_widths = [
+            available_width * 0.10,
+            available_width * 0.20,
+            available_width * 0.30,
+            available_width * 0.15,
+            available_width * 0.15,
+            available_width * 0.10,
+        ]
+
+        table = Table(lines, colWidths=col_widths)
 
         table.setStyle(
             TableStyle(
@@ -509,7 +566,9 @@ class ExportInventoryPDFView(APIView):
 
         drawing = svg2rlg(BASE_DIR / "static_root" / "assets" / "logodimpro.svg")
         if not drawing:
-            raise FileNotFoundError("The file 'assets/logodimpro.svg' could not be found.")
+            raise FileNotFoundError(
+                "The file 'assets/logodimpro.svg' could not be found."
+            )
         drawing.width = 100
         drawing.height = 0
         drawing.hAlign = "CENTER"
@@ -521,20 +580,21 @@ class ExportInventoryPDFView(APIView):
             styles["Normal"],
         )
         current_date = Paragraph(
-            f"<h4><b>Fecha:</b> {str(datetime.date(datetime.now()))}</h4>",
+            f"<h4><b>Fecha:</b> {str(datetime.datetime.today().strftime('%d/%m/%Y %H:%M'))}</h4>",
             styles["Normal"],
         )
 
-        story = [drawing, spacer,information,current_date, spacer, table]
+        story = [drawing, spacer, information, current_date, spacer, table]
 
         doc.build(story)
         buf.seek(0)
-        
+
         return FileResponse(
             buf,
             as_attachment=True,
-            filename=f"inventory-{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+            filename=f"inventory-{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
         )
+
 
 class UpdateDBView(APIView):
     def get(self, request):
@@ -543,7 +603,7 @@ class UpdateDBView(APIView):
             task_id = async_task("dimpro.tasks.updatedb", sync=True)
             return Response(
                 status=status.HTTP_200_OK,
-                data={"message": "Database update task scheduled.", "task_id": task_id}
+                data={"message": "Database update task scheduled.", "task_id": task_id},
             )
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=str(e))
@@ -551,17 +611,99 @@ class UpdateDBView(APIView):
 
 class AlegraTokenView(APIView):
     serializer_class = AlegraAPITokenSerializer
+
     def get(self, request):
         alegra_object = AlegraUser.objects.get(id=1)
         alegra_serialized = AlegraAPITokenSerializer(alegra_object).data
         return Response(status=status.HTTP_200_OK, data=alegra_serialized)
+
     def patch(self, request):
         try:
             alegra_object = AlegraUser.objects.get(id=1)
         except AlegraUser.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "Alegra user not found."})
-        serializer = self.serializer_class(alegra_object, data=request.data, partial=True)
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": "Alegra user not found."},
+            )
+        serializer = self.serializer_class(
+            alegra_object, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(status=status.HTTP_200_OK, data=serializer.data)
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+
+
+class RequestPasswordResetView(generics.GenericAPIView):
+
+    serializer_class = ResetPasswordEmailSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        email = request.data.get("email", None)
+
+        if User.objects.filter(email=email).exists():
+
+            user = User.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(str(user.id).encode())
+            token = PasswordResetTokenGenerator().make_token(user)
+
+            current_site = FRONTEND_URL
+            relativeLink = f"password-reset/{uidb64}/{token}"
+            absurl = current_site + relativeLink
+
+            email_body = (
+                f"Hello {user.name.split()[0]}, \n Use the link below to reset your password  \n"
+                + absurl
+            )
+            data = {
+                "email_body": email_body,
+                "to_email": user.email,
+                "email_subject": "Reset your password",
+            }
+            Util.send_email(data)
+            return Response(
+                {"message": "Password reset link has been sent to your email"},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(
+            {"message": "Email not found"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class PasswordTokenCheckView(generics.GenericAPIView):
+    def get(self, request, uidb64, token):
+        try:
+            id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                Response(
+                    {"message": "Token is not valid", "uidb64": uidb64, "token": token},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            return Response(
+                {"message": "Credentials are valid", "uidb64": uidb64, "token": token},
+                status=status.HTTP_200_OK,
+            )
+
+        except DjangoUnicodeDecodeError as identifier:
+            return Response(
+                {"message": "Token is not valid", "uidb64": uidb64, "token": token},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            {"success": True, "message": "Password reset success"},
+            status=status.HTTP_200_OK,
+        )
