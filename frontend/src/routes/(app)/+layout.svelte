@@ -13,6 +13,7 @@
 	import logolight from '$lib/assets/logodimprolight.svg';
 	import icon from '$lib/assets/iconlight.svg';
 	import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
+	import { goto } from '$app/navigation';
 	let expandedDrawer = false;
 	export let data;
 	const user = data.user; 
@@ -182,7 +183,7 @@
 		on:mouseleave={() => (expandedSideBar = false)}
 		on:focus
 	>
-		<a href="/dashboard">
+		<a href="dimpro" on:click|preventDefault={() => goto("/dashboard")}>
 			<div
 				class="px-2 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface mt-1"
 			>
@@ -195,7 +196,7 @@
 
 		<hr class="w-[80%] mx-auto my-2" />
 
-		<a href="/dashboard/add-order">
+		<a href="añadir pedido" on:click|preventDefault={() => goto("/dashboard/add-order")}>
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-plus h3 w-20"></i>
 				<p
@@ -208,7 +209,7 @@
 				</p>
 			</div>
 		</a>
-		<a href="/dashboard/orders">
+		<a href="pedidos" on:click|preventDefault={() => goto("/dashboard/orders")}>
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-box h3 w-20"></i>
 				<p
@@ -221,7 +222,7 @@
 				</p>
 			</div>
 		</a>
-		<a href="/dashboard/inventory">
+		<a href="inventario" on:click|preventDefault={() => goto("/dashboard/inventory")}>
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-boxes-stacked h3 w-20"></i>
 				<p
@@ -236,7 +237,7 @@
 		</a>
 
 		{#if checkStaffGroup(user)}
-			<a href="/dashboard/users">
+			<a href="vendedores" on:click|preventDefault={() => goto("/dashboard/users")}>
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
 					<p
@@ -252,7 +253,7 @@
 		{/if}
 
 		{#if checkAdminGroup(user)} 
-			<a href="/dashboard/staff">
+			<a href="empleados" on:click|preventDefault={() => goto("/dashboard/staff")}>
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users-gear h3 w-20"></i>
 					<p
@@ -265,7 +266,7 @@
 					</p>
 				</div>
 			</a>
-			<a href="/dashboard/settings">
+			<a href="configuracion" on:click|preventDefault={() => goto("/dashboard/settings")}>
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-gear h3 w-20"></i>
 					<p
@@ -280,7 +281,7 @@
 			</a>
 		{/if}
 
-		<a href="/logout">
+		<a href="salir" on:click|preventDefault={() => goto("/logout")}>
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-arrow-right-from-bracket h3 w-20"></i>
 				<p

@@ -97,4 +97,15 @@ export async function getUserFromCookie(event: { cookies: any; fetch: typeof fet
 	return data; // and here well, just return the user
 }
 
-
+export async function checkLogout({ event }: any) {
+	console.log("CURRENT ENDPOINT: "+event.url.pathname);
+	if (event.url.pathname.startsWith('/logout')) {
+		const response = await event.fetch(apiURL + 'logout');
+		if (response.ok) {
+			event.cookies.delete('sessionid', { path: '/' });
+			event.locals.user = null;
+		} else {
+			console.log(await response.text());
+		}
+	}
+}

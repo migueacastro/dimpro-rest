@@ -59,6 +59,15 @@
 				<i class="fa-solid fa-flag h3 ml-5" />
 			</div>
 		</a>
+		<a
+		class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"
+		href="/dashboard/settings/date"
+	>
+		<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
+			<p class="font-bold h4">Registros</p>
+			<i class="fa-solid fa-book h3 ml-5" />
+		</div>
+	</a>
 
 		<form
 			bind:this={updateDBForm}
