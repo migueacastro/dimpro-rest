@@ -600,10 +600,10 @@ class UpdateDBView(APIView):
     def get(self, request):
         try:
             # Schedule the updatedb task asynchronously.
-            task_id = async_task("dimpro.tasks.updatedb", sync=True)
+            updatedb()
             return Response(
                 status=status.HTTP_200_OK,
-                data={"message": "Database update task scheduled.", "task_id": task_id},
+                data={"message": "Database update updated successfully."},
             )
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=str(e))
