@@ -94,6 +94,7 @@
 					><i class="fa-regular fa-eye"></i></button
 				>
 			{/if}
+			
 		</div>
 		{#if errors.password.length > 0}
 			<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -104,6 +105,9 @@
 				</ul>
 			</div>
 		{/if}
+		<p class="text-start mt-4">
+			<a class="anchor no-underline" href="/password-reset">¿Olvidaste tu contraseña? </a>
+		</p>
 		<button class="btn btn-xl variant-filled-primary my-2 w-full shadow-xl" type="submit"
 			>Iniciar Sesión</button
 		>

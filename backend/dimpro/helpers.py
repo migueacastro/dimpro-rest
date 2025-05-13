@@ -54,8 +54,9 @@ class Util:
             subject=data['email_subject'], 
             body=data['email_body'], 
             to=[data['to_email']])
-        if data['email_file']:
-            email.attach('image.jpg', data['email_file'].read(), 'image/png')
-        if data['content_type'] == 'html':
-            email.content_subtype = 'html'
+        
+        #if data['email_file']:
+        #    email.attach('image.jpg', data['email_file'].read(), 'image/png')
+        #if data['content_type'] == 'html':
+        #    email.content_subtype = 'html'
         email.send()

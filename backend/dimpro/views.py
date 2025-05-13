@@ -263,9 +263,9 @@ class UserVerifyPasswordView(APIView):
 class UserViewSet(SafeViewSet):
     permission_classes = (IsAuthenticated, IsStaff)
     serializer_class = UserSerializer
-    queryset = User.objects.filter(active=True).exclude(
-        groups__name="staff"
-    ).order_by("name")  # If this line does not work i will nuke Copilot
+    queryset = (
+        User.objects.filter(active=True).exclude(groups__name="staff").order_by("name")
+    )  # If this line does not work i will nuke Copilot
 
     def retrieve(self, request, *args, **kwargs):
         object_instance = self.get_object()
@@ -292,7 +292,9 @@ class StaffViewSet(SafeViewSet):
 class ProductViewSet(SafeViewSet):
     serializer_class = ProductSerializer
     permission_classes = (IsAuthenticated, UserReadOnlyPermission)
-    queryset = Product.objects.filter(active=True).order_by("item")  # Aqui no por ejemplo
+    queryset = Product.objects.filter(active=True).order_by(
+        "item"
+    )  # Aqui no por ejemplo
 
 
 class ContactViewSet(SafeViewSet):
@@ -331,7 +333,9 @@ class UserOrderViewSet(SafeViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        return Order.objects.filter(active=True, user=self.request.user.id).order_by("-date")
+        return Order.objects.filter(active=True, user=self.request.user.id).order_by(
+            "-date"
+        )
 
 
 class AlegraUserViewSet(SafeViewSet):
@@ -414,9 +418,7 @@ class ExportOrderPDFView(APIView):
 
             for order_product in products:
                 id = Paragraph(str(order_product["product"]["id"]), small_style)
-                item = Paragraph(
-                    str(order_product["product"]["item"]), small_style
-                )
+                item = Paragraph(str(order_product["product"]["item"]), small_style)
                 reference = Paragraph(
                     str(order_product["product"]["reference"]), small_style
                 )
@@ -600,10 +602,10 @@ class UpdateDBView(APIView):
     def get(self, request):
         try:
             # Schedule the updatedb task asynchronously.
-            task_id = async_task("dimpro.tasks.updatedb", sync=True)
+            updatedb()
             return Response(
                 status=status.HTTP_200_OK,
-                data={"message": "Database update task scheduled.", "task_id": task_id},
+                data={"message": "Database update updated successfully."},
             )
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=str(e))
@@ -654,13 +656,14 @@ class RequestPasswordResetView(generics.GenericAPIView):
             absurl = current_site + relativeLink
 
             email_body = (
-                f"Hello {user.name.split()[0]}, \n Use the link below to reset your password  \n"
+                f"Hola {user.name.split()[0]}, \nUsa el enlace para reestablecer tu contraseña.  \n"
                 + absurl
+                + "\n\nSi no solicitaste este cambio, ignora este mensaje.  \n\nGracias por usar. Dimpro."
             )
             data = {
                 "email_body": email_body,
                 "to_email": user.email,
-                "email_subject": "Reset your password",
+                "email_subject": "Dimpro | Reestablecer contraseña",
             }
             Util.send_email(data)
             return Response(
@@ -680,7 +683,7 @@ class PasswordTokenCheckView(generics.GenericAPIView):
             user = User.objects.get(id=id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                Response(
+                return Response(
                     {"message": "Token is not valid", "uidb64": uidb64, "token": token},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -703,6 +706,7 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
     def patch(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
         return Response(
             {"success": True, "message": "Password reset success"},
             status=status.HTTP_200_OK,
