@@ -193,6 +193,12 @@ class Note(models.Model):
 auditlog.register(Note)
 
 
+#class PasswordResetToken(models.Model):
+#    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')
+#    token = models.CharField(max_length=256)
+#    date = models.DateTimeField(auto_now_add=True)
+#    active = models.BooleanField(default=True)
+
 # class Receivable(models.Model):
 #     active = models.BooleanField(default=False)
 #     seller = models.CharField(max_length=128, blank=True, null=True)

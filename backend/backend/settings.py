@@ -183,10 +183,10 @@ CORS_ALLOW_HEADERS = (
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS=True
-EMAIL_HOST='smtp.castroworks.lat'
-EMAIL_PORT=465
-EMAIL_HOST_USER='no-reply@castroworks.lat'
-EMAIL_HOST_PASSWORD=''
+EMAIL_HOST=os.getenv('EMAIL_HOST', None) 
+EMAIL_PORT=os.getenv('EMAIL_PORT', None)  
+EMAIL_HOST_USER=os.getenv('EMAIL_HOST_USER', None) 
+EMAIL_HOST_PASSWORD=os.getenv('EMAIL_HOST_PASSWORD', None) 
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_NAME = 'sessionid'
@@ -196,4 +196,4 @@ SESSION_COOKIE_SAMESITE = 'Lax'  # Or 'None' if using cross-site
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
 SESSION_COOKIE_DOMAIN = DOMAIN if MODE == "production" else None
 
-FRONTEND_URL = ("https://" if MODE == "production" else "http://") + DOMAIN
+FRONTEND_URL = ("https://" if MODE == "production" + DOMAIN + "/" else "http://localhost/") 
