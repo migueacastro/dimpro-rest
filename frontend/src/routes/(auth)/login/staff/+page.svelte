@@ -105,6 +105,9 @@
 				</ul>
 			</div>
 		{/if}
+		<p class="text-start mt-4">
+			<a class="anchor no-underline" href="/password-reset">¿Olvidaste tu contraseña? </a>
+		</p>
 		<button class="btn btn-xl variant-filled-tertiary my-2 w-full shadow-xl" type="submit"
 			>Iniciar Sesión</button
 		>

@@ -181,7 +181,12 @@ CORS_ALLOW_HEADERS = (
 'X-CSRFToken'
 )
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS=True
+EMAIL_HOST='smtp.castroworks.lat'
+EMAIL_PORT=465
+EMAIL_HOST_USER='no-reply@castroworks.lat'
+EMAIL_HOST_PASSWORD=''
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_NAME = 'sessionid'

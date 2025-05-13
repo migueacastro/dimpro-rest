@@ -654,13 +654,13 @@ class RequestPasswordResetView(generics.GenericAPIView):
             absurl = current_site + relativeLink
 
             email_body = (
-                f"Hello {user.name.split()[0]}, \n Use the link below to reset your password  \n"
+                f"Hola {user.name.split()[0]}, \n Usa el enlace para reestablecer tu contraseña.  \n"
                 + absurl
             )
             data = {
                 "email_body": email_body,
                 "to_email": user.email,
-                "email_subject": "Reset your password",
+                "email_subject": "Reestablecer contraseña",
             }
             Util.send_email(data)
             return Response(
