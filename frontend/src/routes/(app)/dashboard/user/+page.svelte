@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
 
 	export let data;
@@ -71,7 +72,7 @@
 				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/change-password"
 					><i class="fa-solid fa-key mr-1"></i>Cambiar Contraseña</a
 				>
-				<a class="text-error-500" href="/logout"
+				<a class="text-error-500" href="/salir" on:click={() => goto("/logout")}
 					><i class="fa-solid fa-xmark mr-1"></i>Cerrar Sesión</a
 				>
 			</div>
