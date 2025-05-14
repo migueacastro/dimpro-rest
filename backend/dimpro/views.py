@@ -131,7 +131,7 @@ class UserLoginView(APIView):
             login(request, user_instance)
             LogEntry.objects.create(
                 content_type=get_content_type_for_model(User),
-                action=LogEntry.Action.UPDATE,
+                action=LogEntry.Action.ACCESS,
                 changes_text="User logged in",
                 object_pk=user_instance.id,
                 object_id=user_instance.id,
@@ -157,7 +157,7 @@ class UserLogoutView(
         Session.objects.filter(session_key=request.session.session_key).delete()
         LogEntry.objects.create(
             content_type=get_content_type_for_model(User),
-            action=LogEntry.Action.UPDATE,
+            action=LogEntry.Action.ACCESS,
             changes_text="User logged out",
             object_pk=user_instance.id,
             object_id=user_instance.id,
@@ -195,7 +195,7 @@ class StaffOnlyLoginView(APIView):
             login(request, user_instance)
             LogEntry.objects.create(
                 content_type=get_content_type_for_model(User),
-                action=LogEntry.Action.UPDATE,
+                action=LogEntry.Action.ACCESS,
                 changes_text="User logged in",
                 object_pk=user_instance.id,
                 object_id=user_instance.id,

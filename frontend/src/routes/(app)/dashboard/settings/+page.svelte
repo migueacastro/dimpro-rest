@@ -61,7 +61,7 @@
 		</a>
 		<a
 		class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"
-		href="/dashboard/settings/date"
+		href="/dashboard/settings/filter"
 	>
 		<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
 			<p class="font-bold h4">Registros</p>

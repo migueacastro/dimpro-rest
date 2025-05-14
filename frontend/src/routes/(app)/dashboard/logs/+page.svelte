@@ -7,6 +7,7 @@
 	let {user} = data;
 	let {logs} = data;
 	onMount(() => {
+		console.log(logs);
 		if (!checkAdminGroup(user)) {
 			goto('/dashboard');
 		}
@@ -18,6 +19,6 @@
 	source_data={logs}
 	editable={false}
 	endpoint={{main:'logs'}}
-	fields={['object_repr', 'changes_text','remote_addr', 'timestamp']}
-	headings={['Autor', 'Cambios','Dirección IP', 'Tiempo de modificación']}
+	fields={['actor', 'changes_text','changes','remote_addr', 'timestamp']}
+	headings={['Autor', 'Acción','Cambios','Dirección IP', 'Tiempo de modificación']}
 />
