@@ -18,6 +18,8 @@ router.register(r'pricetypes', PriceTypeViewSet)
 router.register(r'user_orders',UserOrderViewSet, basename="user_orders")
 router.register(r'notes', NoteViewSet)
 router.register(r'logs', LogViewSet)
+router.register(r'groups', GroupViewSet)
+router.register(r'permissions', PermissionViewSet)
 
 
 urlpatterns = [

@@ -711,3 +711,14 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
             {"success": True, "message": "Password reset success"},
             status=status.HTTP_200_OK,
         )
+
+class GroupViewSet(SafeViewSet):
+    serializer_class = GroupSerializer
+    permission_classes = (IsAdminUser,)
+    queryset = Group.objects.all()
+
+
+class PermissionViewSet(SafeViewSet):
+    serializer_class = AllPermissionsSerializer
+    permission_classes = (IsAdminUser,)
+    queryset = Permission.objects.all()
