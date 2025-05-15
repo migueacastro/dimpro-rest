@@ -90,3 +90,8 @@ export async function login({ fetch, locals, formData, isStaff, cookies }: any) 
 	};
 	//return redirect(303, '/dashboard');
 }
+
+
+async function checkPermission({ user, type, permission}: any) {
+	
+}

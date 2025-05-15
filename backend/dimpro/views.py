@@ -369,7 +369,7 @@ class NoteViewSet(SafeViewSet):
 class LogViewSet(SafeViewSet):
     serializer_class = LogSerializer
     permission_classes = (IsAdminUser,)
-    queryset = LogEntry.objects.all()
+    queryset = LogEntry.objects.all().order_by("-timestamp")
 
 
 class ExportOrderPDFView(APIView):
@@ -711,3 +711,14 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
             {"success": True, "message": "Password reset success"},
             status=status.HTTP_200_OK,
         )
+
+class GroupViewSet(SafeViewSet):
+    serializer_class = GroupSerializer
+    permission_classes = (IsAdminUser,)
+    queryset = Group.objects.all()
+
+
+class PermissionViewSet(SafeViewSet):
+    serializer_class = AllPermissionsSerializer
+    permission_classes = (IsAdminUser,)
+    queryset = Permission.objects.all()

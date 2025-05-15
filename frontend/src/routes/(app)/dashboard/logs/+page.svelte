@@ -19,6 +19,6 @@
 	source_data={logs}
 	editable={false}
 	endpoint={{main:'logs'}}
-	fields={['actor', 'changes_text','changes','remote_addr', 'timestamp']}
-	headings={['Autor', 'Acción','Cambios','Dirección IP', 'Tiempo de modificación']}
+	fields={['actor','actor_name','actor_email', 'changes_text','content_type_name','remote_addr', 'timestamp']}
+	headings={['ID Autor', 'Nombre de Autor', 'Email de Autor', 'Acción','Cambios','Dirección IP', 'Tiempo de modificación']}
 />

@@ -14,6 +14,8 @@ export const load: PageServerLoad = async ({ locals,fetch }) => {
   response = await fetch(apiURL+"staff");
   let staff = await response.json();
   users = [...users,...staff];
+
+  users.sort((a: any, b: any) => a.name.localeCompare(b.name)); // magic code do not touch 
   return {
     users
   }

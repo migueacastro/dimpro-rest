@@ -20,6 +20,7 @@
 		};
 		return new Intl.DateTimeFormat('es-ES', opciones).format(date);
 	}
+	console.log('user', user);
 </script>
 
 <div class="flex flex-col">
