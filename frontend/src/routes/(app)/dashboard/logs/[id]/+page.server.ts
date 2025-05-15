@@ -1,6 +1,5 @@
 import { apiURL } from '$lib/api_url.js';
 import { redirect } from '@sveltejs/kit';
-import {checkStaffGroup} from "$lib/auth.js";
 
 export async function load({locals,fetch,params}) {
     if (!locals.user) {
@@ -14,9 +13,13 @@ export async function load({locals,fetch,params}) {
     }
     let reqUser = await response.json();
     log.actor = reqUser.email;
-    let logStr = JSON.stringify(log);
+    const keys: string[] = Object.keys(log);
+    keys.forEach((e:any) => {
+        log[e] = JSON.stringify(log[e]);
+    });
     return {
         user: locals.user,
-        logStr
+        keys,
+        log
     };
 }

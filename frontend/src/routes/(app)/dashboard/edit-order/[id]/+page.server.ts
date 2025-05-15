@@ -2,6 +2,7 @@ import { browser } from '$app/environment';
 import { apiURL } from '$lib/api_url';
 import { changestatus } from '$lib/components/StatusButton';
 import type { Actions } from '@sveltejs/kit';
+import { request } from 'http';
 
 export async function load({ params, fetch }: any) {
   let response = await fetch(apiURL + 'products');
@@ -140,7 +141,20 @@ export const actions: Actions = {
         error: { data }
       };
     }
-  }
+  },
+  addReminder: async ({request, fetch,locals}) => {
+    let formData = await request.formData();
+    let body = {note:formData.get('note'),name:locals.user?.name};
+    let response = await fetch(apiURL+"notes/",{
+      method:"POST",
+      body:JSON.stringify(body)
+    });
+    const data = await response.json();
+    return {
+      success: response.ok,
+      error: { data }
+    };
+  },
 };
 
 async function disableInitialItems(orderObject: any, fetch: any) {

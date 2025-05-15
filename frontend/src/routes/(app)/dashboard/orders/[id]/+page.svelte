@@ -56,7 +56,7 @@
 				<form action="/dashboard/orders/exportpdf" method="post">
 					<input type="hidden" name="order_id" value={order?.id} /> 
 					<button class="btn variant-filled max-w-fit px-[2rem] ml-2 h-full" type="submit">
-						<i class="fa-solid fa-floppy-disk"></i>
+						<i class="fa-solid fa-download"></i>
 					</button>
 				</form>
 			</div>

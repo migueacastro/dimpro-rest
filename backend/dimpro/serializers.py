@@ -13,6 +13,7 @@ from django.utils.encoding import force_str
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.models import Permission, Group
+from django.contrib.contenttypes.models import ContentType
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -387,9 +388,25 @@ class ExportOrderPDFSerializer(serializers.Serializer):
 
 
 class LogSerializer(serializers.ModelSerializer):
+    actor_name = serializers.SerializerMethodField(read_only=True)
+    actor_email = serializers.SerializerMethodField(read_only=True)
+    content_type_name = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = LogEntry
         fields = "__all__"
+    
+    def get_actor_name(self, obj):
+        if obj.actor:
+            return User.objects.get(id=obj.actor.id).name
+        return None
+    def get_content_type_name(self, obj):
+        if obj.content_type:
+            return obj.content_type.model
+        return None
+    def get_actor_email(self, obj):
+        if obj.actor:
+            return User.objects.get(id=obj.actor.id).email
+        return None
 
 
 class AlegraAPITokenSerializer(serializers.ModelSerializer):
