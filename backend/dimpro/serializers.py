@@ -208,7 +208,7 @@ class PriceTypeSerializer(serializers.ModelSerializer):
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = ["note", "name", "date"]
+        fields = ["id","note", "name", "date","active"]
 
 
 class ContactSerializer(serializers.ModelSerializer):

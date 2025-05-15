@@ -324,7 +324,6 @@ class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProdu
     queryset = Order.objects.filter(active=True).order_by("status").order_by("-date")
 
     def patch(self, request, *args, **kwargs):
-        print("Pasó por aqui: ", request.data)
         return super().patch(request, *args, **kwargs)
 
 
@@ -363,7 +362,7 @@ class WelcomeSuperUserView(APIView):
 class NoteViewSet(SafeViewSet):
     serializer_class = NoteSerializer
     permission_classes = (IsAdminUser,)
-    queryset = Note.objects.all()
+    queryset = Note.objects.filter(active=True)
 
 
 class LogViewSet(SafeViewSet):

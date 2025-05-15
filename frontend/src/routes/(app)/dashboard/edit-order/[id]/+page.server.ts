@@ -115,7 +115,7 @@ export const actions: Actions = {
         data: data
       };
     } else {
-      
+
       console.log(await response.text());
       return {
         success: false,
@@ -142,18 +142,39 @@ export const actions: Actions = {
       };
     }
   },
-  addReminder: async ({request, fetch,locals}) => {
+  addReminder: async ({ request, fetch, locals }) => {
     let formData = await request.formData();
-    let body = {note:formData.get('note'),name:locals.user?.name};
-    let response = await fetch(apiURL+"notes/",{
-      method:"POST",
-      body:JSON.stringify(body)
+    let body = { note: formData.get('note'), name: locals.user?.name };
+    let response = await fetch(apiURL + "notes/", {
+      method: "POST",
+      body: JSON.stringify(body)
     });
     const data = await response.json();
     return {
       success: response.ok,
+      action: "agreg",
       error: { data }
     };
+  },
+  deleteReminder: async ({ request, fetch }) => {
+    let formData = await request.formData();
+    const id = formData.get('id');
+    const response = await fetch(apiURL + 'notes/' + id + '/', {
+      method: 'DELETE'
+    });
+    if (response.ok) {
+      return {
+        success: true,
+        action: "elimin"
+      };
+    } else {
+      const data = await response.json();
+      return {
+        success: false,
+        action: "elimin",
+        error: { data }
+      };
+    }
   },
 };
 
