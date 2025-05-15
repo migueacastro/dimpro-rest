@@ -369,7 +369,7 @@ class NoteViewSet(SafeViewSet):
 class LogViewSet(SafeViewSet):
     serializer_class = LogSerializer
     permission_classes = (IsAdminUser,)
-    queryset = LogEntry.objects.filter(actor__isnull=False)[:10]
+    queryset = LogEntry.objects.all().order_by("-timestamp")
 
 
 class ExportOrderPDFView(APIView):
