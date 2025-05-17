@@ -20,6 +20,7 @@
 	export let endpoint = '';
 	export let edit = false;
 	export let table_name = '';
+	export let reload = false;
 	let ogValue: any = null;
 	let id = page.params.id;
 	let action = '';
@@ -132,7 +133,14 @@
 				};
 				toastStore.trigger(toast);
 			}
-			goto(`/dashboard/${endpoint}`);
+			if (reload) {
+				goto(`/dashboard/user`);
+				setTimeout(() => {
+					window.location.reload();
+				},1000);
+			} else {
+				goto(`/dashboard/${endpoint}`);
+			}
 		};
 	}
 	function handleForm(event: Event) {

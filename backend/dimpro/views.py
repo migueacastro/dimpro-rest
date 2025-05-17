@@ -21,6 +21,7 @@ from dimpro.models import *
 from auditlog.models import LogEntry
 from dimpro.helpers import (
     SafeViewSet,
+    NoteViewSet,
     IsStaff,
     UserReadOnlyPermission,
     Util,
@@ -359,7 +360,7 @@ class WelcomeSuperUserView(APIView):
         return Response(serializer.data)
 
 
-class NoteViewSet(SafeViewSet):
+class NoteViewSet(NoteViewSet): #because date cannot be updated
     serializer_class = NoteSerializer
     permission_classes = (IsAdminUser,)
     queryset = Note.objects.filter(active=True)

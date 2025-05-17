@@ -12,10 +12,9 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 	let elemCarousel: HTMLDivElement;
-	//TODO: change with real data
 	export let reminders: any;
-	let date: any;
 	export let user;
+	let reminderSelected: any = null;
 	let buttonAction = '';
 	function carouselLeft(): void {
 		const x =
@@ -79,6 +78,23 @@
 		};
 		modalStore.trigger(modal);
 	}
+	function updateConfirmation(event: any) {
+		console.log('what?');
+		const modal: ModalSettings = {
+			type: 'confirm',
+			title: `Actualizar recordatorio`,
+			body: `¿Está seguro de querer eliminar este recordatorio?`,
+			response: async (r: boolean) => {
+				if (r) {
+					const form = event.target.closest('form');
+					if (form) {
+						form.requestSubmit();
+					}
+				}
+			}
+		};
+		modalStore.trigger(modal);
+	}
 </script>
 
 <div class="mx-auto max-w-3xl my-2">
@@ -91,6 +107,41 @@
 						<input type="text" class="input mb-5" name="note" placeholder="Recordatorio" />
 						<div class="flex gap-5">
 							<button type="submit" class="btn variant-filled">
+								<i class="fa-solid fa-floppy-disk"></i>
+							</button>
+							<button
+								type="button"
+								class="btn variant-filled"
+								on:click={() => {
+									buttonAction = '';
+								}}
+							>
+								<i class="fa-solid fa-x"></i>
+							</button>
+						</div>
+					</label>
+				</form>
+			</div>
+		{:else if buttonAction === 'edit'}
+			<div class="card p-[2rem] grid grid-cols-[auto_1fr_auto] gap-4 items-center w-full">
+				<form action="?/editReminder" method="post" use:enhance={handleResult}>
+					<label class="label" for="object">
+						<p class="capitalize">Recordatorio</p>
+						<input type="hidden" name="id" bind:value={reminderSelected.id} />
+						<input type="hidden" name="name" bind:value={user.name} />
+						<input
+							type="text"
+							class="input mb-5"
+							name="note"
+							placeholder="Recordatorio"
+							bind:value={reminderSelected.note}
+						/>
+						<div class="flex gap-5">
+							<button
+								type="button"
+								class="btn variant-filled"
+								on:click={(e) => updateConfirmation(e)}
+							>
 								<i class="fa-solid fa-floppy-disk"></i>
 							</button>
 							<button
@@ -136,7 +187,10 @@
 									</form>
 									<button
 										class="btn-icon variant-filled ml-[29rem]"
-										on:click={() => (buttonAction = 'edit')}
+										on:click={() => {
+											buttonAction = 'edit';
+											reminderSelected = { note: reminder.note, id: reminder.id };
+										}}
 									>
 										<i class="fa-solid fa-pencil" />
 									</button>

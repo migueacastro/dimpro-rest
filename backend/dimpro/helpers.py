@@ -15,6 +15,23 @@ class SafeViewSet(viewsets.ModelViewSet):
     object_instance.save()
     return Response(status=status.HTTP_204_NO_CONTENT)
   
+class NoteViewSet(viewsets.ModelViewSet):
+
+    #i'm insane, i know c:
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.name = request.data['name']
+        instance.note = request.data['note']
+        instance.date = request.data['date']
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def destroy(self, request, *args, **kwargs):
+        object_instance = self.get_object()
+        object_instance.active = False 
+        object_instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+  
 
 class IsStaff(permissions.BasePermission):
     message = "No posee los permisos necesarios"

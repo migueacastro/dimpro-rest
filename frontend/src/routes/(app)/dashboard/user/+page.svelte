@@ -67,13 +67,13 @@
 			<div class="flex flex-col text-start pr-2 space-y-2">
 				<h4 class="h3 font-bold capitalize">Acciones</h4>
 				<div class="flex flex-row space-x-1"></div>
-				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/edit"
+				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/edit/{user.id}"
 					><i class="fa-solid fa-pen-to-square mr-1"></i>Editar Perfil</a
 				>
 				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/change-password"
 					><i class="fa-solid fa-key mr-1"></i>Cambiar Contraseña</a
 				>
-				<a class="text-error-500" href="/salir" on:click={() => goto("/logout")}
+				<a class="text-error-500" href="/salir" on:click|preventDefault={() => goto("/logout")}
 					><i class="fa-solid fa-xmark mr-1"></i>Cerrar Sesión</a
 				>
 			</div>

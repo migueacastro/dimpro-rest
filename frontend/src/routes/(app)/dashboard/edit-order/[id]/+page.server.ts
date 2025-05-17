@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { apiURL } from '$lib/api_url';
 import { changestatus } from '$lib/components/StatusButton';
+import { getCurrentDateTime } from '$lib/datetime';
 import type { Actions } from '@sveltejs/kit';
 import { request } from 'http';
 
@@ -176,6 +177,23 @@ export const actions: Actions = {
       };
     }
   },
+  editReminder: async ({ request, fetch }) => {
+    const formData = await request.formData();
+    const id = formData.get("id");
+    const name = formData.get("name");
+    const note = formData.get("note");
+    let body: any = { note: note, name: name, date: getCurrentDateTime() };
+    let response = await fetch(apiURL + "notes" + `/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+    return {
+      success: response.ok,
+      error: response.statusText,
+      action: "actualiz"
+    }
+
+  }
 };
 
 async function disableInitialItems(orderObject: any, fetch: any) {
