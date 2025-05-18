@@ -20,7 +20,6 @@
 		};
 		return new Intl.DateTimeFormat('es-ES', opciones).format(date);
 	}
-	console.log('user', user);
 </script>
 
 <div class="flex flex-col">
@@ -44,8 +43,8 @@
 			<i class="w-fit text-5xl fa-solid fa-user my-auto text-primary-500 dark:text-surface-50"></i>
 		</div>
 	</div>
-	<div class="flex flex-row space-x-4">
-		<div class="card p-[2rem] mb-[2rem] w-1/3 shadow-md flex flex-row justify-between">
+	<div class="lg:flex flex-row space-x-4">
+		<div class="card p-[2rem] mb-[2rem] w-auto lg:w-1/3 shadow-md flex flex-row justify-between">
 			<div class="flex flex-col text-start pr-2">
 				<h4 class="h3 font-bold capitalize">Información</h4>
 				<p class="p">Se unió: {formatDate(user.date_joined)}</p>
@@ -54,7 +53,7 @@
 			<i class="w-fit text-5xl fa-solid ml-2 fa-info my-auto text-primary-500 dark:text-surface-50"
 			></i>
 		</div>
-		<div class="card p-[2rem] mb-[2rem] w-1/3 shadow-md flex flex-row justify-between">
+		<div class="card p-[2rem] mb-[2rem] w-auto lg:w-1/3 shadow-md flex flex-row justify-between">
 			<div class="flex flex-col text-start pr-2">
 				<h4 class="h3 font-bold capitalize">Contacto</h4>
 				<p class="p">Teléfono: {user?.phonenumber ?? 'No definido'}</p>
@@ -63,7 +62,7 @@
 				class="w-fit text-5xl fa-solid ml-2 fa-address-book my-auto text-primary-500 dark:text-surface-50"
 			></i>
 		</div>
-		<div class="card p-[2rem] mb-[2rem] w-1/3 shadow-md flex flex-row justify-between">
+		<div class="card p-[2rem] mb-[2rem] w-auto lg:w-1/3 shadow-md flex flex-row justify-between">
 			<div class="flex flex-col text-start pr-2 space-y-2">
 				<h4 class="h3 font-bold capitalize">Acciones</h4>
 				<div class="flex flex-row space-x-1"></div>

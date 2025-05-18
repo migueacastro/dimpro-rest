@@ -164,10 +164,10 @@
 				</button>
 				<div
 					bind:this={elemCarousel}
-					class="scroll-smooth flex overflow-hidden w-[35rem] h-[10rem]"
+					class="scroll-smooth flex overflow-hidden w-[11rem] lg:w-[35rem] h-auto"
 				>
 					{#each reminders as reminder}
-						<div class="card flex-none w-[35rem] snap-start items-center">
+						<div class="card flex-none w-[11rem] lg:w-[35rem] h-auto snap-start items-center">
 							<header class="card-header text-center font-bold">{reminder.note}</header>
 							<div class="p-2 text-center">{reminder.name}</div>
 							<footer class="card-footer text-center font-thin">
@@ -179,14 +179,14 @@
 										<input type="hidden" name="id" bind:value={reminder.id} />
 										<button
 											type="button"
-											class="btn-icon variant-filled"
+											class="btn-icon variant-filled ml-[1rem] lg:ml-[2rem]"
 											on:click={(e) => deleteConfirmation(reminder.note, e)}
 										>
 											<i class="fa-solid fa-trash" />
 										</button>
 									</form>
 									<button
-										class="btn-icon variant-filled ml-[29rem]"
+										class="btn-icon variant-filled ml-[2rem] lg:ml-[25rem]"
 										on:click={() => {
 											buttonAction = 'edit';
 											reminderSelected = { note: reminder.note, id: reminder.id };

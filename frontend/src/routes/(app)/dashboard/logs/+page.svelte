@@ -7,7 +7,6 @@
 	let {user} = data;
 	let {logs} = data;
 	onMount(() => {
-		console.log(logs);
 		if (!checkAdminGroup(user)) {
 			goto('/dashboard');
 		}

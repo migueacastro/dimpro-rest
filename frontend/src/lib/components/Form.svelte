@@ -217,10 +217,10 @@
 <form
 	action={!edit ? '?/add' : `?/edit`}
 	method="post"
-	class="gap-10 flex flex-col ml-[13rem] lg:flex-row"
+	class="gap-5 flex flex-col mx-4 lg:mx-0 lg:flex-row"
 	use:enhance={sendData}
 >
-	<div class="card my-3 p-10 text-start lg:w-[75%] space-y-6">
+	<div class="card my-3 p-5 text-start lg:w-[75%] space-y-4">
 		{#if edit}
 			<input class="input" type="hidden" bind:value={id} name="id" />
 		{/if}

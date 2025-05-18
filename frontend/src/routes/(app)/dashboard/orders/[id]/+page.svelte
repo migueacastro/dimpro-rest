@@ -17,7 +17,6 @@
 		};
 	});
 	let loaded = true;
-	console.log(order);
 </script>
 
 <div class="flex flex-col">
