@@ -74,33 +74,9 @@ class VerifyPasswordSerializer(serializers.ModelSerializer):
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
-        fields = ["id", "name", "codename"]
-
-class AllPermissionsSerializer(serializers.ModelSerializer):
-    view = serializers.SerializerMethodField(read_only=True)
-    add = serializers.SerializerMethodField(read_only=True)
-    change = serializers.SerializerMethodField(read_only=True)
-    delete = serializers.SerializerMethodField(read_only=True)
-    class Meta:
-        model = Permission
-        fields = ["change", "add", "delete", "view"]
+        fields = ["id", "codename","name"]
     
-    def get_view(self, obj):
-        return PermissionSerializer(
-            obj.permissions.filter(codename__startswith="view"), many=True
-        ).data
-    def get_add(self, obj):
-        return PermissionSerializer(
-            obj.permissions.filter(codename__startswith="add"), many=True
-        ).data
-    def get_change(self, obj):
-        return PermissionSerializer(
-            obj.permissions.filter(codename__startswith="change"), many=True
-        ).data
-    def get_delete(self, obj):
-        return PermissionSerializer(
-            obj.permissions.filter(codename__startswith="delete"), many=True
-        ).data
+
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -111,31 +87,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        permissions = {
-            "view": [],
-            "add": [],
-            "change": [],
-            "delete": [],
-        }
         
-        for permission in instance.permissions.all():
-            app_label = permission.content_type.app_label
-            model_name = permission.content_type.model
-            if app_label != "dimpro":
-                continue
-            
-            permission_object = {"id": permission.id, "name": model_name}
-            action = permission.codename.split("_", 1)[0]
-            if action == "view":
-                permissions["view"].append(permission_object)
-            elif action == "add":
-                permissions["add"].append(permission_object)
-            elif action == "change":
-                permissions["change"].append(permission_object)
-            elif action == "delete":
-                permissions["delete"].append(permission_object)
-                
-        data["permissions"] = permissions
+        data["permissions"] = PermissionSerializer(instance.permissions.all(), many=True).data
         return data
 
 
