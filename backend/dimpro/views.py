@@ -719,6 +719,6 @@ class GroupViewSet(SafeViewSet):
 
 
 class PermissionViewSet(SafeViewSet):
-    serializer_class = AllPermissionsSerializer
     permission_classes = (IsAdminUser,)
-    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
+    queryset = Permission.objects.filter(content_type__app_label="dimpro")
