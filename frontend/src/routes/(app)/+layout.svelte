@@ -109,7 +109,7 @@
 					</li>
 				{/if}
 				<li>
-					<a href="/logout" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
+					<a href="salir" on:click|preventDefault={() => {hideDrawer();goto("/logout");}} class="w-fit my-2 mx-auto h4 font-bold">
 						Cerrar Sesión
 					</a>
 				</li>

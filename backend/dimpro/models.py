@@ -187,9 +187,11 @@ auditlog.register(Order_Product)
 
 
 class Note(models.Model):
+    id = models.AutoField(primary_key=True)
     note = models.TextField()
     name = models.CharField(max_length=128)
     date = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True, blank=False, null=False)
 auditlog.register(Note)
 
 

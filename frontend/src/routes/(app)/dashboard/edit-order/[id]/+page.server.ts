@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { apiURL } from '$lib/api_url';
 import { changestatus } from '$lib/components/StatusButton';
+import { getCurrentDateTime } from '$lib/datetime';
 import type { Actions } from '@sveltejs/kit';
 import { request } from 'http';
 
@@ -115,7 +116,7 @@ export const actions: Actions = {
         data: data
       };
     } else {
-      
+
       console.log(await response.text());
       return {
         success: false,
@@ -142,19 +143,57 @@ export const actions: Actions = {
       };
     }
   },
-  addReminder: async ({request, fetch,locals}) => {
+  addReminder: async ({ request, fetch, locals }) => {
     let formData = await request.formData();
-    let body = {note:formData.get('note'),name:locals.user?.name};
-    let response = await fetch(apiURL+"notes/",{
-      method:"POST",
-      body:JSON.stringify(body)
+    let body = { note: formData.get('note'), name: locals.user?.name };
+    let response = await fetch(apiURL + "notes/", {
+      method: "POST",
+      body: JSON.stringify(body)
     });
     const data = await response.json();
     return {
       success: response.ok,
+      action: "agreg",
       error: { data }
     };
   },
+  deleteReminder: async ({ request, fetch }) => {
+    let formData = await request.formData();
+    const id = formData.get('id');
+    const response = await fetch(apiURL + 'notes/' + id + '/', {
+      method: 'DELETE'
+    });
+    if (response.ok) {
+      return {
+        success: true,
+        action: "elimin"
+      };
+    } else {
+      const data = await response.json();
+      return {
+        success: false,
+        action: "elimin",
+        error: { data }
+      };
+    }
+  },
+  editReminder: async ({ request, fetch }) => {
+    const formData = await request.formData();
+    const id = formData.get("id");
+    const name = formData.get("name");
+    const note = formData.get("note");
+    let body: any = { note: note, name: name, date: getCurrentDateTime() };
+    let response = await fetch(apiURL + "notes" + `/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+    return {
+      success: response.ok,
+      error: response.statusText,
+      action: "actualiz"
+    }
+
+  }
 };
 
 async function disableInitialItems(orderObject: any, fetch: any) {

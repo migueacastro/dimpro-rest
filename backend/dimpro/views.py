@@ -21,6 +21,7 @@ from dimpro.models import *
 from auditlog.models import LogEntry
 from dimpro.helpers import (
     SafeViewSet,
+    NoteViewSet,
     IsStaff,
     UserReadOnlyPermission,
     Util,
@@ -324,7 +325,6 @@ class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProdu
     queryset = Order.objects.filter(active=True).order_by("status").order_by("-date")
 
     def patch(self, request, *args, **kwargs):
-        print("Pasó por aqui: ", request.data)
         return super().patch(request, *args, **kwargs)
 
 
@@ -360,10 +360,10 @@ class WelcomeSuperUserView(APIView):
         return Response(serializer.data)
 
 
-class NoteViewSet(SafeViewSet):
+class NoteViewSet(NoteViewSet): #because date cannot be updated
     serializer_class = NoteSerializer
     permission_classes = (IsAdminUser,)
-    queryset = Note.objects.all()
+    queryset = Note.objects.filter(active=True)
 
 
 class LogViewSet(SafeViewSet):
