@@ -1,7 +1,11 @@
 import { apiURL } from "$lib/api_url.js";
+import { checkPermission, permissionError } from "$lib/auth.js";
 import type { Actions } from "@sveltejs/kit";
 
-export async function load({ params, fetch }) {
+export async function load({ params, fetch, locals }) {
+  if (!checkPermission(locals.user, "view_order")) {
+    return permissionError();
+  }
   const response = await fetch(apiURL + "orders/" + params.id);
   const order = await response.json();
   return {

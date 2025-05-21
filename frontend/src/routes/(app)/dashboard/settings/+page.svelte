@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { checkAdminGroup, checkPermission } from '$lib/auth';
 	import { getToastStore, ProgressRadial } from '@skeletonlabs/skeleton';
 	import type { ToastStore } from '@skeletonlabs/skeleton';
 	const toastStore: ToastStore = getToastStore();
 	let updateDBForm: HTMLFormElement;
-
+	export let data: any;
+	let { user } = data;
 	$: loaded = true;
 	function handleUpdateDBEnhance() {
 		loaded = false;
@@ -40,6 +42,7 @@
 	<div class="flex flex-col">
 		<h1 class="h2 my-4">Configuración</h1>
 		<div class="lg:flex lg:flex-row mb-[1rem] flex-wrap lg:justify-start justify-center">
+			{#if checkPermission(user, 'view_staff_user')}
 			<a
 				class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"
 				href="/dashboard/staff"
@@ -49,6 +52,8 @@
 					<i class="fa-solid fa-users-gear h3 ml-5" />
 				</div>
 			</a>
+			{/if}
+			{#if checkPermission(user, 'view_alegrauser')}
 			<a
 				class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"
 				href="/dashboard/settings/change-token"
@@ -58,6 +63,8 @@
 					<i class="fa-solid fa-flag h3 ml-5" />
 				</div>
 			</a>
+			{/if}
+			{#if checkPermission(user, 'view_logentry')}
 			<a
 				class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"
 				href="/dashboard/settings/filter"
@@ -67,7 +74,8 @@
 					<i class="fa-solid fa-book h3 ml-5" />
 				</div>
 			</a>
-
+			{/if}
+			{#if checkAdminGroup(user)}
 			<a
 				class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"
 				href="/dashboard/settings/permissions"
@@ -77,8 +85,9 @@
 					<i class="fa-solid fa-book h3 ml-5" />
 				</div>
 			</a>
-
-
+			{/if}
+			
+			{#if checkPermission(user, 'view_updatedb_product')}
 			<form
 				bind:this={updateDBForm}
 				action="?/updatedb"
@@ -97,6 +106,7 @@
 					</div>
 				</button>
 			</form>
+			{/if}
 		</div>
 	</div>
 {:else}

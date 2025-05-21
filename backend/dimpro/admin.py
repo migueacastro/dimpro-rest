@@ -1,5 +1,6 @@
 from django.contrib import admin
 from dimpro.models import *
+from django.contrib.auth.models import Group, ContentType
 #
 # Register your models here.
 class ProductAdmin(admin.ModelAdmin): # Esto es para ver detalladamente la lista
@@ -25,3 +26,4 @@ admin.site.register(Note)
 admin.site.register(PriceType)
 admin.site.register(ExchangeRate)
 admin.site.register(ExchangeCurrency)
+admin.site.register(ContentType)

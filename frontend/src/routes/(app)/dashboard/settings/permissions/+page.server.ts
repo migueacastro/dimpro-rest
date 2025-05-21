@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	const permissions = await response.json();
 	const listPermissionNames = permissions.reduce((acc: any, permission: any) => {
 		const parts = permission.codename.split('_');
-		const modelName = parts[1];
+		const modelName = parts[parts.length - 1];
 		if (!Array.from(acc).find((item: any) => item === modelName)) {
 			acc.push(modelName);
 		}
@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	}, []);
 	const permissionsObject = permissions.reduce((acc: any, permission: any) => {
 		const parts = permission.codename.split('_');
-		const modelName = parts[1];
+		const modelName = parts[parts.length - 1];
 		if (!acc[modelName]) {
 			acc[modelName] = [];
 		}
@@ -37,7 +37,8 @@ export const load: PageServerLoad = async ({ fetch }) => {
 		});
 		return acc;
 	}, {});
-
+	console.log('permissionsObject', permissionsObject);
+	console.log('listPermissionNames', listPermissionNames);
 	return {
 		groupsObject,
 		listPermissionNames,

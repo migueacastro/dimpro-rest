@@ -75,8 +75,7 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = ["id", "codename","name"]
-    
-
+      
 
 
 class GroupSerializer(serializers.ModelSerializer):

@@ -1,13 +1,11 @@
 import { apiURL } from '$lib/api_url.js';
+import { checkPermission, permissionError } from '$lib/auth.js';
 import { redirect, type Actions } from '@sveltejs/kit';
 
 export async function load({ locals }) {
-    if (!locals.user) {
-        return redirect(303, '/start');
+    if (!checkPermission(locals.user, 'add_user')) {
+        return permissionError();
     }
-    return {
-        user: locals.user
-    };
 }
 
 export const actions: Actions = {

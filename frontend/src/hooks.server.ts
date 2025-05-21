@@ -109,3 +109,4 @@ export async function checkLogout({ event }: any) {
 		}
 	}
 }
+

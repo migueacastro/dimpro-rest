@@ -22,4 +22,6 @@
 	table_name={'empleado/administrador'}
 	fields={['name', 'email', 'phonenumber']}
 	headings={['Nombre', 'Email', 'Teléfono']}
+	model_name={'staff_user'}
+	user={user}
 />

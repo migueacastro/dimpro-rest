@@ -1,5 +1,5 @@
 <script>
-	import { checkStaffGroup } from '$lib/auth.ts';
+	import { checkPermission } from '$lib/auth.ts';
 	import Datatable from '$lib/components/Datatable.svelte';
 	export let data;
 	let {user} = data;
@@ -7,7 +7,7 @@
 
 <title>Dimpro Iluminación</title>
 
-{#if checkStaffGroup(user)}
+{#if checkPermission(user, "view_advanced_homepage_user")}
 	<div class="lg:flex lg:flex-row mb-[1rem] justify-center">
 		<a
 			class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[50%] lg:mr-[1rem] my-5 dark:variant-filled-surface variant-filled-tertiary"

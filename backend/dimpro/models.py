@@ -77,6 +77,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
+        permissions = [
+            ("view_staff_user", "Can view staff user"),
+            ("change_staff_user", "Can change staff user"),
+            ("delete_staff_user", "Can delete staff user"),
+            ("add_staff_user", "Can add staff user"),
+            ("view_settings_user", "Can view settings"),
+            ("view_advanced_homepage_user", "Can view advanced homepage"),
+        ]
 
     def get_full_name(self):
         return self.name
@@ -107,7 +115,12 @@ class Product(models.Model):
     available_quantity = models.IntegerField(validators = [
         MinValueValidator(1)
     ])
-
+    class Meta:
+        verbose_name = 'Product'
+        verbose_name_plural = 'Products'
+        permissions = [
+            ("view_updatedb_product", "Can update database"),
+        ]
     def __str__(self):
         return str(self.id)
 
@@ -164,6 +177,15 @@ class Order(models.Model):
     total = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     pricetype = models.ForeignKey(PriceType, blank=True, null=True, on_delete=models.DO_NOTHING)
     active = models.BooleanField(null = False, default=True)
+
+    class Meta:
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
+        permissions = [
+            ("view_own_order", "Can view its own order"),
+            ("change_status_order", "Can change order status"),
+            ("view_export_order", "Can export order"),
+        ]
     def product_categories(self):
         return Order_Product.objects.filter(order_id=self.id).count()
 

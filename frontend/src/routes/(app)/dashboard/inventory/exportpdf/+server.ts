@@ -1,7 +1,11 @@
 import { apiURL } from "$lib/api_url.js";
+import { checkPermission, permissionError } from "$lib/auth";
 import type { RequestHandler } from "@sveltejs/kit";
 
-export const POST: RequestHandler = async ({ fetch }) => {
+export const POST: RequestHandler = async ({ fetch, locals }) => {
+    if (!checkPermission(locals.user, "view_export_order")) {
+        return permissionError();
+    }
     const response = await fetch(apiURL + 'export_inventory_pdf', {
         method: "POST",
         headers: {

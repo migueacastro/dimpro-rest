@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { SlideToggle } from '@skeletonlabs/skeleton';
 	import {
 		getModalStore,
@@ -87,6 +87,7 @@
 				timeout: 7000
 			};
 			if (result?.type === 'success') {
+				invalidateAll();
 				toastStore.trigger(toast);
 			} else {
 				toast = {
