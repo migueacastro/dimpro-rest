@@ -1,12 +1,10 @@
 import { apiURL } from "$lib/api_url";
-import { checkAdminGroup } from "$lib/auth.js";
-import { redirect } from "@sveltejs/kit";
+import { checkPermission, permissionError } from "$lib/auth.js";
+
 
 export async function load({ locals, fetch, url }) {
-    if (!locals.user) {
-        return redirect(303, '/start');
-    }else if(!checkAdminGroup(locals.user)){
-        return redirect(303, '/dashboard');
+    if (!checkPermission(locals.user, "view_logentry")) {
+        return permissionError();
     }
     const date: any = url.searchParams.get('date');
     const action: any = url.searchParams.get('action');

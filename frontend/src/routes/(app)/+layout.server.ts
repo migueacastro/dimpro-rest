@@ -5,7 +5,6 @@ export async function load({ locals }) { //This is +layout.server.ts, it passes 
 
     return redirect(303, '/start');
   }
-
   return {
     user: locals.user // this one
   };

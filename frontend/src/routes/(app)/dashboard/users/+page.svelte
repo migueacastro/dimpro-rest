@@ -21,6 +21,8 @@
 	endpoint={endpoint}
 	source_data={users}
 	table_name={'vendedor'}
+	model_name={'user'}
+	user={user}
 	fields={['name', 'email', 'phonenumber']}
 	headings={['Nombre', 'Email', 'Teléfono']}
 />

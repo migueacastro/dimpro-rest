@@ -1,12 +1,12 @@
-import { checkAdminGroup } from "$lib/auth";
+import { checkAdminGroup, checkPermission, permissionError } from "$lib/auth";
 import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "../$types";
 import { apiURL } from "$lib/api_url";
 import { fail } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({locals}) => {
-  if (!checkAdminGroup(locals.user)) {
-    return redirect(303, '/');
+  if (!checkPermission(locals.user, 'view_settings_user')) {
+    return permissionError();
   }
 };
 

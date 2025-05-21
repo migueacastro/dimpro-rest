@@ -1,7 +1,11 @@
 import { apiURL } from '$lib/api_url';
+import { checkPermission, permissionError } from '$lib/auth';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 
-export async function load({ cookies, fetch }: any) {
+export async function load({ cookies, fetch, locals }: any) {
+	if (!checkPermission(locals.user, 'change_alegrauser')) {
+		return permissionError();
+	}
 	if (cookies.get('password')) {
 		const response = await fetch(apiURL + 'alegratoken');
 		const alegratoken = await response.json();

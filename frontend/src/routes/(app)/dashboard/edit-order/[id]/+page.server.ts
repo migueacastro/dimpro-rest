@@ -1,11 +1,16 @@
 import { browser } from '$app/environment';
 import { apiURL } from '$lib/api_url';
+import { checkPermission, permissionError } from '$lib/auth';
 import { changestatus } from '$lib/components/StatusButton';
 import { getCurrentDateTime } from '$lib/datetime';
 import type { Actions } from '@sveltejs/kit';
-import { request } from 'http';
 
-export async function load({ params, fetch }: any) {
+export async function load({ params, fetch, locals }: any) {
+
+  if (!checkPermission(locals.user, 'change_order')) {
+    return permissionError();
+  }
+
   let response = await fetch(apiURL + 'products');
   let products = await response.json();
   response = await fetch(apiURL + 'orders/' + params.id);

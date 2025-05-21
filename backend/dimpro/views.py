@@ -26,6 +26,7 @@ from dimpro.helpers import (
     UserReadOnlyPermission,
     Util,
     EmailMessage,
+    GroupPermission,
 )
 from django.utils.translation import gettext as _
 from django.contrib.sessions.models import Session
@@ -262,7 +263,7 @@ class UserVerifyPasswordView(APIView):
 
 
 class UserViewSet(SafeViewSet):
-    permission_classes = (IsAuthenticated, IsStaff)
+    permission_classes = (IsAuthenticated, GroupPermission)
     serializer_class = UserSerializer
     queryset = (
         User.objects.filter(active=True).exclude(groups__name="staff").order_by("name")
@@ -281,7 +282,7 @@ class RefreshCSRFTokenView(APIView):
 
 
 class StaffViewSet(SafeViewSet):
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser, GroupPermission)
     serializer_class = UserNestedSerializer
     queryset = User.objects.filter(groups__name="staff", active=True).order_by("name")
     superuser_only = True
@@ -292,7 +293,7 @@ class StaffViewSet(SafeViewSet):
 
 class ProductViewSet(SafeViewSet):
     serializer_class = ProductSerializer
-    permission_classes = (IsAuthenticated, UserReadOnlyPermission)
+    permission_classes = (IsAuthenticated, GroupPermission)
     queryset = Product.objects.filter(active=True).order_by(
         "item"
     )  # Aqui no por ejemplo
@@ -300,25 +301,25 @@ class ProductViewSet(SafeViewSet):
 
 class ContactViewSet(SafeViewSet):
     serializer_class = ContactSerializer
-    permission_classes = (IsAuthenticated, UserReadOnlyPermission)
+    permission_classes = (IsAuthenticated, GroupPermission)
     queryset = Contact.objects.filter(active=True).order_by("name")
 
 
 class OrderProductViewSet(SafeViewSet):
     serializer_class = OrderProductSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, GroupPermission)
     queryset = Order_Product.objects.all()
 
 
-class PriceTypeViewSet(SafeViewSet):
+class PriceTypeViewSet(SafeViewSet,GroupPermission):
     serializer_class = PriceTypeSerializer
-    permission_classes = (IsAuthenticated, UserReadOnlyPermission)
+    permission_classes = (IsAuthenticated, GroupPermission)
     queryset = PriceType.objects.filter(active=True)
 
 
 class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProducts
     serializer_class = OrderSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,GroupPermission)
     # No hay que preocuparse por lecturas indebidas,
     # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
     # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
@@ -340,11 +341,12 @@ class UserOrderViewSet(SafeViewSet):
 
 class AlegraUserViewSet(SafeViewSet):
     serializer_class = AlegraUserSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAuthenticated, GroupPermission)
     queryset = AlegraUser.objects.filter(active=True)
 
 
 class WelcomeStaffView(APIView):
+    permission_classes = (IsAuthenticated)
     def get(self, request, format=None):
         serializer = (
             WelcomeStaffSerializer()
@@ -353,6 +355,7 @@ class WelcomeStaffView(APIView):
 
 
 class WelcomeSuperUserView(APIView):
+    permission_classes = (IsAuthenticated)
     def get(self, request, format=None):
         serializer = (
             WelcomeSuperUserSerializer()
@@ -362,13 +365,13 @@ class WelcomeSuperUserView(APIView):
 
 class NoteViewSet(NoteViewSet): #because date cannot be updated
     serializer_class = NoteSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAuthenticated,GroupPermission)
     queryset = Note.objects.filter(active=True)
 
 
 class LogViewSet(SafeViewSet):
     serializer_class = LogSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAuthenticated,GroupPermission)
     queryset = LogEntry.objects.all().order_by("-timestamp")
 
 
@@ -472,8 +475,11 @@ class ExportOrderPDFView(APIView):
             )
             formatted_date = order_date.strftime("%d %B %Y %H:%M")
             print(order)
+            for field in order:
+                if field == None:
+                    order[field] = "Ninguno"
             information = Paragraph(
-                f"<b>ID de pedido:</b> {order['id']}<br/><b>Tipo de precio:</b> {order['pricetype']['name']}<br/><b>Cliente: </b>{order['contact_name']}<br/><b>Vendedor:</b> {order['user_name']}<br/><b>Email del Vendedor:</b> { order['user']['email'] }<br/><b>Items:</b> {len(products)}<br/><b>Total:</b> {order['total']}$<br/><b>Fecha:</b> {formatted_date}",
+                f"<b>ID de pedido:</b> {order['id']}<br/><b>Tipo de precio:</b> {order['pricetype']['name'] if order['pricetype'] else 'Ninguno'}<br/><b>Cliente: </b>{order['contact_name']}<br/><b>Vendedor:</b> {order['user_name']}<br/><b>Email del Vendedor:</b> { order['user']['email'] }<br/><b>Items:</b> {len(products)}<br/><b>Total:</b> {order['total'] if order['total'] else '0'}$<br/><b>Fecha:</b> {formatted_date}",
                 styles["Normal"],
             )
 
@@ -599,6 +605,7 @@ class ExportInventoryPDFView(APIView):
 
 
 class UpdateDBView(APIView):
+    permission_classes = (IsAuthenticated)
     def get(self, request):
         try:
             # Schedule the updatedb task asynchronously.
@@ -613,6 +620,7 @@ class UpdateDBView(APIView):
 
 class AlegraTokenView(APIView):
     serializer_class = AlegraAPITokenSerializer
+    permission_classes = (IsAuthenticated)
 
     def get(self, request):
         alegra_object = AlegraUser.objects.get(id=1)
@@ -639,7 +647,7 @@ class AlegraTokenView(APIView):
 class RequestPasswordResetView(generics.GenericAPIView):
 
     serializer_class = ResetPasswordEmailSerializer
-
+    permission_classes = (AllowAny,)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -677,6 +685,7 @@ class RequestPasswordResetView(generics.GenericAPIView):
 
 
 class PasswordTokenCheckView(generics.GenericAPIView):
+
     def get(self, request, uidb64, token):
         try:
             id = smart_str(urlsafe_base64_decode(uidb64))
@@ -702,7 +711,7 @@ class PasswordTokenCheckView(generics.GenericAPIView):
 
 class SetNewPasswordAPIView(generics.GenericAPIView):
     serializer_class = SetNewPasswordSerializer
-
+    permission_classes = (AllowAny,)
     def patch(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -721,4 +730,4 @@ class GroupViewSet(SafeViewSet):
 class PermissionViewSet(SafeViewSet):
     permission_classes = (IsAdminUser,)
     serializer_class = PermissionSerializer
-    queryset = Permission.objects.filter(content_type__app_label="dimpro")
+    queryset = Permission.objects.filter(content_type__app_label__in=["auditlog","dimpro"])

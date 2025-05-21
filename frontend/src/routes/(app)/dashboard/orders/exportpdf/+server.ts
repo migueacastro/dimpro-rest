@@ -1,7 +1,9 @@
 import { apiURL } from "$lib/api_url.js";
+import { checkPermission, permissionError } from "$lib/auth";
 import type { RequestHandler } from "@sveltejs/kit";
 
-export const POST: RequestHandler = async ({ request, fetch }) => {
+export const POST: RequestHandler = async ({ request, fetch, locals }) => {
+  
   const formData = await request.formData(); // Parse form data
   const order_id = formData.get("order_id");
 

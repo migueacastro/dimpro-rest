@@ -24,6 +24,7 @@
 	} from '@skeletonlabs/skeleton';
 	import { Result } from 'postcss';
 	import { enhance } from '$app/forms';
+	import { checkPermission } from '$lib/auth';
 	//import { loading } from '../../stores/stores';
 
 	const modalStore = getModalStore();
@@ -36,6 +37,8 @@
 	export let source_data: any = null;
 	export let headings: any = [];
 	export let table_name = '';
+	export let model_name = '';
+	export let user: any = null;
 
 	$: loaded = false;
 	$: loading = true;
@@ -176,7 +179,7 @@
 							>
 								<i class="fa-solid fa-info"></i>
 							</button>
-
+							{#if user && model_name && checkPermission(user, 'delete_'+model_name)}
 							<form action="?/handleDelete" method="POST" use:enhance={deleteResult}>
 								<input type="hidden" name="id" value={row['id']} />
 								<button
@@ -187,6 +190,8 @@
 									<i class="fa-solid fa-trash"></i>
 								</button>
 							</form>
+							{/if}
+							{#if user && model_name && checkPermission(user, 'change_'+model_name)}
 							<button
 								class="btn ml-2 variant-filled"
 								on:click={() => {
@@ -199,6 +204,7 @@
 							>
 								<i class="fa-solid fa-pencil"></i>
 							</button>
+							{/if}
 						</td>
 					{/if}
 				</tr>

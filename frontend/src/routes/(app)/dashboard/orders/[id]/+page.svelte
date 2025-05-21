@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import StatusButton from '$lib/components/StatusButton.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
-	import { checkStaffGroup } from '$lib/auth';
+	import { checkPermission, checkStaffGroup } from '$lib/auth';
 	export let data: any;
 	let order = data.order;
 	let products: Array<any> = order?.products.map((item: any) => {
@@ -42,22 +42,26 @@
 		<div class="flex flex-row flex-wrap justify-between mb-[2rem]">
 			<h2 class="h2 lg:my-0 my-2">Items: {order?.products?.length}</h2>
 			<div class="flex flex-row">
-				{#if checkStaffGroup(data.user)}
+				{#if checkPermission(data.user, 'change_status_order')}
 					<StatusButton {order} />
 				{/if}
 
+				{#if checkPermission(data.user, 'change_order')}
 				<button
 					class="btn variant-filled max-w-fit px-[2rem] mx-2"
 					on:click={() => goto('/dashboard/edit-order/' + order?.id)}
 				>
 					<i class="fa-solid fa-pen-to-square"></i>
 				</button>
+				{/if}
+				{#if checkPermission(data.user, 'view_export_order')}
 				<form action="/dashboard/orders/exportpdf" method="post">
 					<input type="hidden" name="order_id" value={order?.id} /> 
 					<button class="btn variant-filled max-w-fit px-[2rem] ml-2 h-full" type="submit">
 						<i class="fa-solid fa-download"></i>
 					</button>
 				</form>
+				{/if}
 			</div>
 		</div>
 		<Datatable

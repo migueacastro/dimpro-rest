@@ -12,11 +12,12 @@
 	import logo from '$lib/assets/logodimpro.svg';
 	import logolight from '$lib/assets/logodimprolight.svg';
 	import icon from '$lib/assets/iconlight.svg';
-	import { checkStaffGroup, checkAdminGroup } from '$lib/auth.ts';
+	import { checkStaffGroup, checkAdminGroup, checkPermission } from '$lib/auth.ts';
 	import { goto } from '$app/navigation';
+	import { check } from '@vincjo/datatables';
 	let expandedDrawer = false;
 	export let data;
-	const user = data.user; 
+	const user = data.user;
 	const drawerStore = getDrawerStore();
 	const layoutDrawerSettings = {
 		id: 'layoutDrawer',
@@ -54,30 +55,40 @@
 						Inicio
 					</a>
 				</li>
-				<li>
-					<a
-						href="/dashboard/add-order"
-						class="w-fit my-2 mx-auto h4 font-bold"
-						on:click={hideDrawer}
-					>
-						Crear Pedido
-					</a>
-				</li>
-				<li>
-					<a href="/dashboard/orders" class="w-fit my-2 mx-auto h4 font-bold" on:click={hideDrawer}>
-						Pedidos
-					</a>
-				</li>
-				<li>
-					<a
-						href="/dashboard/inventory"
-						class="w-fit my-2 mx-auto h4 font-bold"
-						on:click={hideDrawer}
-					>
-						Inventario
-					</a>
-				</li>
-				{#if checkStaffGroup(user)}
+				{#if checkPermission(user, 'add_order')}
+					<li>
+						<a
+							href="/dashboard/add-order"
+							class="w-fit my-2 mx-auto h4 font-bold"
+							on:click={hideDrawer}
+						>
+							Crear Pedido
+						</a>
+					</li>
+				{/if}
+				{#if checkPermission(user, 'view_own_order')}
+					<li>
+						<a
+							href="/dashboard/orders"
+							class="w-fit my-2 mx-auto h4 font-bold"
+							on:click={hideDrawer}
+						>
+							Pedidos
+						</a>
+					</li>
+				{/if}
+				{#if checkPermission(user, 'view_product')}
+					<li>
+						<a
+							href="/dashboard/inventory"
+							class="w-fit my-2 mx-auto h4 font-bold"
+							on:click={hideDrawer}
+						>
+							Inventario
+						</a>
+					</li>
+				{/if}
+				{#if checkPermission(user, 'view_user')}
 					<li>
 						<a
 							href="/dashboard/users"
@@ -88,7 +99,7 @@
 						</a>
 					</li>
 				{/if}
-				{#if checkAdminGroup(user)}
+				{#if checkPermission(user, 'view_staff_user')}
 					<li>
 						<a
 							href="/dashboard/staff"
@@ -98,6 +109,8 @@
 							Empleados
 						</a>
 					</li>
+				{/if}
+				{#if checkPermission(user, 'view_settings_user')}
 					<li>
 						<a
 							href="/dashboard/settings"
@@ -109,7 +122,14 @@
 					</li>
 				{/if}
 				<li>
-					<a href="salir" on:click|preventDefault={() => {hideDrawer();goto("/logout");}} class="w-fit my-2 mx-auto h4 font-bold">
+					<a
+						href="salir"
+						on:click|preventDefault={() => {
+							hideDrawer();
+							goto('/logout');
+						}}
+						class="w-fit my-2 mx-auto h4 font-bold"
+					>
 						Cerrar Sesión
 					</a>
 				</li>
@@ -183,7 +203,7 @@
 		on:mouseleave={() => (expandedSideBar = false)}
 		on:focus
 	>
-		<a href="dimpro" on:click|preventDefault={() => goto("/dashboard")}>
+		<a href="dimpro" on:click|preventDefault={() => goto('/dashboard')}>
 			<div
 				class="px-2 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface mt-1"
 			>
@@ -195,49 +215,54 @@
 		</a>
 
 		<hr class="w-[80%] mx-auto my-2" />
+		{#if checkPermission(user, 'add_order')}
+			<a href="/dashboard/add-order" on:click|preventDefault={() => goto('/dashboard/add-order')}>
+				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
+					<i class="py-5 fa-solid fa-plus h3 w-20"></i>
+					<p
+						class="font-bold h5 fixed left-20"
+						class:opacity-0={!expandedSideBar}
+						class:show-text={expandedSideBar}
+						class:hide-text={!expandedSideBar}
+					>
+						Crear Pedido
+					</p>
+				</div>
+			</a>
+		{/if}
+		{#if checkPermission(user, 'view_own_order')}
+			<a href="pedidos" on:click|preventDefault={() => goto('/dashboard/orders')}>
+				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
+					<i class="py-5 fa-solid fa-box h3 w-20"></i>
+					<p
+						class="font-bold h5 fixed left-20"
+						class:opacity-0={!expandedSideBar}
+						class:show-text={expandedSideBar}
+						class:hide-text={!expandedSideBar}
+					>
+						Pedidos
+					</p>
+				</div>
+			</a>
+		{/if}
+		{#if checkPermission(user, 'view_product')}
+			<a href="inventario" on:click|preventDefault={() => goto('/dashboard/inventory')}>
+				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
+					<i class="py-5 fa-solid fa-boxes-stacked h3 w-20"></i>
+					<p
+						class="font-bold h5 fixed left-20"
+						class:opacity-0={!expandedSideBar}
+						class:show-text={expandedSideBar}
+						class:hide-text={!expandedSideBar}
+					>
+						Inventario
+					</p>
+				</div>
+			</a>
+		{/if}
 
-		<a href="añadir pedido" on:click|preventDefault={() => goto("/dashboard/add-order")}>
-			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
-				<i class="py-5 fa-solid fa-plus h3 w-20"></i>
-				<p
-					class="font-bold h5 fixed left-20"
-					class:opacity-0={!expandedSideBar}
-					class:show-text={expandedSideBar}
-					class:hide-text={!expandedSideBar}
-				>
-					Crear Pedido
-				</p>
-			</div>
-		</a>
-		<a href="pedidos" on:click|preventDefault={() => goto("/dashboard/orders")}>
-			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
-				<i class="py-5 fa-solid fa-box h3 w-20"></i>
-				<p
-					class="font-bold h5 fixed left-20"
-					class:opacity-0={!expandedSideBar}
-					class:show-text={expandedSideBar}
-					class:hide-text={!expandedSideBar}
-				>
-					Pedidos
-				</p>
-			</div>
-		</a>
-		<a href="inventario" on:click|preventDefault={() => goto("/dashboard/inventory")}>
-			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
-				<i class="py-5 fa-solid fa-boxes-stacked h3 w-20"></i>
-				<p
-					class="font-bold h5 fixed left-20"
-					class:opacity-0={!expandedSideBar}
-					class:show-text={expandedSideBar}
-					class:hide-text={!expandedSideBar}
-				>
-					Inventario
-				</p>
-			</div>
-		</a>
-
-		{#if checkStaffGroup(user)}
-			<a href="vendedores" on:click|preventDefault={() => goto("/dashboard/users")}>
+		{#if checkPermission(user, 'view_user')}
+			<a href="vendedores" on:click|preventDefault={() => goto('/dashboard/users')}>
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
 					<p
@@ -252,8 +277,8 @@
 			</a>
 		{/if}
 
-		{#if checkAdminGroup(user)} 
-			<a href="empleados" on:click|preventDefault={() => goto("/dashboard/staff")}>
+		{#if checkPermission(user, 'view_staff_user')}
+			<a href="empleados" on:click|preventDefault={() => goto('/dashboard/staff')}>
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users-gear h3 w-20"></i>
 					<p
@@ -266,7 +291,9 @@
 					</p>
 				</div>
 			</a>
-			<a href="configuracion" on:click|preventDefault={() => goto("/dashboard/settings")}>
+		{/if}
+		{#if checkPermission(user, 'view_settings_user')}
+			<a href="configuracion" on:click|preventDefault={() => goto('/dashboard/settings')}>
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-gear h3 w-20"></i>
 					<p
@@ -281,7 +308,7 @@
 			</a>
 		{/if}
 
-		<a href="salir" on:click|preventDefault={() => goto("/logout")}>
+		<a href="salir" on:click|preventDefault={() => goto('/logout')}>
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-arrow-right-from-bracket h3 w-20"></i>
 				<p

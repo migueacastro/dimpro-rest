@@ -1,5 +1,5 @@
 import { apiURL } from './api_url';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 
 export async function fetchCSRFToken() {
 	const response = await fetch(apiURL + 'csrf');
@@ -92,6 +92,22 @@ export async function login({ fetch, locals, formData, isStaff, cookies }: any) 
 }
 
 
-async function checkPermission({ user, type, permission}: any) {
-	
+export function checkPermission(user: any, permission_codename: string) {
+	if (!user?.groups) {
+		return false;
+	}
+	let hasPermission: any;
+
+	for (let group of user?.groups) {
+		if (group?.permissions) {
+			hasPermission = group?.permissions.find((perm: any) => perm.codename === permission_codename);
+			if (hasPermission) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+export function permissionError() {
+	return redirect(308, '/error/permission_denied');
 }

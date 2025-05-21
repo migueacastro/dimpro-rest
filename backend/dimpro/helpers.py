@@ -49,6 +49,25 @@ class UserReadOnlyPermission(permissions.BasePermission):
       if (not user_is_staff and request.method in allowed_methods) or user_is_staff:
          return True
 
+class GroupPermission(permissions.BasePermission):
+   def has_model_permissions( entity, model, perms, app, request):
+
+    match request.method:
+        case "GET":
+            if entity.has_perm( f"{app}.read_{model.__name__ }"):
+                return True
+        case "POST":
+            if entity.has_perm( f"{app}.add_{model.__name__ }"):
+                return True
+        case "PUT" | "PATCH":
+            if entity.has_perm( f"{app}.change_{model.__name__ }"):
+                return True
+        case "DELETE":
+            if entity.has_perm( f"{app}.delete_{model.__name__ }"):
+                return True
+        case _:
+            return False
+      
 
 def add_to_group(user,group_name):
     group = Group.objects.get_or_create(name=group_name)

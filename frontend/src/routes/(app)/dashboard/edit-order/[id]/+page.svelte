@@ -1,6 +1,6 @@
 <script lang="ts">
 	//@ts-nocheck
-	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
+	import { checkAdminGroup, checkPermission, checkStaffGroup } from '$lib/auth';
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import Reminder from '$lib/components/Reminder.svelte';
@@ -388,7 +388,7 @@
 						{/each}
 					</select>
 				</div>
-				{#if checkStaffGroup(user)}
+				{#if checkPermission(user, 'change_status_order')}
 					<div class="flex flex-col w-fit lg:my-0 mb-2">
 						<label for="select-contact" class="h4">Estatus</label>
 						<StatusButton {order} />

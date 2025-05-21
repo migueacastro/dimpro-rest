@@ -1,14 +1,15 @@
 import { apiURL } from '$lib/api_url.js';
+import { checkPermission, permissionError } from '$lib/auth.js';
 import { redirect, type Actions } from '@sveltejs/kit';
 
 export async function load({locals,fetch}) {
     let response = await fetch(apiURL+"staff");
-    if (!locals.user) {
-        return redirect(303, '/start');
+    if (!checkPermission(locals.user, "view_staff_user")) {
+        return permissionError();
     }
     let users = await response.json();
     return {
-        user: locals.user,
+        
         users: users
     };
 }

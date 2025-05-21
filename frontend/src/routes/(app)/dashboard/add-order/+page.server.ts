@@ -1,12 +1,17 @@
 import { apiURL } from '$lib/api_url';
-import { redirect, type Actions } from '@sveltejs/kit';
+import { checkPermission, permissionError } from '$lib/auth';
+import { type Actions } from '@sveltejs/kit';
 
-export async function load({ fetch }: any) {
+export async function load({ fetch, locals}: any) {
   let response = await fetch(apiURL + 'contacts');
   let contacts = await response.json();
   let contactList = contacts.map((contact: any) => {
     return { label: contact.name, value: contact.id };
   });
+
+  if (!checkPermission(locals.user,"add_order")) {
+    return permissionError();
+  }
 
   return {
     contactList
