@@ -21,7 +21,7 @@ admin.site.register(Order_Product)
 # admin.site.register(LogEntry)
 admin.site.register(Contact) # Esto es para ver solo los registros por el id, no muestra detalles a simple vista
 admin.site.register(Note)
-admin.site.register(Image)
+#admin.site.register(Image)
 admin.site.register(PriceType)
 admin.site.register(ExchangeRate)
 admin.site.register(ExchangeCurrency)

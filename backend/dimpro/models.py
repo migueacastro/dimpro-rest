@@ -124,10 +124,10 @@ class Product(models.Model):
 auditlog.register(Product)
 
 
-class Image(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    url = models.CharField(max_length=256)
-auditlog.register(Image)
+#class Image(models.Model):
+#    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+#    url = models.CharField(max_length=256)
+#auditlog.register(Image)
 
 
 class AlegraUser(models.Model):

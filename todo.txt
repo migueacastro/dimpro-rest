@@ -1,11 +1,11 @@
 - Fix docker +
 - Fix node compiling
-- Inventory Exportation
-- User Change Password
+- Inventory Exportation +
+- User Change Password +
 - Settings +
-- Change api key setting
+- Change api key setting +
 - UpdateDB Setting +
-- Reminders
+- Reminders +
 - Fix logs
 - Fix bugs
 
