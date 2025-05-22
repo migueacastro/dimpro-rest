@@ -3,7 +3,7 @@ import { checkPermission, permissionError } from "$lib/auth.js";
 import type { Actions } from "@sveltejs/kit";
 
 export async function load({ params, fetch, locals }) {
-  if (!checkPermission(locals.user, "view_order")) {
+  if (!checkPermission(locals.user, "view_order") && !checkPermission(locals.user, "view_own_order")) {
     return permissionError();
   }
   const response = await fetch(apiURL + "orders/" + params.id);
