@@ -87,8 +87,8 @@
 				timeout: 7000
 			};
 			if (result?.type === 'success') {
-				invalidateAll();
-				toastStore.trigger(toast);
+				window.location.reload();
+				return
 			} else {
 				toast = {
 					message: `¡ERROR! No se pudo actualizar los permisos.`,
