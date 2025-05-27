@@ -14,6 +14,9 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext
+from dimpro.helpers import translate_permission_name, translate_permission_content_type
+
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -72,9 +75,16 @@ class VerifyPasswordSerializer(serializers.ModelSerializer):
 
 
 class PermissionSerializer(serializers.ModelSerializer):
+    translated_name = serializers.SerializerMethodField()
+    translated_content_type = serializers.SerializerMethodField()
     class Meta:
         model = Permission
-        fields = ["id", "codename","name"]
+        fields = ["id", "codename","name", "translated_name", "translated_content_type"]
+
+    def get_translated_name(self, obj):
+        return translate_permission_name(obj.name) if obj.name else ""
+    def get_translated_content_type(self, obj):
+        return translate_permission_content_type(obj.codename) if obj.codename else ""
       
 
 

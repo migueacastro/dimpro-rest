@@ -346,7 +346,7 @@ class AlegraUserViewSet(SafeViewSet):
 
 
 class WelcomeStaffView(APIView):
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
         serializer = (
             WelcomeStaffSerializer()
@@ -355,7 +355,7 @@ class WelcomeStaffView(APIView):
 
 
 class WelcomeSuperUserView(APIView):
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated, )
     def get(self, request, format=None):
         serializer = (
             WelcomeSuperUserSerializer()
@@ -605,7 +605,7 @@ class ExportInventoryPDFView(APIView):
 
 
 class UpdateDBView(APIView):
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated, )
     def get(self, request):
         try:
             # Schedule the updatedb task asynchronously.
@@ -620,7 +620,7 @@ class UpdateDBView(APIView):
 
 class AlegraTokenView(APIView):
     serializer_class = AlegraAPITokenSerializer
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         alegra_object = AlegraUser.objects.get(id=1)
