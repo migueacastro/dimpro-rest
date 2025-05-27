@@ -130,7 +130,7 @@
 			<div class="mx-auto flex justify-center flex-col space-y-3">
 				{#each listPermissionNames as name}
 					<div class="card p-3 flex flex-col w-full">
-						<h3 class="text-2xl mb-4 capitalize">{name}</h3>
+						<h3 class="text-xl mb-4 capitalize">{name}</h3>
 						<div class="grid grid-cols-2 gap-4">
 							{#each permissionsObject[name] as permission}
 								<div class="flex items-center capitalize flex-row space-x-4">
@@ -140,7 +140,7 @@
 										name={permission.name}
 										bind:checked={permissionChecked[permission.id]}
 									/>
-									<p>
+									<p class="text-sm capitalize">
 										{permission.name}
 									</p>
 								</div>
