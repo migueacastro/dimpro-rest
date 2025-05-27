@@ -266,7 +266,7 @@ class UserViewSet(SafeViewSet):
     permission_classes = (IsAuthenticated, GroupPermission)
     serializer_class = UserSerializer
     queryset = (
-        User.objects.filter(active=True).exclude(groups__name="staff").order_by("name")
+        User.objects.filter(active=True).exclude(groups__name="staff").exclude(groups__name="admin").order_by("name")
     )  # If this line does not work i will nuke Copilot
 
     def retrieve(self, request, *args, **kwargs):
@@ -284,11 +284,8 @@ class RefreshCSRFTokenView(APIView):
 class StaffViewSet(SafeViewSet):
     permission_classes = (IsAdminUser, GroupPermission)
     serializer_class = UserNestedSerializer
-    queryset = User.objects.filter(groups__name="staff", active=True).order_by("name")
+    queryset = User.objects.filter(groups__name__in=["staff", "admin"], active=True).distinct().order_by("name")
     superuser_only = True
-
-
-# TODO: (para lueego) RequestPasswordResetView  && PasswordTokenCheckView && SetNewPasswordView
 
 
 class ProductViewSet(SafeViewSet):

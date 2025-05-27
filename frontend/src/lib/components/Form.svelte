@@ -9,7 +9,10 @@
 		getToastStore,
 		getModalStore,
 		type ModalSettings,
-		type ToastSettings
+		type ToastSettings,
+
+		SlideToggle
+
 	} from '@skeletonlabs/skeleton';
 	import { enhance } from '$app/forms';
 
@@ -66,6 +69,7 @@
 		validatedFields = valid;
 		return valid;
 	}
+	$: console.log('fields', fields);
 	function activatedErrors() {
 		hasErrors = true;
 		return '';
@@ -359,7 +363,7 @@
 						name={field.name}
 					/>
 				{:else if field?.type === 'boolean'}
-					<p>bool</p>
+					<SlideToggle checked={field.value}>{field.label}</SlideToggle>
 				{:else if field?.type === 'hidden'}
 					<input class="input" type="text" bind:value={field.value} name={field.name} />
 				{:else if field?.type === 'date'}
@@ -393,6 +397,14 @@
 							on:selection={({ detail }) => addChip(detail, field.table)}
 						/>
 					</div>-->
+				{:else if field?.type == 'select'}
+						<select class="select capitalize" bind:value={field.value} name={field?.name} id={field?.name}>
+							{#each field?.options as option}
+								<option class="capitalize" value={option.value}>
+									{option.label}
+								</option>
+							{/each}
+						</select>
 				{/if}
 			</label>
 		{/each}

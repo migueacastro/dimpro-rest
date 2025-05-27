@@ -1,23 +1,12 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
-	import { checkAdminGroup } from '$lib/auth';
 	export let data: any;
 	let {user} = data;
 	let {reqUser} = data;
-	let staff: any;
+	let staff: any = reqUser;
 	$: loaded = false;
-	onMount(async () => {
-		staff = reqUser;
-		if (staff['detail'] === 'No encontrado.') {
-			goto('/dashboard');
-		} else if (!checkAdminGroup(user)){
-			goto('/dashboard');
-		}
-		loaded = true;
-	});
+
 </script>
 
 <div class="flex flex-col">

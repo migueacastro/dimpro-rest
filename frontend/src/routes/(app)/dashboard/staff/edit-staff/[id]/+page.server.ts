@@ -3,15 +3,26 @@ import { checkPermission, permissionError } from '$lib/auth';
 import { redirect, type Actions } from '@sveltejs/kit';
 
 export async function load({ fetch, locals, params }: any) {
-    const response = await fetch(apiURL + `staff/${params.id}`);
-    const data = await response.json();
+    let response = await fetch(apiURL + `staff/${params.id}`);
+    let data = await response.json();
     if (!checkPermission(locals.user, "change_staff_user")) {
         return permissionError();
     }
-
+    data.groups = data.groups.map((group: any) => {
+        return group.id;
+    });
+    const reqUser = data;
+    response = await fetch(apiURL + 'groups/');
+    let groups = await response.json();
+    groups = groups.map((group: any) => {
+        return {
+            label: group.name,
+            value: group.id
+        }
+    });
     return {
-        user: locals.user,
-        reqUser: data
+        reqUser,
+        groups
     };
 }
 
@@ -22,10 +33,14 @@ export const actions: Actions = {
         const endpoint = formData.get("endpoint");
         formData.delete("endpoint");
         const keys = Array.from(formData.keys());
-        const values = Array.from(formData.values());
+        const values: any = Array.from(formData.values());
         let body: any = {};
         for (let i = 0; i < keys.length; i++) {
             if (values[i].toString().trim() !== "") {
+                if (keys[i].toString().trim() === "groups") {
+                    body[keys[i]] = [parseInt(values[i])];
+                    continue; // skip the JSON.parse step for groups
+                }
                 try {
                     body[keys[i]] = JSON.parse(values[i] as string);
                 } catch {
