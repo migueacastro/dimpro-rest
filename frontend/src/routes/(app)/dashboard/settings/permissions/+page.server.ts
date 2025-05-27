@@ -17,22 +17,20 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	response = await fetch(apiURL + 'permissions');
 	const permissions = await response.json();
 	const listPermissionNames = permissions.reduce((acc: any, permission: any) => {
-		const parts = permission.codename.split('_');
-		const modelName = parts[parts.length - 1];
+		const modelName = permission.translated_content_type;
 		if (!Array.from(acc).find((item: any) => item === modelName)) {
 			acc.push(modelName);
 		}
 		return acc;
 	}, []);
 	const permissionsObject = permissions.reduce((acc: any, permission: any) => {
-		const parts = permission.codename.split('_');
-		const modelName = parts[parts.length - 1];
+		const modelName = permission.translated_content_type;
 		if (!acc[modelName]) {
 			acc[modelName] = [];
 		}
 		acc[modelName].push({
 			id: permission.id,
-			name: permission.name,
+			name: permission.translated_name,
 			codename: permission.codename
 		});
 		return acc;

@@ -71,7 +71,7 @@
 			</div>
 		{/if}
 		<button type="submit" class="btn btn-xl variant-filled-primary my-2 w-fit shadow-xl">
-			Continuar
+			Acceder
 		</button>
 	</form>
 </div>
