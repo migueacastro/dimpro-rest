@@ -126,7 +126,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("confirmPassword")
-
         user_groups = validated_data.pop("groups")
         user_instance = User.objects.create_user(**validated_data)
         user_instance.groups.set(user_groups)
@@ -134,7 +133,7 @@ class UserSerializer(serializers.ModelSerializer):
         return user_instance
 
     def update(self, instance, validated_data):
-
+        
         if validated_data.get("confirmPassword"):
             validated_data.pop("confirmPassword")
         if "name" in validated_data:
@@ -147,7 +146,6 @@ class UserSerializer(serializers.ModelSerializer):
             instance.phonenumber = validated_data.get("phonenumber")
         if "groups" in validated_data:
             instance.groups.set(validated_data.pop("groups", None))
-        instance.save()
         return instance
 
     def to_representation(self, instance):
@@ -325,6 +323,7 @@ class UserNestedSerializer(UserSerializer):
             "orders",
             "date_joined_format",
             "last_login_format",
+            "groups",
         ]
 
     def get_orders(self, obj):

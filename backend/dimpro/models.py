@@ -27,20 +27,14 @@ class CustomUserManager(UserManager):
 
     def create_superuser(self, email=None, password=None, phonenumber=None, **extra_fields):
         user = self.create_user(email, password, phonenumber,**extra_fields)
-        staff_group, created = Group.objects.get_or_create(name="staff")
-        superuser_group, created = Group.objects.get_or_create(name="admin") # it lacked staff group
-        user_group, created = Group.objects.get_or_create(name="user")        
+        superuser_group, created = Group.objects.get_or_create(name="admin") # it lacked staff group     
         user.groups.add(superuser_group)
-        user.groups.add(staff_group)
-        user.groups.add(user_group)
         return user
 
     def create_staff(self, email=None, password=None, phonenumber=None, **extra_fields):
         user = self.create_user(email, password, phonenumber,**extra_fields)
-        staff_group, created = Group.objects.get_or_create(name="staff")
-        user_group, created = Group.objects.get_or_create(name="user")        
+        staff_group, created = Group.objects.get_or_create(name="staff")  
         user.groups.add(staff_group)
-        user.groups.add(user_group)
         return user
 
 
@@ -102,7 +96,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_superuser(self):
-        return User.objects.get(id=self.id).groups.filter(name="admin").exists()
+        return self.groups.filter(name="admin").exists()
 auditlog.register(User, exclude_fields=["password"]) #adding this will log the model
 
 

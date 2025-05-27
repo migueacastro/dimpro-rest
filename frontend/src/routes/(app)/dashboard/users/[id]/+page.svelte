@@ -1,18 +1,10 @@
 <script lang="ts">
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
 	$: loaded = false;
 	let {user} = data;
 	let {reqUser} = data;
-	onMount(async () => {
-		if (user['detail'] === 'No posee los permisos necesarios') {
-			goto('/dashboard');
-		}
-		loaded = true;
-	});
 </script>
 
 <div class="flex flex-col">

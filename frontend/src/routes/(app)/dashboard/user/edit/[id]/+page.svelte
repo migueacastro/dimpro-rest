@@ -5,7 +5,7 @@
 	let fields = [
 		{ type: 'email', value: '', name: 'email', label: 'email' },
 		{ type: 'text', value: '', name: 'name', label: 'Nombre' },
-		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' }
+		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' },
 		];
 </script>
 

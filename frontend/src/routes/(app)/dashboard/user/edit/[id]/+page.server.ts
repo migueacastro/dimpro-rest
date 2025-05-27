@@ -9,6 +9,7 @@ export async function load({ fetch, locals }: any) {
     return {
         user: locals.user
     };
+    
 }
 
 export const actions: Actions = {

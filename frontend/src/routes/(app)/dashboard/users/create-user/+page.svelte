@@ -1,8 +1,5 @@
 <script lang="ts">
 	import Form from '$lib/components/Form.svelte';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
 	export let data;
 	let {user} = data;
 	let fields = [
@@ -12,11 +9,6 @@
 		{ type: 'password', value: '', name: 'confirmPassword', label: 'confirmar contraseña' },
 		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' }
 	];
-	onMount( () => {
-		if (!(checkAdminGroup(user) || checkStaffGroup(user))) {
-			goto('/dashboard');
-		}
-	});
 </script>
 
 <Form fields={fields} edit={false} endpoint={'users/'} table_name={'vendedor'}/>
