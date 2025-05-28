@@ -569,7 +569,7 @@
 		<div class="flex justify-end flex-row mb-[5rem]">
 			<h1 class="h2 mt-[2rem]">Total: {totalCost}$</h1>
 		</div>
-		{#if checkPermission(user, 'view_reminder')}
+		{#if checkPermission(user, 'view_note')}
 		<Reminder {user} reminders={data.reminders} />
 		{/if}
 	</div>
