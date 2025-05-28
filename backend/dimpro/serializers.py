@@ -123,14 +123,7 @@ class UserSerializer(serializers.ModelSerializer):
             "date_joined",
             "last_login",
         ]
-
-    def create(self, validated_data):
-        validated_data.pop("confirmPassword")
-        user_groups = validated_data.pop("groups")
-        user_instance = User.objects.create_user(**validated_data)
-        user_instance.groups.set(user_groups)
-        user_instance.save()
-        return user_instance
+        
 
     def update(self, instance, validated_data):
         

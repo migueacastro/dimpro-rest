@@ -14,4 +14,5 @@
 	];
 </script>
 
+<h1 class="h2 my-4">Editar Empleado</h1>
 <Form fields={fields} edit={true} user={reqUser} endpoint={'staff'} table_name={'Empleado/Administrador'}/>

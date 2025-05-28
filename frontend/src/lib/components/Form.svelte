@@ -10,9 +10,7 @@
 		getModalStore,
 		type ModalSettings,
 		type ToastSettings,
-
 		SlideToggle
-
 	} from '@skeletonlabs/skeleton';
 	import { enhance } from '$app/forms';
 
@@ -128,22 +126,22 @@
 					timeout: 7000
 				};
 				toastStore.trigger(toast);
+				if (reload) {
+					goto(`/dashboard/user`);
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+				} else {
+					return update({reset: false});
+				}
 			} else {
 				const toast: ToastSettings = {
 					message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
-							mensaje:${result.data.error}`,
+							mensaje: ${result.data.error}`,
 					background: 'variant-ghost-error',
 					timeout: 7000
 				};
 				toastStore.trigger(toast);
-			}
-			if (reload) {
-				goto(`/dashboard/user`);
-				setTimeout(() => {
-					window.location.reload();
-				},1000);
-			} else {
-				goto(`/dashboard/${endpoint}`);
 			}
 		};
 	}
@@ -398,13 +396,18 @@
 						/>
 					</div>-->
 				{:else if field?.type == 'select'}
-						<select class="select capitalize" bind:value={field.value} name={field?.name} id={field?.name}>
-							{#each field?.options as option}
-								<option class="capitalize" value={option.value}>
-									{option.label}
-								</option>
-							{/each}
-						</select>
+					<select
+						class="select capitalize"
+						bind:value={field.value}
+						name={field?.name}
+						id={field?.name}
+					>
+						{#each field?.options as option}
+							<option class="capitalize" value={option.value}>
+								{option.label}
+							</option>
+						{/each}
+					</select>
 				{/if}
 			</label>
 		{/each}

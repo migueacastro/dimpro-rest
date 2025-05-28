@@ -97,6 +97,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_superuser(self):
         return self.groups.filter(name="admin").exists()
+    
+    @property
+    def is_staff(self):
+        return self.groups.filter(name__in=["admin", "staff"]).exists()
 auditlog.register(User, exclude_fields=["password"]) #adding this will log the model
 
 
