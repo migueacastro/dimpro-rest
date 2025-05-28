@@ -213,7 +213,7 @@
 				{#each fields as field}
 					<td class="capitalize">----</td>
 				{/each}
-				{#if editable}
+				{#if editable && model_name && checkPermission(user, 'add_'+model_name)}
 					<button
 						class="btn variant-filled ml-[0.75rem]"
 						on:click={() => goto('/dashboard/' + endpoint['main'] + '/' + `${endpoint['add']}`)}

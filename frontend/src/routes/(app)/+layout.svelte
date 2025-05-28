@@ -230,7 +230,7 @@
 				</div>
 			</a>
 		{/if}
-		{#if checkPermission(user, 'view_own_order')}
+		{#if checkPermission(user, 'view_own_order') || checkPermission(user, 'view_order')}
 			<a href="pedidos" on:click|preventDefault={() => goto('/dashboard/orders')}>
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-box h3 w-20"></i>
