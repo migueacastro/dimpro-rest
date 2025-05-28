@@ -272,6 +272,56 @@ class UserViewSet(SafeViewSet):
     def retrieve(self, request, *args, **kwargs):
         object_instance = self.get_object()
         return Response(UserNestedSerializer(object_instance).data)
+    
+    def create(self, request, *args, **kwargs):
+        # Use raise_exception=True so that any validation errors surface automatically.
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=False)
+        validated_data = serializer.validated_data.copy()
+        
+        # Remove the confirmPassword field
+        validated_data.pop("confirmPassword", None)
+        
+        # Extract groups and email from validated_data
+        user_groups = validated_data.pop("groups", None)
+        email = request.data.get("email")
+        
+        if email is None:
+            return Response({"error": "El campo email es obligatorio."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if an inactive user already exists with that email; if so, update it.
+        query = User.objects.filter(email=email)
+        print(query)
+        if query.exists():
+            user_instance = query.first()
+            if not user_instance.active:
+                # Update individual fields
+                if "name" in validated_data:
+                    user_instance.name = validated_data.get("name")
+                if "email" in validated_data:
+                    user_instance.email = validated_data.get("email")
+                if "password" in validated_data:
+                    user_instance.set_password(validated_data.get("password"))
+                if "phonenumber" in validated_data:
+                    user_instance.phonenumber = validated_data.get("phonenumber")
+                if user_groups is not None:
+                    user_instance.groups.clear()
+                    user_instance.groups.set(user_groups)
+                user_instance.active = True
+                user_instance.save()
+                status_code = status.HTTP_200_OK  # Existing user updated.
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El correo ya existe."})
+        else:
+            # Create a new user from validated data
+            user_instance = User.objects.create(**validated_data)
+            if user_groups is not None:
+                user_instance.groups.set(user_groups)
+            user_instance.save()
+            status_code = status.HTTP_201_CREATED  # New user created.
+        
+        # Return the serialized user instance.
+        return Response(status=status_code, data=UserSerializer(user_instance).data)
 
 
 class RefreshCSRFTokenView(APIView):

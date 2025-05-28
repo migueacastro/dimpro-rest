@@ -19,4 +19,5 @@
 	];
 </script>
 
+<h1 class="h2 my-4">Editar Vendedor</h1>
 <Form {fields} edit={true} user={reqUser} endpoint={'users'} table_name={'vendedor'} />
