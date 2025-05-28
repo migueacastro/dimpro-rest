@@ -6,7 +6,7 @@
 		type ModalSettings,
 		type ToastSettings
 	} from '@skeletonlabs/skeleton';
-	import { checkAdminGroup } from '$lib/auth';
+	import { checkAdminGroup, checkPermission } from '$lib/auth';
 	import { enhance } from '$app/forms';
 
 	const modalStore = getModalStore();
@@ -98,8 +98,7 @@
 </script>
 
 <div class="mx-auto max-w-3xl my-2">
-	{#if reminders && reminders.length > 0}
-		{#if buttonAction === 'create'}
+		{#if buttonAction === 'create' || reminders && reminders.length < 1}
 			<div class="card p-[2rem] grid grid-cols-[auto_1fr_auto] gap-4 items-center w-full">
 				<form action="?/addReminder" method="post" use:enhance={handleResult}>
 					<label class="label" for="object">
@@ -168,12 +167,12 @@
 				>
 					{#each reminders as reminder}
 						<div class="card flex-none w-[11rem] lg:w-[35rem] h-auto snap-start items-center">
-							<header class="card-header text-center font-bold">{reminder.note}</header>
+							<header class="cardcheckAdminGroup(user)-header text-center font-bold">{reminder.note}</header>
 							<div class="p-2 text-center">{reminder.name}</div>
 							<footer class="card-footer text-center font-thin">
 								{convertToDate(reminder.date)}
 							</footer>
-							{#if checkAdminGroup(user)}
+							{#if checkPermission(user, 'delete_note')}
 								<div class="flex">
 									<form action="?/deleteReminder" method="post" use:enhance={handleResult}>
 										<input type="hidden" name="id" bind:value={reminder.id} />
@@ -202,7 +201,7 @@
 				<button type="button" class="btn-icon variant-filled" on:click={carouselRight}>
 					<i class="fa-solid fa-arrow-right" />
 				</button>
-				{#if checkAdminGroup(user)}
+				{#if checkPermission(user,'add_note')}
 					<button
 						class="btn variant-filled"
 						on:click={() => {
@@ -214,5 +213,4 @@
 				{/if}
 			</div>
 		{/if}
-	{/if}
 </div>

@@ -26,7 +26,7 @@ export async function load({ params, fetch, locals }: any) {
   let reminders = await response.json();
 
   let items =
-    order.products.map((product: any, index: any) => {
+    (order?.products?.length > 0) ? Array.from(order.products).map((product: any, index: any) => {
       const row = {
         id: product.product.id,
         item: product.product.id,
@@ -43,7 +43,7 @@ export async function load({ params, fetch, locals }: any) {
         product_object: null
       };
       return row;
-    }) ?? [];
+    }) : [];
 
   let selectedPricetypeId = order?.pricetype?.id ?? pricetypes[0]?.id;
   let selectedContactId = order?.contact?.id ?? contacts[0]?.id;

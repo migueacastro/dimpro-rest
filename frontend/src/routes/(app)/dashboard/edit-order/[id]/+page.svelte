@@ -23,7 +23,7 @@
 	let pricetypes: Array<any> = data.pricetypes ?? [];
 	let productBlacklist: any = [];
 	let productAutoCompleteList: AutocompleteOption[] = data.productAutoCompleteList ?? [];
-	let selectedPricetypeId: any = data.selectedPricetypeId;
+	let selectedPricetypeId: any = data.selectedPricetypeId ?? pricetypes[0].id;
 	let order: any = data.order ?? {};
 	let toastStore = getToastStore();
 	let modalStore = getModalStore();
@@ -96,7 +96,7 @@
 			row.item_label = item_object.item;
 			let selectedPricetypeName = pricetypes.find(
 				(pricetype: any) => pricetype.id === selectedPricetypeId
-			).name;
+			)?.name ?? pricetypes[0]?.name;
 			row.price = Object.values(
 				item_object.prices.find(
 					(pricetype: any) => Object.keys(pricetype)[0] === selectedPricetypeName
@@ -420,101 +420,112 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each items as row, index}
-						<tr
-							on:mouseover={() => (row.hover = true)}
-							on:mouseout={() => (row.hover = false)}
-							on:focus={() => {}}
-							on:blur={() => {}}
-						>
-							<td>{row.id || ''}</td>
-							<td>
-								<div
-									class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
-									class:variant-ghost-error={row.search_error}
-								>
-									<input
-										class="input autocomplete"
-										class:variant-ghost-error={row.search_error}
-										type="search"
-										name="autocomplete-search"
-										bind:value={row.item_label}
-										placeholder="Buscar..."
-										use:popup={{
-											event: 'focus-click',
-											target: `popupAutocomplete-${index}`,
-											placement: 'bottom'
-										}}
-										on:input={() => handleItemInput(row)}
-										on:blur={() => handleItemInputBlur(row)}
-										on:keydown={(e) => handleItemEnterPress(row, e)}
-									/>
-									<button
-										type="button"
-										class="input-group-shim"
-										on:click={() => clearItemInput(row)}
-									>
-										<i class="fa-solid fa-xmark"></i>
-									</button>
-								</div>
-								<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
-									<Autocomplete
-										bind:input={row.item_label}
-										options={productAutoCompleteList}
-										on:selection={(e) => {
-											row.item_label = e.detail.label;
-											row.item = e.detail.value;
-											loadRowItemValues(row, e.detail.value);
-										}}
-									/>
-								</div>
-							</td>
-							<td>{row.reference || ''}</td>
-							<td
-								><input
-									type="number"
-									class="input"
-									min="1"
-									disabled={row.input_disabled}
-									bind:value={row.quantity}
-									on:input={() => calculateCost(row)}
-								/></td
+					{#if checkPermission(user, 'view_order_product')}
+						{#each items as row, index}
+							<tr
+								on:mouseover={() => (row.hover = true)}
+								on:mouseout={() => (row.hover = false)}
+								on:focus={() => {}}
+								on:blur={() => {}}
 							>
-							<td>{row.availability || ''}</td>
-							<td>{row.price || ''}</td>
-							<td>{row.cost || ''}</td>
-							<td class="hidden lg:flex flex-row">
-								<button
-									type="button"
-									class:hidden={!row.hover}
-									class="btn variant-ghost-error"
-									on:click={() => removeRow(row.index)}
+								<td>{row.id || ''}</td>
+								<td>
+									<div
+										class="input-group input-group-divider grid-cols-[1fr_auto] p-0"
+										class:variant-ghost-error={row.search_error}
+									>
+										<input
+											disabled={!checkPermission(user, 'change_order_product')}
+											class="input autocomplete"
+											class:variant-ghost-error={row.search_error}
+											type="search"
+											name="autocomplete-search"
+											bind:value={row.item_label}
+											placeholder="Buscar..."
+											use:popup={{
+												event: 'focus-click',
+												target: `popupAutocomplete-${index}`,
+												placement: 'bottom'
+											}}
+											on:input={() => handleItemInput(row)}
+											on:blur={() => handleItemInputBlur(row)}
+											on:keydown={(e) => handleItemEnterPress(row, e)}
+										/>
+										<button
+											type="button"
+											class="input-group-shim"
+											on:click={() => clearItemInput(row)}
+										>
+											<i class="fa-solid fa-xmark"></i>
+										</button>
+									</div>
+									<div data-popup={`popupAutocomplete-${row?.index}`} class="max-w-md w-full card">
+										<Autocomplete
+											bind:input={row.item_label}
+											options={productAutoCompleteList}
+											on:selection={(e) => {
+												row.item_label = e.detail.label;
+												row.item = e.detail.value;
+												loadRowItemValues(row, e.detail.value);
+											}}
+										/>
+									</div>
+								</td>
+								<td>{row.reference || ''}</td>
+								<td
+									><input
+										type="number"
+										class="input"
+										min="1"
+										disabled={row.input_disabled || !checkPermission(user, 'change_order_product')}
+										bind:value={row.quantity}
+										on:input={() => calculateCost(row)}
+									/></td
 								>
-									<i class="fa-solid fa-trash"></i>
-								</button>
-								<button
-									type="button"
-									class:hidden={!row.hover}
-									class="btn ml-2 variant-filled"
-									on:click={addRow}
-								>
-									<i class="fa-solid fa-plus"></i>
-								</button>
-							</td>
-							<td class="flex lg:hidden flex-row">
-								<button
-									type="button"
-									class="btn variant-ghost-error"
-									on:click={() => removeRow(row.index)}
-								>
-									<i class="fa-solid fa-trash"></i>
-								</button>
-								<button type="button" class="btn ml-2 variant-filled" on:click={addRow}>
-									<i class="fa-solid fa-plus"></i>
-								</button>
-							</td>
-						</tr>
-					{/each}
+								<td>{row.availability || ''}</td>
+								<td>{row.price || ''}</td>
+								<td>{row.cost || ''}</td>
+								<td class="hidden lg:flex flex-row">
+									{#if checkPermission(user, 'delete_order_product')}
+										<button
+											type="button"
+											class:hidden={!row.hover}
+											class="btn variant-ghost-error"
+											on:click={() => removeRow(row.index)}
+										>
+											<i class="fa-solid fa-trash"></i>
+										</button>
+									{/if}
+									{#if checkPermission(user, 'add_order_product')}
+										<button
+											type="button"
+											class:hidden={!row.hover}
+											class="btn ml-2 variant-filled"
+											on:click={addRow}
+										>
+											<i class="fa-solid fa-plus"></i>
+										</button>
+									{/if}
+								</td>
+								<td class="flex lg:hidden flex-row">
+									{#if checkPermission(user, 'delete_order_product')}
+										<button
+											type="button"
+											class="btn variant-ghost-error"
+											on:click={() => removeRow(row.index)}
+										>
+											<i class="fa-solid fa-trash"></i>
+										</button>
+									{/if}
+									{#if checkPermission(user, 'add_order_product')}
+										<button type="button" class="btn ml-2 variant-filled" on:click={addRow}>
+											<i class="fa-solid fa-plus"></i>
+										</button>
+									{/if}
+								</td>
+							</tr>
+						{/each}
+					{/if}
 				</tbody>
 				<tfoot>
 					<tr>
@@ -537,17 +548,30 @@
 			<button class="btn ml-2 text-sm variant-filled" on:click={confirmSave}>
 				<i class="fa-solid fa-floppy-disk mr-2"></i> Guardar
 			</button>
-			<form action="?/delete" method="post" bind:this={orderDeleteForm} use:enhance={handleDelete}>
-				<input type="hidden" name="id" value={data.id} />
-				<button type="button" class="btn ml-2 text-sm variant-ghost-error" on:click={confirmDelete}>
-					<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
-				</button>
-			</form>
+			{#if checkPermission(user, 'delete_order')}
+				<form
+					action="?/delete"
+					method="post"
+					bind:this={orderDeleteForm}
+					use:enhance={handleDelete}
+				>
+					<input type="hidden" name="id" value={data.id} />
+					<button
+						type="button"
+						class="btn ml-2 text-sm variant-ghost-error"
+						on:click={confirmDelete}
+					>
+						<i class="fa-solid fa-trash mr-2"></i> Eliminar Pedido
+					</button>
+				</form>
+			{/if}
 		</div>
 		<div class="flex justify-end flex-row mb-[5rem]">
 			<h1 class="h2 mt-[2rem]">Total: {totalCost}$</h1>
 		</div>
+		{#if checkPermission(user, 'view_reminder')}
 		<Reminder {user} reminders={data.reminders} />
+		{/if}
 	</div>
 {:else}
 	<div class="flex justify-center mt-[8rem]">
