@@ -2,7 +2,7 @@
 	import Datatable from '$lib/components/Datatable.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
-	$: loaded = false;
+	$: loaded = true;
 	let {user} = data;
 	let {reqUser} = data;
 </script>
