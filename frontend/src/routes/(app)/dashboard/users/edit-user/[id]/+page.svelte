@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Form from '$lib/components/Form.svelte';
+	import { checkStaffGroup } from '$lib/auth';
+import Form from '$lib/components/Form.svelte';
 	export let data;
 	let { user } = data;
 	let { reqUser } = data;
@@ -20,4 +21,4 @@
 </script>
 
 <h1 class="h2 my-4">Editar Vendedor</h1>
-<Form {fields} edit={true} user={reqUser} endpoint={'users'} table_name={'vendedor'} />
+<Form {fields} edit={true} user={reqUser} endpoint={(checkStaffGroup(user)) ? 'staff' : 'users'} table_name={'vendedor'} />

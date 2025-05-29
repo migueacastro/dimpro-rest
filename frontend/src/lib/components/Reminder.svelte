@@ -119,7 +119,7 @@
 	}
 </script>
 
-<div class="mx-auto w-3/4 my-2">
+<div class="mx-auto  w-full lg:w-3/4 my-2">
 	<div class="flex flex-row space-x-2 items-center">
 		<h2 class="h2 my-4">Recordatorios</h2>
 		{#if buttonAction !== 'create'}{#if checkPermission(user, 'add_note')}
@@ -138,6 +138,7 @@
 	<div class="grid grid-cols-[auto_1fr_auto] gap-4 items-center w-full">
 		{#if buttonAction === 'create' || !reminders || reminders.length < 1}
 			<form action="?/addReminder" method="post" class="w-full" use:enhance={handleResult}>
+				<input type="hidden" name="name" bind:value={user.name} />
 				<textarea class="textarea w-[30rem] h-[10rem] mb-5" name="note" placeholder="Recordatorio"
 				></textarea>
 
@@ -145,6 +146,7 @@
 					<button type="submit" class="btn variant-filled">
 						<i class="fa-solid fa-floppy-disk"></i>
 					</button>
+					{#if reminders && reminders.length > 0}
 					<button
 						type="button"
 						class="btn variant-filled"
@@ -154,6 +156,7 @@
 					>
 						<i class="fa-solid fa-arrow-left"></i>
 					</button>
+					{/if}
 				</div>
 			</form>
 		{:else if buttonAction === 'edit'}
@@ -172,6 +175,7 @@
 						>
 							<i class="fa-solid fa-floppy-disk"></i>
 						</button>
+						{#if reminders.length > 0}
 						<button
 							type="button"
 							class="btn variant-filled"
@@ -181,6 +185,7 @@
 						>
 							<i class="fa-solid fa-arrow-left"></i>
 						</button>
+						{/if}
 					</div>
 				</label>
 			</form>
@@ -207,10 +212,11 @@
 							{reminder.note}
 						</header>
 
-						{#if checkPermission(user, 'delete_note')}
+						
 							<div class="flex justify-between">
 								<form action="?/deleteReminder" method="post" use:enhance={handleResult}>
 									<input type="hidden" name="id" bind:value={reminder.id} />
+									{#if checkPermission(user, 'delete_note')}
 									<button
 										type="button"
 										class="btn-icon variant-filled h-[3rem] w-[3rem]"
@@ -218,14 +224,15 @@
 									>
 										<i class="fa-solid fa-trash" />
 									</button>
+									{/if}
 								</form>
-								<div class="flex flex-col">
-									<div class="p-2 text-center">{reminder.name}</div>
+								<div class="flex flex-col mx-auto">
 									<footer class="card-footer text-center font-thin">
 										{convertToDate(reminder.date)}
 									</footer>
 								</div>
 
+								{#if checkPermission(user, 'change_note')}
 								<button
 									class="btn-icon variant-filled h-[3rem] w-[3rem]"
 									on:click={() => {
@@ -235,8 +242,8 @@
 								>
 									<i class="fa-solid fa-pencil" />
 								</button>
+								{/if}
 							</div>
-						{/if}
 					</div>
 				{/each}
 			</div>
@@ -254,6 +261,7 @@
 			</div>
 		{/if}
 	</div>
+	{#if reminders.length > 1 && buttonAction !== 'create'}
 	<div class="flex flex-row justify-center w-full mt-3 space-x-2">
 		{#each sortedReminders as reminder}
 			<button
@@ -269,4 +277,5 @@
 			</button>
 		{/each}
 	</div>
+	{/if}
 </div>
