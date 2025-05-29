@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { checkStaffGroup } from '$lib/auth.js';
 	import Form from '$lib/components/Form.svelte';
 	export let data;
 	let {user} = data;
@@ -9,4 +10,4 @@
 		];
 </script>
 
-<Form fields={fields} edit={true} user={user} endpoint={'users'} reload={true} table_name={'usuario'}/>
+<Form fields={fields} edit={true} user={user} endpoint={(checkStaffGroup(user)) ? 'staff' : 'users'} reload={true} table_name={'usuario'}/>
