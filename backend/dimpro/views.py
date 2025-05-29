@@ -223,6 +223,16 @@ class UserProfileView(APIView):
         user_serializer = UserSerializer(user)
         return Response(user_serializer.data)
 
+    def patch(self, request):
+        user = request.user
+        if not user:
+            raise AuthenticationFailed({"message": "Acceso no Autorizado."})
+        # Pass user instance and partial=True for updating only provided fields
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
 
 class UserChangePasswordView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -266,29 +276,35 @@ class UserViewSet(SafeViewSet):
     permission_classes = (IsAuthenticated, GroupPermission)
     serializer_class = UserSerializer
     queryset = (
-        User.objects.filter(active=True).exclude(groups__name="staff").exclude(groups__name="admin").order_by("name")
+        User.objects.filter(active=True)
+        .exclude(groups__name="staff")
+        .exclude(groups__name="admin")
+        .order_by("name")
     )  # If this line does not work i will nuke Copilot
 
     def retrieve(self, request, *args, **kwargs):
         object_instance = self.get_object()
         return Response(UserNestedSerializer(object_instance).data)
-    
+
     def create(self, request, *args, **kwargs):
         # Use raise_exception=True so that any validation errors surface automatically.
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=False)
         validated_data = serializer.validated_data.copy()
-        
+
         # Remove the confirmPassword field
         validated_data.pop("confirmPassword", None)
-        
+
         # Extract groups and email from validated_data
         user_groups = validated_data.pop("groups", None)
         email = request.data.get("email")
-        
+
         if email is None:
-            return Response({"error": "El campo email es obligatorio."}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(
+                {"error": "El campo email es obligatorio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # Check if an inactive user already exists with that email; if so, update it.
         query = User.objects.filter(email=email)
         print(query)
@@ -311,7 +327,10 @@ class UserViewSet(SafeViewSet):
                 user_instance.save()
                 status_code = status.HTTP_200_OK  # Existing user updated.
             else:
-                return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "El correo ya existe."})
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"error": "El correo ya existe."},
+                )
         else:
             # Create a new user from validated data
             user_instance = User.objects.create(**validated_data)
@@ -319,7 +338,7 @@ class UserViewSet(SafeViewSet):
                 user_instance.groups.set(user_groups)
             user_instance.save()
             status_code = status.HTTP_201_CREATED  # New user created.
-        
+
         # Return the serialized user instance.
         return Response(status=status_code, data=UserSerializer(user_instance).data)
 
@@ -331,6 +350,7 @@ class UserViewSet(SafeViewSet):
             print(request.data)
         return super().partial_update(request, *args, **kwargs)
 
+
 class RefreshCSRFTokenView(APIView):
     permission_classes = (AllowAny,)
 
@@ -341,7 +361,11 @@ class RefreshCSRFTokenView(APIView):
 class StaffViewSet(SafeViewSet):
     permission_classes = (IsAdminUser, GroupPermission)
     serializer_class = UserNestedSerializer
-    queryset = User.objects.filter(groups__name__in=["staff", "admin"], active=True).distinct().order_by("name")
+    queryset = (
+        User.objects.filter(groups__name__in=["staff", "admin"], active=True)
+        .distinct()
+        .order_by("name")
+    )
     superuser_only = True
 
 
@@ -365,7 +389,7 @@ class OrderProductViewSet(SafeViewSet):
     queryset = Order_Product.objects.all()
 
 
-class PriceTypeViewSet(SafeViewSet,GroupPermission):
+class PriceTypeViewSet(SafeViewSet, GroupPermission):
     serializer_class = PriceTypeSerializer
     permission_classes = (IsAuthenticated, GroupPermission)
     queryset = PriceType.objects.filter(active=True)
@@ -373,7 +397,7 @@ class PriceTypeViewSet(SafeViewSet,GroupPermission):
 
 class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProducts
     serializer_class = OrderSerializer
-    permission_classes = (IsAuthenticated,GroupPermission)
+    permission_classes = (IsAuthenticated, GroupPermission)
     # No hay que preocuparse por lecturas indebidas,
     # El CORS no permitiria cualquier IP acceder al API excepto por el del mismo frontend desde la nube
     # Entonces, esa vulnerabilidad ya está cubierta, de hecho, por esa razon ya es inutil el UserReadOnlyPermission, pero dejemoslo activo
@@ -401,6 +425,7 @@ class AlegraUserViewSet(SafeViewSet):
 
 class WelcomeStaffView(APIView):
     permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         serializer = (
             WelcomeStaffSerializer()
@@ -409,7 +434,8 @@ class WelcomeStaffView(APIView):
 
 
 class WelcomeSuperUserView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         serializer = (
             WelcomeSuperUserSerializer()
@@ -417,15 +443,15 @@ class WelcomeSuperUserView(APIView):
         return Response(serializer.data)
 
 
-class NoteViewSet(NoteViewSet): #because date cannot be updated
+class NoteViewSet(NoteViewSet):  # because date cannot be updated
     serializer_class = NoteSerializer
-    permission_classes = (IsAuthenticated,GroupPermission)
+    permission_classes = (IsAuthenticated, GroupPermission)
     queryset = Note.objects.filter(active=True)
 
 
 class LogViewSet(SafeViewSet):
     serializer_class = LogSerializer
-    permission_classes = (IsAuthenticated,GroupPermission)
+    permission_classes = (IsAuthenticated, GroupPermission)
     queryset = LogEntry.objects.all().order_by("-timestamp")
 
 
@@ -659,7 +685,8 @@ class ExportInventoryPDFView(APIView):
 
 
 class UpdateDBView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         try:
             # Schedule the updatedb task asynchronously.
@@ -702,6 +729,7 @@ class RequestPasswordResetView(generics.GenericAPIView):
 
     serializer_class = ResetPasswordEmailSerializer
     permission_classes = (AllowAny,)
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -766,14 +794,16 @@ class PasswordTokenCheckView(generics.GenericAPIView):
 class SetNewPasswordAPIView(generics.GenericAPIView):
     serializer_class = SetNewPasswordSerializer
     permission_classes = (AllowAny,)
+
     def patch(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         return Response(
             {"success": True, "message": "Password reset success"},
             status=status.HTTP_200_OK,
         )
+
 
 class GroupViewSet(SafeViewSet):
     serializer_class = GroupSerializer
@@ -784,4 +814,6 @@ class GroupViewSet(SafeViewSet):
 class PermissionViewSet(SafeViewSet):
     permission_classes = (IsAdminUser,)
     serializer_class = PermissionSerializer
-    queryset = Permission.objects.filter(content_type__app_label__in=["auditlog","dimpro"])
+    queryset = Permission.objects.filter(
+        content_type__app_label__in=["auditlog", "dimpro"]
+    )

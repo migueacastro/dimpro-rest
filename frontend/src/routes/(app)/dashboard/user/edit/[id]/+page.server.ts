@@ -17,12 +17,6 @@ export const actions: Actions = {
         const formData = await request.formData();
         const id = formData.get("id");
         let endpoint = "";
-        if (checkStaffGroup(locals.user)) {
-            endpoint = "staff";
-        } else {
-            endpoint = "users";
-        }
-        formData.delete("endpoint");
         const keys = Array.from(formData.keys());
         const values = Array.from(formData.values());
         let body: any = {};
@@ -34,7 +28,7 @@ export const actions: Actions = {
             }
         }
 
-        let response = await fetch(apiURL + endpoint + `/${id}/`, {
+        let response = await fetch(apiURL + 'user', {
             method: 'PATCH',
             body: JSON.stringify(body)
         });

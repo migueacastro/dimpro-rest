@@ -51,6 +51,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields = ["email", "password"]
 
 
+
 class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=100, style={"input_type": "password"}, write_only=True
@@ -145,6 +146,11 @@ class UserSerializer(serializers.ModelSerializer):
         self.fields["groups"] = GroupSerializer(many=True)
         return super().to_representation(instance)
 
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "name", "phonenumber"]
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
