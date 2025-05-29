@@ -5,7 +5,7 @@
 	let {user} = data;
 	let {reqUser} = data;
 	let staff: any = reqUser;
-	$: loaded = false;
+	$: loaded = true;
 
 </script>
 

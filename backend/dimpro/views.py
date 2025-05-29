@@ -605,7 +605,7 @@ class ExportInventoryPDFView(APIView):
 
         doc.addPageTemplates([template])
 
-        lines = [["ID", "Item", "Detalles", "Referencia", "Cantidad", "precio"]]
+        lines = [["ID", "Item", "Detalles", "Referencia", "Cantidad"]]
         products = Product.objects.filter(active=True).order_by("item")
         if not products.exists():
             return Response({"error": "No products found."}, status=404)
@@ -623,18 +623,18 @@ class ExportInventoryPDFView(APIView):
             else:
                 price_value = "Ninguno"
 
-            price = Paragraph(price_value, small_style)
+            #price = Paragraph(price_value, small_style)
 
-            lines.append((id, item, details, reference, quantity, price))
+            lines.append((id, item, details, reference, quantity))
 
         available_width = doc.width
         col_widths = [
             available_width * 0.10,
             available_width * 0.20,
             available_width * 0.30,
-            available_width * 0.15,
-            available_width * 0.15,
-            available_width * 0.10,
+            available_width * 0.2,
+            available_width * 0.2,
+            #available_width * 0.10,
         ]
 
         table = Table(lines, colWidths=col_widths)
