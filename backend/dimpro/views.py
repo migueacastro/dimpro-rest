@@ -323,6 +323,13 @@ class UserViewSet(SafeViewSet):
         # Return the serialized user instance.
         return Response(status=status_code, data=UserSerializer(user_instance).data)
 
+    def partial_update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            print(serializer.validated_data)
+        else:
+            print(request.data)
+        return super().partial_update(request, *args, **kwargs)
 
 class RefreshCSRFTokenView(APIView):
     permission_classes = (AllowAny,)

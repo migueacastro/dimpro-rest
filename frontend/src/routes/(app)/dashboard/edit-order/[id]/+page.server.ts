@@ -156,22 +156,28 @@ export const actions: Actions = {
       body: JSON.stringify(body)
     });
     const data = await response.json();
+    response = await fetch(apiURL+"notes");
+    const reminders = await response.json();
     return {
       success: response.ok,
       action: "agreg",
-      error: { data }
+      error: { data },
+      reminders,
     };
   },
   deleteReminder: async ({ request, fetch }) => {
     let formData = await request.formData();
     const id = formData.get('id');
-    const response = await fetch(apiURL + 'notes/' + id + '/', {
+    let response = await fetch(apiURL + 'notes/' + id + '/', {
       method: 'DELETE'
     });
     if (response.ok) {
+      response = await fetch(apiURL+"notes");
+      const reminders = await response.json();
       return {
         success: true,
-        action: "elimin"
+        action: "elimin",
+        reminders
       };
     } else {
       const data = await response.json();
@@ -192,10 +198,13 @@ export const actions: Actions = {
       method: 'PUT',
       body: JSON.stringify(body)
     });
+    let fetchResponse = await fetch(apiURL+"notes");
+    const reminders = await fetchResponse.json();
     return {
       success: response.ok,
       error: response.statusText,
-      action: "actualiz"
+      action: "actualiz",
+      reminders,
     }
 
   }

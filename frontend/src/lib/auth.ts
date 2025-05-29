@@ -30,7 +30,7 @@ export function checkStaffGroup(user: any) {
 		return false;
 	}
 	for (let group of user?.groups) {
-		if (group?.name === 'staff') {
+		if (group?.name === 'staff' || group?.name === 'admin') {
 			return true;
 		}
 	}
