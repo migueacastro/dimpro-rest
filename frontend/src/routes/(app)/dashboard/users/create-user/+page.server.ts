@@ -27,7 +27,6 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const endpoint = formData.get('endpoint');
 		formData.delete('endpoint');
-		formData.set('groups', '[3]');
 		const keys = Array.from(formData.keys());
 		const values: any = Array.from(formData.values());
 		let body: any = {};
@@ -48,9 +47,11 @@ export const actions: Actions = {
 			method: 'POST',
 			body: JSON.stringify(body)
 		});
+
+		const data = await response.json()
 		return {
 			success: response.ok,
-			error: response.statusText
+			error: data.error
 		};
 	}
 };

@@ -124,6 +124,9 @@ class UserSerializer(serializers.ModelSerializer):
             "date_joined",
             "last_login",
         ]
+        extra_kwargs = {
+            "name": {"required": True},
+        }
         
 
     def update(self, instance, validated_data):

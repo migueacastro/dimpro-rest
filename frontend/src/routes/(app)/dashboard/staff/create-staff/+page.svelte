@@ -21,6 +21,6 @@
 <Form
 	{fields}
 	edit={false}
-	endpoint={'staff'}
+	endpoint={'staff/'}
 	table_name={'empleado/administrador'}
 />

@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.mixins import Response
 from rest_framework import permissions
 from django.core.mail import EmailMessage
+from rest_framework.exceptions import ValidationError
+from dimpro.models import *
 import threading
 
 
@@ -161,7 +163,7 @@ PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "session": "sesión",
     "pricetype": "tipo de precio",
     "receivable": "cuenta por cobrar",
-    "exchangerate":"taza de cambio",
+    "exchangerate": "taza de cambio",
     "exchangecurrency": "moneda de cambio",
     "passwordresettoken": "token de restablecimiento de contraseña",
     "pricetypetax": "impuesto de tipo de precio",
@@ -171,12 +173,13 @@ PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
 
 def translate_permission_content_type(codename):
     content_type = "_".join(codename.split("_")[1:])
-    
+
     name = PERMISSION_CONTENT_TYPE_TRANSLATIONS.get(content_type)
     if not name:
         content_type = content_type.split("_")[-1]
-        name =  PERMISSION_CONTENT_TYPE_TRANSLATIONS.get(content_type)
+        name = PERMISSION_CONTENT_TYPE_TRANSLATIONS.get(content_type)
     return name
+
 
 def translate_permission_name(name):
     for key, value in PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS.items():
@@ -187,6 +190,84 @@ def translate_permission_name(name):
     for i, part in enumerate(parts):
         if part in PERMISSION_TRANSLATIONS:
             parts[i] = PERMISSION_TRANSLATIONS[part]
-    name = " ".join(parts).replace("_","")
-    
+    name = " ".join(parts).replace("_", "")
+
     return name
+
+
+def partial_update_user(self, request, *args, **kwargs):
+    from .serializers import UserSerializer
+
+    serializer = self.get_serializer(data=request.data, partial=True)
+
+    email = request.data.pop("email", None)
+    serializer.is_valid(raise_exception=True)
+    validated_data = serializer.validated_data.copy()
+
+    validated_data.pop("confirmPassword", None)
+    user_groups = validated_data.pop("groups", None)
+
+    # Obtén el usuario actual que deseas actualizar
+    current_user = self.get_object()
+
+    # Si no se envía un email en el request, usa el del usuario actual
+    if email is None:
+        raise ValidationError({"error": "El campo email es obligatorio."})
+
+    # Verifica si existe otro usuario activo (distinto al actual) con el mismo email
+    if (
+        User.objects.filter(email=email, active=True)
+        .exclude(id=current_user.id)
+        .exists()
+    ):
+        return Response(
+            {"error": "El correo ya existe."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Actualiza los campos del usuario actual
+    if "name" in validated_data:
+        current_user.name = validated_data.get("name")
+    if "email" in validated_data:
+        current_user.email = email
+    if "password" in validated_data:
+        current_user.set_password(validated_data.get("password"))
+    if "phonenumber" in validated_data:
+        current_user.phonenumber = validated_data.get("phonenumber")
+    if user_groups is not None:
+        current_user.groups.clear()
+        current_user.groups.set(user_groups)
+    current_user.save()
+
+    return Response(UserSerializer(current_user).data, status=status.HTTP_200_OK)
+
+
+def create_user(self, request, *args, **kwargs):
+    from .serializers import UserSerializer
+
+    email = request.data.pop("email", None)
+    serializer = self.get_serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    validated_data = serializer.validated_data.copy()
+    validated_data.pop("confirmPassword")
+    user_groups = validated_data.pop("groups", None)
+
+    if not email:
+        return Response(
+            {"error": "El campo email es obligatorio."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Check if an active user already exists with that email
+    if User.objects.filter(email=email, active=True).exists():
+        return Response(
+            {"error": "El correo ya existe."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    user_instance, created = User.objects.update_or_create(
+        email=email, active=True, defaults=validated_data
+    )
+    if user_groups is not None:
+        user_instance.groups.set(user_groups)
+    user_instance.save()
+    return Response(UserSerializer(user_instance).data, status=status.HTTP_201_CREATED)

@@ -10,4 +10,4 @@
 		];
 </script>
 
-<Form fields={fields} edit={true} user={user} endpoint={(checkStaffGroup(user)) ? 'staff' : 'users'} reload={true} table_name={'usuario'}/>
+<Form fields={fields} edit={true} user={user} endpoint={'user'} reload={true} table_name={'usuario'}/>
