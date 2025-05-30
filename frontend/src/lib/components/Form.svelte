@@ -132,7 +132,7 @@
 						window.location.reload();
 					}, 1000);
 				} else {
-					return update({reset: false});
+					goto(`/dashboard/${endpoint}`);
 				}
 			} else {
 				const toast: ToastSettings = {

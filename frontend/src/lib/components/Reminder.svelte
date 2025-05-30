@@ -118,7 +118,7 @@
 
 <div class="mx-auto w-full lg:w-3/4 my-2">
 	<div class="flex flex-row space-x-2 items-center">
-		<h2 class="h2 my-4">Recordatorios</h2>
+		<h2 class="h2 my-4">Información</h2>
 		{#if buttonAction !== 'create'}{#if checkPermission(user, 'add_note')}
 				<button
 					class="btn variant-filled px-6 h-[2rem]"
@@ -139,60 +139,25 @@
 {:else}
 	<div class="grid grid-cols-[auto_1fr_auto] gap-4 items-center w-full">
 		{#if buttonAction === 'create' || !reminders || reminders.length < 1}
-			<form
-				action="?/addReminder"
-				method="post"
-				class="w-full mx-auto lg:ml-[10rem]"
-				use:enhance={handleResult}
-			>
-				<input type="hidden" name="name" bind:value={user.name} />
-				<textarea
-					class="textarea w-[40rem] h-[10rem] mx-auto mb-5"
-					name="note"
-					placeholder="Recordatorio"
-				></textarea>
-
-				<div class="flex gap-5">
-					<button type="submit" class="btn variant-filled">
-						<i class="fa-solid fa-floppy-disk"></i>
-					</button>
-					{#if reminders && reminders.length > 0}
-						<button
-							type="button"
-							class="btn variant-filled"
-							on:click={() => {
-								buttonAction = '';
-							}}
-						>
-							<i class="fa-solid fa-arrow-left"></i>
-						</button>
-					{/if}
-				</div>
-			</form>
-		{:else if buttonAction === 'edit'}
-			<form
-				action="?/editReminder"
-				class="mx-auto lg:ml-[10rem]"
-				method="post"
-				use:enhance={handleResult}
-			>
-				<label class="label" for="object">
-					<input type="hidden" name="id" bind:value={reminderSelected.id} />
+			{#if checkPermission(user, 'add_note')}
+				<form
+					action="?/addReminder"
+					method="post"
+					class="w-full mx-auto lg:ml-[10rem]"
+					use:enhance={handleResult}
+				>
 					<input type="hidden" name="name" bind:value={user.name} />
 					<textarea
-						class="textarea w-[40rem] mx-auto h-[10rem] mb-5"
+						class="textarea w-[40rem] h-[10rem] mx-auto mb-5"
 						name="note"
-						placeholder="Recordatorio">{reminderSelected.note}</textarea
-					>
+						placeholder="Recordatorio"
+					></textarea>
+
 					<div class="flex gap-5">
-						<button
-							type="button"
-							class="btn variant-filled"
-							on:click={(e) => updateConfirmation(e)}
-						>
+						<button type="submit" class="btn variant-filled">
 							<i class="fa-solid fa-floppy-disk"></i>
 						</button>
-						{#if reminders.length > 0}
+						{#if reminders && reminders.length > 0}
 							<button
 								type="button"
 								class="btn variant-filled"
@@ -204,78 +169,115 @@
 							</button>
 						{/if}
 					</div>
-				</label>
-			</form>
-		{:else}
-			<div class="w-[3rem]">
-				{#if reminders.length > 1}
-					<button
-						type="button"
-						class="h-[3rem] w-[3rem] btn-icon variant-filled"
-						on:click={carouselLeft}
-					>
-						<i class="fa-solid fa-arrow-left" />
-					</button>
+				</form>
 				{/if}
-			</div>
-
-			<div
-				bind:this={elemCarousel}
-				class="scroll-smooth flex overflow-hidden w-full mx-auto h-auto"
-			>
-				{#each sortedReminders as reminder}
-					<div class="card p-4 flex-none h-auto snap-start items-center w-full">
-						<header class="text-xl text-start font-bold py-5 px-2 whitespace-pre-wrap">
-							{reminder.note}
-						</header>
-
-						<div class="flex justify-between">
-							<form action="?/deleteReminder" method="post" use:enhance={handleResult}>
-								<input type="hidden" name="id" bind:value={reminder.id} />
-								{#if checkPermission(user, 'delete_note')}
-									<button
-										type="button"
-										class="btn-icon variant-filled h-[3rem] w-[3rem]"
-										on:click={(e) => deleteConfirmation(reminder.note, e)}
-									>
-										<i class="fa-solid fa-trash" />
-									</button>
-								{/if}
-							</form>
-							<div class="flex flex-col mx-auto">
-								<footer class="card-footer text-center font-thin">
-									{convertToDate(reminder.date)}
-								</footer>
-							</div>
-
-							{#if checkPermission(user, 'change_note')}
+			{:else if buttonAction === 'edit'}
+				<form
+					action="?/editReminder"
+					class="mx-auto lg:ml-[10rem]"
+					method="post"
+					use:enhance={handleResult}
+				>
+					<label class="label" for="object">
+						<input type="hidden" name="id" bind:value={reminderSelected.id} />
+						<input type="hidden" name="name" bind:value={user.name} />
+						<textarea
+							class="textarea w-[40rem] mx-auto h-[10rem] mb-5"
+							name="note"
+							placeholder="Recordatorio">{reminderSelected.note}</textarea
+						>
+						<div class="flex gap-5">
+							<button
+								type="button"
+								class="btn variant-filled"
+								on:click={(e) => updateConfirmation(e)}
+							>
+								<i class="fa-solid fa-floppy-disk"></i>
+							</button>
+							{#if reminders.length > 0}
 								<button
-									class="btn-icon variant-filled h-[3rem] w-[3rem]"
+									type="button"
+									class="btn variant-filled"
 									on:click={() => {
-										buttonAction = 'edit';
-										reminderSelected = { note: reminder.note, id: reminder.id };
+										buttonAction = '';
 									}}
 								>
-									<i class="fa-solid fa-pencil" />
+									<i class="fa-solid fa-arrow-left"></i>
 								</button>
 							{/if}
 						</div>
-					</div>
-				{/each}
-			</div>
+					</label>
+				</form>
+			{:else}
+				<div class="w-[3rem]">
+					{#if reminders.length > 1}
+						<button
+							type="button"
+							class="h-[3rem] w-[3rem] btn-icon variant-filled"
+							on:click={carouselLeft}
+						>
+							<i class="fa-solid fa-arrow-left" />
+						</button>
+					{/if}
+				</div>
 
-			<div class="w-[3rem]">
-				{#if reminders.length > 1}
-					<button
-						type="button"
-						class="h-[3rem] w-[3rem] btn-icon variant-filled"
-						on:click={carouselRight}
-					>
-						<i class="fa-solid fa-arrow-right" />
-					</button>
-				{/if}
-			</div>
-		{/if}
+				<div
+					bind:this={elemCarousel}
+					class="scroll-smooth flex overflow-hidden w-full mx-auto h-auto"
+				>
+					{#each sortedReminders as reminder}
+						<div class="card p-4 flex-none h-auto snap-start items-center w-full">
+							<header class="text-xl text-start font-bold py-5 px-2 whitespace-pre-wrap">
+								{reminder.note}
+							</header>
+
+							<div class="flex justify-between">
+								<form action="?/deleteReminder" method="post" use:enhance={handleResult}>
+									<input type="hidden" name="id" bind:value={reminder.id} />
+									{#if checkPermission(user, 'delete_note')}
+										<button
+											type="button"
+											class="btn-icon variant-filled h-[3rem] w-[3rem]"
+											on:click={(e) => deleteConfirmation(reminder.note, e)}
+										>
+											<i class="fa-solid fa-trash" />
+										</button>
+									{/if}
+								</form>
+								<div class="flex flex-col mx-auto">
+									<footer class="card-footer text-center font-thin">
+										{convertToDate(reminder.date)}
+									</footer>
+								</div>
+
+								{#if checkPermission(user, 'change_note')}
+									<button
+										class="btn-icon variant-filled h-[3rem] w-[3rem]"
+										on:click={() => {
+											buttonAction = 'edit';
+											reminderSelected = { note: reminder.note, id: reminder.id };
+										}}
+									>
+										<i class="fa-solid fa-pencil" />
+									</button>
+								{/if}
+							</div>
+						</div>
+					{/each}
+				</div>
+
+				<div class="w-[3rem]">
+					{#if reminders.length > 1}
+						<button
+							type="button"
+							class="h-[3rem] w-[3rem] btn-icon variant-filled"
+							on:click={carouselRight}
+						>
+							<i class="fa-solid fa-arrow-right" />
+						</button>
+					{/if}
+				</div>
+			{/if}
 	</div>
 	{#if reminders.length > 1 && buttonAction !== 'create'}
 		<div class="flex flex-row justify-center w-full mt-3 space-x-2">

@@ -1,7 +1,7 @@
 import { apiURL } from '$lib/api_url';
 import type { Actions, RequestEvent } from '@sveltejs/kit';
 import { handleDelete } from '$lib/components/Datatable';
-import { checkPermission, checkStaffGroup } from '$lib/auth';
+import { checkPermission, checkStaffGroup, permissionError } from '$lib/auth';
 
 export const load = async ({ fetch, locals }: RequestEvent) => {
 	let endpoint: string;
@@ -13,10 +13,12 @@ export const load = async ({ fetch, locals }: RequestEvent) => {
 		response = await fetch(apiURL + endpoint);
 		list_all = await response.json();
 	}
-	if (checkPermission(locals.user, 'view_own_order')) {
+	else if (checkPermission(locals.user, 'view_own_order')) {
 		endpoint = 'user_orders';
 		response = await fetch(apiURL + endpoint);
 		list_user = await response.json();
+	} else {
+		return permissionError();
 	}
 
 	return {
