@@ -203,7 +203,7 @@
 		on:mouseleave={() => (expandedSideBar = false)}
 		on:focus
 	>
-		<a href="dimpro" on:click|preventDefault={() => goto('/dashboard')}>
+		<a href="/">
 			<div
 				class="px-2 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface mt-1"
 			>
@@ -216,7 +216,7 @@
 
 		<hr class="w-[80%] mx-auto my-2" />
 		{#if checkPermission(user, 'add_order')}
-			<a href="/dashboard/add-order" on:click|preventDefault={() => goto('/dashboard/add-order')}>
+			<a href="/dashboard/add-order">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-plus h3 w-20"></i>
 					<p
@@ -231,7 +231,7 @@
 			</a>
 		{/if}
 		{#if checkPermission(user, 'view_own_order') || checkPermission(user, 'view_order')}
-			<a href="pedidos" on:click|preventDefault={() => goto('/dashboard/orders')}>
+			<a href="/dashboard/orders">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-box h3 w-20"></i>
 					<p
@@ -246,7 +246,7 @@
 			</a>
 		{/if}
 		{#if checkPermission(user, 'view_product')}
-			<a href="inventario" on:click|preventDefault={() => goto('/dashboard/inventory')}>
+			<a href="/dashboard/inventory">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-boxes-stacked h3 w-20"></i>
 					<p
@@ -262,7 +262,7 @@
 		{/if}
 
 		{#if checkPermission(user, 'view_user')}
-			<a href="vendedores" on:click|preventDefault={() => goto('/dashboard/users')}>
+			<a href="/dashboard/users">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users h3 w-20"></i>
 					<p
@@ -278,7 +278,7 @@
 		{/if}
 
 		{#if checkPermission(user, 'view_staff_user')}
-			<a href="empleados" on:click|preventDefault={() => goto('/dashboard/staff')}>
+			<a href="/dashboard/staff">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-users-gear h3 w-20"></i>
 					<p
@@ -293,7 +293,7 @@
 			</a>
 		{/if}
 		{#if checkPermission(user, 'view_settings_user')}
-			<a href="configuracion" on:click|preventDefault={() => goto('/dashboard/settings')}>
+			<a href="/dashboard/settings">
 				<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 					<i class="py-5 fa-solid fa-gear h3 w-20"></i>
 					<p
@@ -308,7 +308,7 @@
 			</a>
 		{/if}
 
-		<a href="/logout" on:click|preventDefault={() => goto('/logout')}>
+		<a href="/logout">
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-arrow-right-from-bracket h3 w-20"></i>
 				<p
