@@ -301,7 +301,7 @@
 					timeout: 7000
 				};
 				console.log('Successfully deleted');
-				goto(`/dashboard/orders/${order.id}`);
+				goto(`/dashboard/orders`);
 				toastStore.trigger(toast);
 			} else {
 				toast = {
