@@ -19,4 +19,4 @@
 </script>
 
 <h1 class="h2 my-4">Crear Vendedor</h1>
-<Form fields={fields} edit={false} endpoint={'users'} table_name={'vendedor'}/>
+<Form fields={fields} edit={false} endpoint={'users/'} table_name={'vendedor'}/>

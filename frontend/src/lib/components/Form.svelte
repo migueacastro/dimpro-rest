@@ -135,6 +135,7 @@
 					goto(`/dashboard/${endpoint}`);
 				}
 			} else {
+				console.log(result.data)
 				const toast: ToastSettings = {
 					message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
 							mensaje: ${result.data.error}`,

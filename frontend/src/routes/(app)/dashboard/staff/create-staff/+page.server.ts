@@ -23,7 +23,6 @@ export const actions: Actions = {
     add: async ({ request, fetch }) => {
         const formData = await request.formData();
         formData.delete("endpoint");
-        formData.set("groups","[2,3]");
         const keys = Array.from(formData.keys());
         const values: any = Array.from(formData.values());
         let body: any = {};
@@ -43,9 +42,9 @@ export const actions: Actions = {
             body: JSON.stringify(body)
         });
         const data = await response.json()
-        return {
-            success: response.ok,
-            error: data.error,
-        }
+		return {
+			success: response.ok,
+			error: data.error
+		};
     }
 }
