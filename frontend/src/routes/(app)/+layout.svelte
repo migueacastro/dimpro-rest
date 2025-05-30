@@ -179,10 +179,10 @@
 				</div>
 				<div class="w-1/3 pt-[1rem] pr-[1rem] lg:pr-[2rem] flex flex-row justify-end">
 					<div
-						class="lg:text-xl text-md capitalize text-end font-bold md:text-xl md:flex md:align-middle"
+						class="lg:text-md text-md capitalize text-end font-bold md:text-xl md:flex md:align-middle"
 					>
-						<a href="/dashboard/user">
-							<div>{user?.name?.split()[0]} <i class="ml-2 fa-solid fa-user"></i></div>
+						<a href="/dashboard/user" class="whitespace-nowrap w">
+							<div class="flex flex-row space-x-2 items-center"><p class="hidden lg:block">{user?.name?.split()[0]}</p> <i class="ml-2 fa-solid fa-user"></i></div>
 						</a>
 					</div>
 					<div class="hidden lg:flex w-auto ml-4"><LightSwitch /></div>
