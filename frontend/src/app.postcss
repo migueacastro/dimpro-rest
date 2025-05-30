@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+* {
+	font-family: Arial, Helvetica;
+}
+html,
+body {
+	@apply h-full overflow-hidden;
+}
+
+.animate-show {
+	@apply animate-[appear_600ms_cubic-bezier(0.4,_0,_0.2,_1)_0ms_forwards];
+}
+.animate-hide {
+	@apply animate-[appear_600ms_cubic_bezier(0.4,_0,_0.2,_1)_0ms_backwards];
+}
+
+
+@keyframes show-text {
+	0% {
+		opacity: 0;
+	}
+	50% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+@keyframes hide-text {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes show-sidebar {
+	0% {
+		width: 5rem;
+	}
+	100% {
+		width: 16rem;
+	}
+}
+
+@keyframes show-sidebar {
+	0% {
+		width: 6rem;
+	}
+	100% {
+		width: 20rem;
+	}
+}
+
+@keyframes hide-sidebar {
+	0% {
+		width: 16rem;
+	}
+	50% {
+		width: 16rem;
+	}
+	100% {
+		width: 5rem;
+	}
+}
+
+@keyframes hide-mobile-navbar {
+	0% {
+		transform: translateY(0);
+	}
+	100% {
+		transform: translateY(-10rem)
+	}
+}
+
+@keyframes show-mobile-navbar {
+	0% {
+		transform: translateY(-10rem);
+	}
+	100% {
+		transform: translateY(0);
+	}
+}
+
+.show-text {
+	animation: show-text 400ms ease-in-out;
+}
+.hide-text {
+	animation: hide-text 200ms ease-in-out;
+}
+.show-sidebar {
+	animation: show-sidebar 200ms ease-in-out;
+}
+.hide-sidebar {
+	animation: hide-sidebar 400ms ease-in-out;
+}
+.show-navbar {
+	animation: show-mobile-navbar 1000ms ease-in-out;
+}
+.hide-navbar {
+	animation: hide-mobile-navbar 1000ms ease-in-out;
+}

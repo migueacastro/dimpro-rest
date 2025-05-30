@@ -1,0 +1,116 @@
+services:
+  db:
+    image: postgres:17
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgres/data/
+      - ./postgres/backups:/backups/
+    restart: always
+    environment:
+      - DB=db
+    env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    post_start:
+      - command: > 
+          bash -c "
+            until pg_isready -U postgres; do
+              echo 'Waiting for PostgreSQL to be ready...';
+              sleep 1;
+            done;
+            if [ -f /backups/backup.dump ]; then
+              echo 'Backup file exists. Starting restore with --clean option...';
+              export PGPASSWORD=${POSTGRES_PASSWORD};
+              pg_restore --clean --if-exists -U postgres -h db -d postgres -v /backups/backup.dump;
+            else
+              echo 'Backup file does not exist. Skipping restore.';
+            fi
+          "
+    pre_stop:
+      - command: > 
+          bash -c "
+            echo 'Starting backup';
+            export PGPASSWORD=${POSTGRES_PASSWORD};
+            pg_dump -U postgres -h db -d postgres -Fc -f /backups/backup.dump
+          "
+  api:
+    build: ./backend
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend:/backend
+      - ./backend/static_root:/usr/src/app/static_root
+      - ./backend/media:/usr/src/app/media
+    command: >
+      sh -c  "python manage.py makemigrations && 
+              python manage.py migrate && 
+              python manage.py collectstatic --noinput && 
+              python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api"]  # Replace with a valid health check endpoint
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  django-q:
+    build: ./backend
+    volumes:
+      - ./backend:/backend
+    command: python manage.py qcluster
+    depends_on:
+      api:
+        condition: service_healthy
+    env_file: .env
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/frontend
+    command: sh -c "npm run dev"
+    ports:
+      - 3000:3000
+    env_file: .env
+    environment:
+      - VITE_ORIGIN=https://${DOMAIN}
+  nginx:
+    image: nginx:1.13
+    restart: on-failure
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx-conf/nginx-dev.conf:/etc/nginx/templates/nginx-dev.conf.template
+      - ./nginx-conf/nginx-http.conf:/etc/nginx/templates/nginx-http.conf.template
+      - ./nginx-conf/nginx-https.conf:/etc/nginx/templates/nginx-https.conf.template
+      - ./nginx-conf/startnginx.sh:/startnginx.sh
+      - ./backend/static_root:/usr/src/app/static_root
+      - ./backend/media:/usr/src/app/media
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      api:
+        condition: service_healthy
+    command: >
+      /bin/bash -c "
+      chmod +x /startnginx.sh &&
+      /startnginx.sh
+      "
+    env_file: .env
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email ${EMAIL} -d ${DOMAIN} --agree-tos
+    env_file:
+      - .env
+    depends_on:
+      - nginx
+volumes:
+  postgres_data:
