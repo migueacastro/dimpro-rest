@@ -123,7 +123,7 @@
 				{/if}
 				<li>
 					<a
-						href="salir"
+						href="/logout"
 						on:click|preventDefault={() => {
 							hideDrawer();
 							goto('/logout');
@@ -308,7 +308,7 @@
 			</a>
 		{/if}
 
-		<a href="salir" on:click|preventDefault={() => goto('/logout')}>
+		<a href="/logout" on:click|preventDefault={() => goto('/logout')}>
 			<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 				<i class="py-5 fa-solid fa-arrow-right-from-bracket h3 w-20"></i>
 				<p
