@@ -5,7 +5,7 @@ import { redirect } from '@sveltejs/kit';
 export async function load({ locals, fetch, params }) {
 	let response = await fetch(apiURL + 'users/' + params.id);
 
-	if (!checkPermission(locals.user, 'change_user')) {
+	if (!checkPermission(locals.user, 'view_user')) {
 		return permissionError();
 	}
 	let reqUser = await response.json();
