@@ -1,4 +1,4 @@
-#!/home/joel/Desktop/dimpro-rest/backend/.env/bin/python3.12
+#!/Users/joel/Desktop/dimpro-rest-main/backend/.env/bin/python3.13
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -67,7 +67,7 @@
 	function confirmation() {
 		const modal: ModalSettings = {
 			type: 'confirm',
-			title: `¿Está seguro de querer modificar este Pedido?`,
+			title: `¿Está seguro de querer modificar estos permisos?`,
 			body: `Puede alterar el funcionamiento de la aplicación.`,
 			response: async (r: boolean) => {
 				if (r) {
