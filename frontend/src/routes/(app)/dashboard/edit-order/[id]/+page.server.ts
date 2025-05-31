@@ -44,9 +44,8 @@ export async function load({ params, fetch, locals }: any) {
       };
       return row;
     }) : [];
-
   let selectedPricetypeId = order?.pricetype?.id ?? pricetypes[0]?.id;
-  let selectedContactId = order?.contact?.id ?? contacts[0]?.id;
+  let selectedContactId = order?.contact;
   let productAutoCompleteList = products.map((product: any) => {
     return { label: product.item, value: product.id };
   });
@@ -91,7 +90,6 @@ export const actions: Actions = {
     let items: Array<any> = JSON.parse(formData.get('items') as string);
 
     await disableInitialItems(order, fetch);
-
     let response;
     for (const row of items) {
       response = await fetch(apiURL + 'order_products/', {
