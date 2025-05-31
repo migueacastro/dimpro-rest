@@ -25,7 +25,6 @@
 	let contactList: AutocompleteOption<number, string>[] = data.contactList ?? [];
 	async function handleSubmit() {
 		return ({update, result}: any) => {
-			console.log(result);
 			if (result.type == 'success') {
 				toastStore.trigger(successSettings);
 				goto('/dashboard/edit-order/'+result.data.data.id);
@@ -44,6 +43,7 @@
 			class="input autocomplete my-2"
 			type="search"
 			name="autocomplete-search"
+			autocomplete="off"
 			bind:value={inputContact}
 			placeholder="Search..."
 			use:popup={popupSettings}
@@ -67,7 +67,7 @@
 		</p>
 
 		<div class="flex flex-row justify-end">
-			<input type="hidden" name="contact" value={selectedContactId}/>
+			<input type="hidden" name="contact" bind:value={selectedContactId}/>
 			<button
 				type="submit"
 				class="btn variant-filled max-w-fit my-[2rem] px-[2rem]"

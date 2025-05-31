@@ -340,6 +340,8 @@
 		loadItems(order);
 		loaded = true;
 	});
+
+$: console.log(selectedContactId)
 </script>
 
 <title>Editar Pedidos</title>

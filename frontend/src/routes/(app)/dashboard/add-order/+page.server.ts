@@ -21,7 +21,7 @@ export async function load({ fetch, locals}: any) {
 export const actions: Actions = {
   create: async ({ request, locals, fetch }) => {
     const formData = await request.formData();
-    const contact = formData.get('contact');
+    const contact: any = parseInt(formData.get('contact') as string);
     const user = locals?.user?.id;
     const response = await fetch(apiURL + 'orders' + '/', {
       method: 'POST',
@@ -32,7 +32,6 @@ export const actions: Actions = {
       })
     });
     const data = await response.json();
-    console.log(data);
     if (response.ok) {
       return {
         success: true,
