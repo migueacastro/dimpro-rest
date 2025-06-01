@@ -1,5 +1,6 @@
 from auditlog.models import LogEntry
 from django.contrib.admin.options import get_content_type_for_model
+from dimpro.pagination import LogsResultsSetPagination, StardardResultsSetPagination
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
@@ -398,6 +399,7 @@ class NoteViewSet(NoteViewSet):  # because date cannot be updated
 
 class LogViewSet(SafeViewSet):
     serializer_class = LogSerializer
+    pagination_class = LogsResultsSetPagination
     permission_classes = (IsAuthenticated, GroupPermission)
     queryset = LogEntry.objects.all().order_by("-timestamp")
 
