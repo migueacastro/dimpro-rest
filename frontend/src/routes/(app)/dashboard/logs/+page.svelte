@@ -8,7 +8,7 @@
 	handler={data.handler}
 	editable={false}
 	endpoint={{main:'logs'}}
-	filter_headings={['actor_id', 'actor__name', 'actor__email', 'changes_text', 'content_type__model', 'remote_addr', 'timestamp']}
+	filter_headings={['actor_id', 'actor__name', 'actor__email', 'changes_text', 'content_type__model', 'remote_addr', 'timestamp__date']}
 	order_headings={['actor_id', 'actor__name', 'actor__email', 'changes_text', 'content_type__model', 'remote_addr', 'timestamp']}
 	fields={['actor','actor_name','actor_email', 'changes_text','content_type_name','remote_addr', 'timestamp']}
 	headings={['ID Autor', 'Nombre de Autor', 'Email de Autor', 'Acción','Cambios','Dirección IP', 'Tiempo de modificación']}

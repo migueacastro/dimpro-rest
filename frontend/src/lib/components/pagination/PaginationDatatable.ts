@@ -76,9 +76,9 @@ export class CustomDataHandler {
     this.ordering = url.searchParams.get('ordering') ?? "";
 		this.pages = {
       sizes: [5,10,20,50,100],
-			current: url.searchParams.get('page') ?? '10'
+			current: url.searchParams.get('page') ?? '1'
 		};
-    this.pages.size = Number(url.searchParams.get('page_size')) || this.pages.sizes[0];
+    this.pages.size = Number(url.searchParams.get('page_size')) || this.pages.sizes[1];
 		this.rowCount = {
 			start: (parseInt(this.pages.current) - 1) * parseInt(this.pages.size) + 1,
 			total: query.count

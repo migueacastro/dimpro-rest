@@ -19,10 +19,19 @@ class LogEntryFilter(django_filters.FilterSet):
     content_type_model = django_filters.CharFilter(field_name='content_type__model', lookup_expr='icontains')
     changes_text = django_filters.CharFilter(field_name='changes_text', lookup_expr='icontains')
     remote_addr = django_filters.CharFilter(field_name='remote_addr', lookup_expr='icontains')
-    timestamp = django_filters.IsoDateTimeFromToRangeFilter(field_name='timestamp')
-    
-    # Custom filter for action name
+    timestamp = django_filters.IsoDateTimeFromToRangeFilter(field_name='timestamp', lookup_expr='date')
+    not_system = django_filters.BooleanFilter(method='filter_not_system')
     action_name = django_filters.CharFilter(method='filter_action_name')
+    # ...otros filtros...
+
+    def filter_not_system(self, queryset, name, value):
+        # Si value es True, excluye los registros del sistema (por ejemplo, actor es None)
+        if value:
+            return queryset.exclude(actor__isnull=True)
+        # Si value es False o no está presente, no filtra nada
+        return queryset
+    # Custom filter for action name
+    
 
     def filter_action_name(self, queryset, name, value):
         # Debug: print input value
@@ -50,5 +59,5 @@ class LogEntryFilter(django_filters.FilterSet):
             'content_type__model': ['icontains'],
             'changes_text': ['icontains'],
             'remote_addr': ['icontains'],
-            'timestamp': ['gte', 'lte'],
+            'timestamp': ['date'],
         }
