@@ -36,16 +36,16 @@
 	export let order_headings: any = [];
 	// List to use inside each heading so that it can access the Title and the field name to access the object attribute
 	let combinedHeadingsList = headings.map((heading: any, index: any) => {
-		let newObject: any = { heading: heading, field: fields[index]};
+		let newObject: any = { heading: heading, field: fields[index] };
 		if (headings.length > 0) {
-			newObject.filter = filter_headings[index]; 
+			newObject.filter = filter_headings[index];
 			newObject.order = order_headings[index];
 		}
 		return newObject;
 	});
 
 	export let handler: any;
-	
+
 	let searchTerm = handler.search || '';
 	$: handler.search = searchTerm;
 	loading = false;
@@ -57,6 +57,7 @@
 		const currentPage = get(page);
 		const params = new URLSearchParams(currentPage.url.search);
 		params.set(parameter, newPage.toString());
+		params.set("page", 1);
 		// The pathname is important to preserve the current location (for example, '/dashboard/logs')
 		return currentPage.url.pathname + '?' + params.toString();
 	}
@@ -179,15 +180,17 @@
 
 			<tr>
 				{#each combinedHeadingsList as item}
-					{#if item !== ""}
-					<th>
-						<input
-							class="input text-sm w-full capitalize"
-							type="text"
-							placeholder={'Filtrar ' + item?.heading}
-							on:input={() => goto(buildQuery(item.filter, event.target.value), {keepFocus: true})}
-						/>
-					</th>
+					{#if item !== ''}
+						<th>
+							<input
+								class="input text-sm w-full capitalize"
+								type={item.field === 'timestamp' ? 'date' : 'text'}
+								placeholder={'Filtrar ' + item?.heading}
+								on:input={() => {
+									goto(buildQuery(item.filter, event.target.value), { keepFocus: true });
+								}}
+							/>
+						</th>
 					{/if}
 				{/each}
 				{#if editable}

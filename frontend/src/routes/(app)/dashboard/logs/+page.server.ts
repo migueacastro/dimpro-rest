@@ -11,6 +11,12 @@ export async function load({ locals, fetch, url }) {
 	console.log(qs);
 	let response = await fetch(apiURL + 'logs' + qs);
 	let query: any = await response.json();
+    query.results = query.results.map((result:any) => {
+        if (!result.actor) {
+            result.actor_name = "Sistema";
+        }
+        return {...result, timestamp: formatDateTime(result.timestamp as string)}
+    })
 
 	/*
     const date: any = url.searchParams.get('date');
