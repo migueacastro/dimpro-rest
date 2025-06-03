@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { FormErrors } from '$lib/FormErrors';
+	import { FormErrors, getPassword, getConfirmPassword } from '$lib/FormErrors';
 	import {
 		getToastStore,
 		getModalStore,
@@ -55,7 +55,7 @@
 	let confirmPassword = '';
 	let phoneNumber = '';
 	let validatedFields: Boolean = false;
-	let passwordError: any = null;
+	let passwordError: any = true;
 	let repPasswordError: any = null;
 	let hasErrors: boolean = false;
 	function validateFields() {
@@ -63,7 +63,7 @@
 		valid =
 			error.validateEmail(email) &&
 			error.validatePhoneNumber(phoneNumber) &&
-			error.validatePasswords(password, confirmPassword);
+			error.validateText(name);
 		validatedFields = valid;
 		return valid;
 	}
@@ -76,6 +76,7 @@
 		hasErrors = false;
 		return '';
 	}
+
 	function isEditable() {
 		if (edit) {
 			action = 'edit';
@@ -135,7 +136,7 @@
 					goto(`/dashboard/${endpoint}`);
 				}
 			} else {
-				console.log(result.data)
+				console.log(result.data);
 				const toast: ToastSettings = {
 					message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
 							mensaje: ${result.data.error}`,
@@ -173,41 +174,16 @@
 		icon.classList.toggle('fa-eye');
 		icon.classList.toggle('fa-eye-slash');
 	}
-	function validateRepPassword(event: Event) {
-		let target = event.target as HTMLElement;
-		const input = target.closest('input');
-		let password = (input as HTMLInputElement).value;
-		const originalPassword = (document.getElementsByName('password') as HTMLFormElement)[0].value;
-		if (password.length > 0) {
-			if (password.length <= 5) {
-				repPasswordError = error.shortPass;
-			} else if (!error.hasNumbers(password)) {
-				repPasswordError = error.NotNumbers;
-			} else if (!error.hasUpperCase(password)) {
-				repPasswordError = error.NotUpperCase;
-			} else if (password !== originalPassword) {
-				repPasswordError = error.NotMatchingPass;
-			} else {
-				repPasswordError = null;
-			}
-		} else {
-			repPasswordError = null;
-		}
-	}
-	function validatePassword(event: Event) {
-		let target = event.target as HTMLElement;
-		const input = target.closest('input');
-		let password = (input as HTMLInputElement).value;
-		if (password.length > 0) {
-			if (password.length <= 5) {
-				passwordError = error.shortPass;
-			} else if (!error.hasNumbers(password)) {
-				passwordError = error.NotNumbers;
-			} else if (!error.hasUpperCase(password)) {
-				passwordError = error.NotUpperCase;
-			} else {
-				passwordError = null;
-			}
+	function validatePassword() {
+		let password = getPassword(fields)?.value;
+		if (password.length < 8) {
+			passwordError = true;
+		} else if (!error.hasNumbers(password)) {
+			passwordError = true;
+		} else if (!error.hasUpperCase(password)) {
+			passwordError = true;
+		} else if (!(password === getConfirmPassword(fields)?.value)) {
+			passwordError = true;
 		} else {
 			passwordError = null;
 		}
@@ -255,6 +231,11 @@
 							{:else}
 								{deactivatedErrors()}
 							{/if}
+						{:else}
+							{activatedErrors()}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								Este campo no puede estar vacío.
+							</div>
 						{/if}
 						{#if errors?.phoneNumber?.length > 0}
 							<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -281,6 +262,11 @@
 							{:else}
 								{deactivatedErrors()}
 							{/if}
+						{:else}
+							{activatedErrors()}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								Este campo no puede estar vacío.
+							</div>
 						{/if}
 					{/if}
 				{:else if field?.type === 'email'}
@@ -303,6 +289,11 @@
 						{:else}
 							{deactivatedErrors()}
 						{/if}
+					{:else}
+						{activatedErrors()}
+						<div class="card variant-ghost-error p-2 text-sm text-left">
+							Este campo no puede estar vacío.
+						</div>
 					{/if}
 
 					{#if errors?.field?.value.length > 0}
@@ -320,29 +311,43 @@
 							class="input"
 							type="password"
 							bind:value={field.value}
-							name={field.name}
-							on:input={field.name === 'password' ? validatePassword : validateRepPassword}
+							name={field?.name}
+							on:input={validatePassword}
 						/>
 						<button type="button" on:click={togglePassword}
 							><i class="fa-regular fa-eye-slash"></i></button
 						>
 					</div>
-					{#if passwordError && field.name === 'password'}
-						{activatedErrors()}
-						<div class="card variant-ghost-error p-2 text-sm text-left">
+
+					{#if field?.name === 'password'}
+						<div
+							class="mt-3 card p-4 text-left text-sm"
+							class:variant-ghost-success={!passwordError}
+							class:variant-ghost-error={passwordError}
+						>
 							<ul>
-								<li>{passwordError}</li>
+								<li>
+									Tiene 8 caractéres o más {#if field?.value?.toString()?.length >= 8}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
+								<li>
+									Tiene números {#if error?.hasNumbers(field?.value?.toString())}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
+								<li>
+									Tiene mayúsculas {#if error?.hasUpperCase(field?.value?.toString())}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
+								<li>
+									Las contraseñas coinciden {#if field?.value === getConfirmPassword(fields)?.value && field?.value?.toString().length > 0}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
 							</ul>
 						</div>
-					{:else if repPasswordError && field.name === 'confirmPassword'}
-						{activatedErrors()}
-						<div class="card variant-ghost-error p-2 text-sm text-left">
-							<ul>
-								<li>{repPasswordError}</li>
-							</ul>
-						</div>
-					{:else}
-						{deactivatedErrors() && ''}
 					{/if}
 				{:else if field?.type === 'decimal'}
 					<input
@@ -415,12 +420,14 @@
 		{#if !edit}
 			<button
 				type="button"
+				disabled={passwordError || hasErrors}
 				class="btn variant-filled h-fit w-fit mx-auto btn-xl"
 				on:click={handleForm}>Guardar</button
 			>
 		{:else}
 			<button
 				type="button"
+				disabled={passwordError || hasErrors}
 				class="btn variant-filled h-fit w-fit mx-auto btn-xl"
 				on:click={(e) => {
 					updateConfirmation(e);
