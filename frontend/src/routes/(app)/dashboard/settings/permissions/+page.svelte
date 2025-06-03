@@ -141,7 +141,7 @@
 										bind:checked={permissionChecked[permission.id]}
 									/>
 									<p class="text-sm capitalize">
-										{permission.name}
+										{permission.translated_name}
 									</p>
 								</div>
 							{/each}

@@ -113,6 +113,7 @@ PERMISSION_TRANSLATIONS = {
     "delete": "eliminar",
     "view": "ver",
     "user": "usuario",
+    "User": "Usuario",
     "its": "su",
     "own": "propio",
     "export": "exportar",
@@ -139,7 +140,7 @@ PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
     "pricetype tax": "impuesto de tipo de precio",
     "update database": "actualizar base de datos",
     "receivable": "cuenta por cobrar",
-    "staff user": "usuario staff",
+    "staff user": "empleado",
     "advanced homepage": "página de inicio avanzada",
 }
 PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
@@ -187,9 +188,9 @@ def translate_permission_name(name):
             name = name.replace(key, value)
             break
     parts = name.split(" ")
-    for i, part in enumerate(parts):
+    for i,part in enumerate(parts):
         if part in PERMISSION_TRANSLATIONS:
-            parts[i] = PERMISSION_TRANSLATIONS[part]
+            parts[i] = PERMISSION_TRANSLATIONS[part] 
     name = " ".join(parts).replace("_", "")
 
     return name
