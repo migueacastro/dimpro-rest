@@ -57,7 +57,7 @@
 		const currentPage = get(page);
 		const params = new URLSearchParams(currentPage.url.search);
 		params.set(parameter, newPage.toString());
-		params.set("page", 1);
+		params.set('page', newPage.toString());
 		// The pathname is important to preserve the current location (for example, '/dashboard/logs')
 		return currentPage.url.pathname + '?' + params.toString();
 	}
@@ -290,7 +290,7 @@
 			class="btn-group variant-ghost-surface [&>*+*]:border-surface-500 h-10 hidden lg:flex flex-row"
 		>
 			<button
-				on:click={goto(buildQuery('page', parseInt(handler.pages.current) - 1))}
+				on:click={() => goto(buildQuery('page', parseInt(handler.pages.current) - 1))}
 				type="button"
 				class="hover:variant-soft-primary"
 				disabled={handler.pages.current == 1}
@@ -300,8 +300,7 @@
 
 			{#each handler.pages.list as page}
 				<button
-					on:click={goto(buildQuery('page', page))}
-					type="submit"
+					on:click={() => goto(buildQuery('page', page))}
 					class="hover:variant-soft-primary"
 					class:variant-soft-secondary={handler.pages.current == page}
 					class:ellipse={page == null}
@@ -310,7 +309,7 @@
 				</button>
 			{/each}
 			<button
-				on:click={goto(buildQuery('page', parseInt(handler.pages.current) + 1))}
+				on:click={() => goto(buildQuery('page', parseInt(handler.pages.current) + 1))}
 				type="button"
 				class="hover:variant-soft-primary"
 				disabled={handler.pages.current == handler.pages.count}
@@ -320,23 +319,33 @@
 		</section>
 
 		<!-- Mobile buttons -->
-		<section class="lg:hidden">
+		<section class="lg:hidden overflow-x-scroll w-full">
 			<button
+				on:click={() => goto(buildQuery('page', parseInt(handler.pages.current) - 1))}
 				type="button"
 				class="btn variant-ghost-surface mr-2 mb-2 hover:variant-soft-primary"
 				disabled={handler.pages.current == 1}
 			>
 				←
-			</button>
-			<form action="" method="get">
+				{#each handler.pages.list as page}
+					<button
+						on:click={() => goto(buildQuery('page', page))}
+						class="hover:variant-soft-primary px-2"
+						class:variant-soft-secondary={handler.pages.current == page}
+						class:ellipse={page == null}
+					>
+						{page ?? '...'}
+					</button>
+				{/each}
 				<button
+					on:click={() => goto(buildQuery('page', parseInt(handler.pages.current) + 1))}
 					type="button"
-					class="btn variant-ghost-surface mb-2 hover:variant-soft-primary"
+					class="hover:variant-soft-primary"
 					disabled={handler.pages.current == handler.pages.count}
 				>
 					→
 				</button>
-			</form>
+			</button>
 		</section>
 	</footer>
 </div>
