@@ -14,3 +14,14 @@ export function getCurrentDateTime(): string {
     const offsetSign = timezoneOffset > 0 ? '-' : '+';
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
 }
+export function formatDateTime(timestamp: string): string {
+  const date = new Date(timestamp);
+  // Return only the date portion (adjust format as needed)
+  return date.toLocaleDateString('es', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}

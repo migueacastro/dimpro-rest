@@ -1,11 +1,24 @@
-import { apiURL } from "$lib/api_url";
-import { checkPermission, permissionError } from "$lib/auth.js";
-
+import { apiURL } from '$lib/api_url';
+import { checkPermission, permissionError } from '$lib/auth.js';
+import { CustomDataHandler } from '$lib/components/pagination/PaginationDatatable.js';
+import { formatDateTime, getCurrentDateTime } from '$lib/datetime.js';
 
 export async function load({ locals, fetch, url }) {
-    if (!checkPermission(locals.user, "view_logentry")) {
-        return permissionError();
-    }
+	if (!checkPermission(locals.user, 'view_logentry')) {
+		return permissionError();
+	}
+	const qs = url.searchParams.toString() ? `?${url.searchParams.toString()}` : '';
+	console.log(qs);
+	let response = await fetch(apiURL + 'logs' + qs);
+	let query: any = await response.json();
+    query.results = query.results.map((result:any) => {
+        if (!result.actor) {
+            result.actor_name = "Sistema";
+        }
+        return {...result, timestamp: formatDateTime(result.timestamp as string)}
+    })
+
+	/*
     const date: any = url.searchParams.get('date');
     const action: any = url.searchParams.get('action');
     const systemParse: any = url.searchParams.get('systemLogs');
@@ -13,6 +26,7 @@ export async function load({ locals, fetch, url }) {
     const systemLogs: boolean = JSON.parse(systemParse);
     let response = await fetch(apiURL + "logs");
     let logs = await response.json();
+    logs = logs.results;
     logs.forEach((e: any) => {
         switch (e.action) {
             case 0:
@@ -58,4 +72,10 @@ export async function load({ locals, fetch, url }) {
         user: locals.user,
         logs
     };
+    */
+   return {
+    handler: new CustomDataHandler({url, query}).serialize(),
+   }
 }
+
+
