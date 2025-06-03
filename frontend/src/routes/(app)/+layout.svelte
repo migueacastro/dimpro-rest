@@ -224,6 +224,7 @@
 						class:opacity-0={!expandedSideBar}
 						class:show-text={expandedSideBar}
 						class:hide-text={!expandedSideBar}
+    				style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 					>
 						Crear Pedido
 					</p>
@@ -239,6 +240,7 @@
 						class:opacity-0={!expandedSideBar}
 						class:show-text={expandedSideBar}
 						class:hide-text={!expandedSideBar}
+						style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 					>
 						Pedidos
 					</p>
@@ -254,6 +256,7 @@
 						class:opacity-0={!expandedSideBar}
 						class:show-text={expandedSideBar}
 						class:hide-text={!expandedSideBar}
+						style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 					>
 						Inventario
 					</p>
@@ -270,6 +273,7 @@
 						class:opacity-0={!expandedSideBar}
 						class:show-text={expandedSideBar}
 						class:hide-text={!expandedSideBar}
+						style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 					>
 						Vendedores
 					</p>
@@ -286,6 +290,7 @@
 						class:opacity-0={!expandedSideBar}
 						class:show-text={expandedSideBar}
 						class:hide-text={!expandedSideBar}
+						style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 					>
 						Empleados
 					</p>
@@ -301,6 +306,7 @@
 						class:opacity-0={!expandedSideBar}
 						class:show-text={expandedSideBar}
 						class:hide-text={!expandedSideBar}
+						style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 					>
 						Configuración
 					</p>
@@ -316,6 +322,7 @@
 					class:opacity-0={!expandedSideBar}
 					class:show-text={expandedSideBar}
 					class:hide-text={!expandedSideBar}
+					style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 				>
 					Cerrar Sesión
 				</p>

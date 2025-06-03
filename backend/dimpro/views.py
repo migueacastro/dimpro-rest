@@ -6,6 +6,9 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from backend.settings import BASE_DIR, FRONTEND_URL
 import os
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters
+
 from rest_framework.permissions import (
     AllowAny,
     IsAdminUser,
@@ -38,6 +41,8 @@ import datetime
 from django_q.tasks import async_task
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import *
+from django_filters.rest_framework.backends import DjangoFilterBackend
+from dimpro.pagination import LogEntryFilter
 
 # Create your views here.
 
@@ -402,6 +407,17 @@ class LogViewSet(SafeViewSet):
     pagination_class = LogsResultsSetPagination
     permission_classes = (IsAuthenticated, GroupPermission)
     queryset = LogEntry.objects.all().order_by("-timestamp")
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
+    filterset_class = LogEntryFilter
+    search_fields = [
+        "actor__name", "actor__email",
+        "content_type__model", "changes_text", "timestamp", "remote_addr",
+    ]
+    ordering_fields = ["actor_id","actor", "actor__name","actor__email", "content_type__model", "changes_text", "timestamp", "remote_addr"]
 
 
 class ExportOrderPDFView(APIView):

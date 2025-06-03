@@ -11,7 +11,7 @@
 	const search = () => {
         loaded = false;
 		goto(
-			`/dashboard/logs?date=${date}&action=${action}&systemLogs=${systemLogs}&user=${selectedUser}`
+			`/dashboard/logs?timestamp__date=${date}&action_name=${action}&not_system=${systemLogs}&actor_id=${selectedUser}`
 		);
 	};
 </script>

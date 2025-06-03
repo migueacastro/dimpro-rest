@@ -354,6 +354,7 @@ class LogSerializer(serializers.ModelSerializer):
     actor_name = serializers.SerializerMethodField(read_only=True)
     actor_email = serializers.SerializerMethodField(read_only=True)
     content_type_name = serializers.SerializerMethodField(read_only=True)
+    action_name = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = LogEntry
         fields = "__all__"
@@ -370,6 +371,16 @@ class LogSerializer(serializers.ModelSerializer):
         if obj.actor:
             return User.objects.get(id=obj.actor.id).email
         return None
+    def get_action_name(self,obj):
+        match obj.action:
+            case 0:
+                return "creación"
+            case 1:
+                return "actualización"
+            case 2:
+                return "eliminación"
+            case _:
+                return "desconocido"
 
 
 class AlegraAPITokenSerializer(serializers.ModelSerializer):
