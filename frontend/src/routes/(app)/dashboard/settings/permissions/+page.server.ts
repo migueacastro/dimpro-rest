@@ -28,6 +28,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 		if (!acc[modelName]) {
 			acc[modelName] = [];
 		}
+		console.log(permission.translated_name)
 		acc[modelName].push({
 			id: permission.id,
 			name: permission.translated_name,

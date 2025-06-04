@@ -57,7 +57,6 @@
 		const currentPage = get(page);
 		const params = new URLSearchParams(currentPage.url.search);
 		params.set(parameter, newPage.toString());
-		params.set('page', newPage.toString());
 		// The pathname is important to preserve the current location (for example, '/dashboard/logs')
 		return currentPage.url.pathname + '?' + params.toString();
 	}

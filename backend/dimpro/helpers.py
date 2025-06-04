@@ -122,7 +122,7 @@ PERMISSION_TRANSLATIONS = {
     "order": "pedido",
     "product": "producto",
     "contact": "contacto",
-    "note": "nota",
+    "note": "recordatorio",
     "price": "precio",
     "image": "imagen",
     "session": "sesión",
@@ -131,10 +131,12 @@ PERMISSION_TRANSLATIONS = {
 
 PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
     "log entry": "entrada de registro",
-    "alegra user": "usuario de alegra",
+    "alegra user": "token de alegra",
     "exchange currency": "moneda de cambio",
     "exchange rate": "tasa de cambio",
+    "order status": "status de pedido",
     "order product": "producto de pedido",
+    "order_ product": "producto de pedido",
     "password reset token": "token de restablecimiento de contraseña",
     "price type": "tipo de precio",
     "pricetype tax": "impuesto de tipo de precio",
@@ -149,14 +151,15 @@ PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "order": "pedido",
     "product": "producto",
     "contact": "contacto",
-    "note": "nota",
+    "note": "recordatorio",
     "price": "precio",
     "image": "imagen",
     "session": "sesión",
     "settings": "configuración",
-    "alegrauser": "usuario de alegra",
+    "alegrauser": "token de alegra",
     "permission": "permiso",
     "logentry": "entrada de registro",
+    "order_ product": "producto de pedido",
     "order_product": "producto de pedido",
     "price_type": "tipo de precio",
     "precio tipo": "tipo de precio",
@@ -183,6 +186,7 @@ def translate_permission_content_type(codename):
 
 
 def translate_permission_name(name):
+    name= str(name).lower()
     for key, value in PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS.items():
         if key in name:
             name = name.replace(key, value)
