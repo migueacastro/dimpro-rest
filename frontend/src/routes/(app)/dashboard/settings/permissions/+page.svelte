@@ -107,9 +107,9 @@
 
 {#if loaded}
 	<div class=" mx-auto flex flex-col lg:w-1/2 w-full justify-start">
-		<div class="flex flex-row justify-between mb-[2rem]">
+		<div class="flex flex-col lg:flex-row justify-between mb-[2rem]">
 			<h3 class="text-4xl">Cambiar Permisos</h3>
-			<button on:click={confirmation} class="btn variant-filled-primary"
+			<button on:click={confirmation} class="btn w-fit my-2 h-fit variant-filled-primary"
 				><i class="fa-solid fa-floppy-disk mr-5"></i>Guardar</button
 			>
 		</div>
@@ -131,7 +131,7 @@
 				{#each listPermissionNames as name}
 					<div class="card p-3 flex flex-col w-full">
 						<h3 class="text-xl mb-4 capitalize">{name}</h3>
-						<div class="grid grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 							{#each permissionsObject[name] as permission}
 								<div class="flex items-center capitalize flex-row space-x-4">
 									<SlideToggle
@@ -141,7 +141,7 @@
 										bind:checked={permissionChecked[permission.id]}
 									/>
 									<p class="text-sm capitalize">
-										{permission.translated_name}
+										{permission.name}
 									</p>
 								</div>
 							{/each}

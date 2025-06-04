@@ -123,7 +123,7 @@
 				{/if}
 				<li>
 					<a
-						href="/logout"
+						href="#"
 						on:click|preventDefault={() => {
 							hideDrawer();
 							goto('/logout');

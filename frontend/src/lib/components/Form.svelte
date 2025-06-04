@@ -4,7 +4,14 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { FormErrors, getPassword, getConfirmPassword } from '$lib/FormErrors';
+	import {
+		FormErrors,
+		getPassword,
+		getConfirmPassword,
+		getEmail,
+		getPhonenumber,
+		getName
+	} from '$lib/FormErrors';
 	import {
 		getToastStore,
 		getModalStore,
@@ -13,11 +20,16 @@
 		SlideToggle
 	} from '@skeletonlabs/skeleton';
 	import { enhance } from '$app/forms';
+	import Datatable from './Datatable.svelte';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 	export let user = {};
 	export let fields: any = null;
+	let mappedFields: any = fields.map((field: any) => {
+		field.touched = false;
+		return field;
+	});
 	export let endpoint = '';
 	export let edit = false;
 	export let table_name = '';
@@ -25,11 +37,6 @@
 	let ogValue: any = null;
 	let id = page.params.id;
 	let action = '';
-
-	let manyToManyListsDict = {};
-	let inputChipListsDict = {};
-	let valueChipListsDict = {};
-	let inputChipDict = {};
 
 	const error = new FormErrors();
 
@@ -49,34 +56,40 @@
 		phoneNumber: []
 	};
 
-	let email = '';
-	let name = '';
-	let password = '';
-	let confirmPassword = '';
-	let phoneNumber = '';
-	let validatedFields: Boolean = false;
-	let passwordError: any = true;
-	let repPasswordError: any = null;
-	let hasErrors: boolean = false;
-	function validateFields() {
-		let valid: Boolean = false;
-		valid =
-			error.validateEmail(email) &&
-			error.validatePhoneNumber(phoneNumber) &&
-			error.validateText(name);
-		validatedFields = valid;
-		return valid;
-	}
-	$: console.log('fields', fields);
-	function activatedErrors() {
-		hasErrors = true;
-		return '';
-	}
-	function deactivatedErrors() {
-		hasErrors = false;
-		return '';
+	let passwordError: boolean = true;
+	function validatePassword() {
+		let password = getPassword(mappedFields)?.toString();
+		let confirm = getConfirmPassword(mappedFields)?.toString();
+		let isValid: boolean;
+		if (edit && password.length === 0 && confirm.length === 0) {
+			isValid = true; // allow empty password in edit mode
+		} else {
+			isValid =
+				password.length >= 8 &&
+				error.hasNumbers(password) &&
+				error.hasUpperCase(password) &&
+				password === confirm;
+		}
+		
+		passwordError = !isValid;
+		return isValid;
 	}
 
+	$: valid =
+		error.validateEmail(getEmail(mappedFields)) &&
+		error.validatePhoneNumber(getPhonenumber(mappedFields)) &&
+		error.validateText(getName(mappedFields)) &&
+		validatePassword();
+	function validateFields() {
+		valid =
+			error.validateEmail(getEmail(mappedFields)) &&
+			error.validatePhoneNumber(getPhonenumber(mappedFields)) &&
+			error.validateText(getName(mappedFields)) &&
+			validatePassword();
+		return valid;
+	}
+
+	let showPasswordChecks: boolean = false;
 	function isEditable() {
 		if (edit) {
 			action = 'edit';
@@ -93,7 +106,7 @@
 	}
 
 	function updateConfirmation(event: any) {
-		if (hasErrors) {
+		if (!valid) {
 			const toast: ToastSettings = {
 				message: 'No es posible proceder si hay errores.',
 				background: 'variant-ghost-error',
@@ -148,7 +161,7 @@
 		};
 	}
 	function handleForm(event: Event) {
-		if (hasErrors) {
+		if (!valid) {
 			const toast: ToastSettings = {
 				message: 'No es posible proceder si hay errores.',
 				background: 'variant-ghost-error',
@@ -174,23 +187,8 @@
 		icon.classList.toggle('fa-eye');
 		icon.classList.toggle('fa-eye-slash');
 	}
-	function validatePassword() {
-		let password = getPassword(fields)?.value;
-		if (password.length < 8) {
-			passwordError = true;
-		} else if (!error.hasNumbers(password)) {
-			passwordError = true;
-		} else if (!error.hasUpperCase(password)) {
-			passwordError = true;
-		} else if (!(password === getConfirmPassword(fields)?.value)) {
-			passwordError = true;
-		} else {
-			passwordError = null;
-		}
-	}
-	onMount(() => {
-		isEditable();
-	});
+	$: console.log(valid);
+	$: isEditable();
 </script>
 
 <form
@@ -204,7 +202,7 @@
 			<input class="input" type="hidden" bind:value={id} name="id" />
 		{/if}
 		<input class="input" type="hidden" bind:value={endpoint} name="endpoint" />
-		{#each fields as field}
+		{#each mappedFields as field}
 			<label
 				class="label"
 				for={field?.type == 'object' ? 'file' : field?.name}
@@ -221,21 +219,20 @@
 							placeholder="Número de telefono"
 							bind:value={field.value}
 							on:input={validateFields}
+							on:focus={() => (field.touched = true)}
 						/>
-						{#if field?.value?.length > 0}
-							{#if !error.validatePhoneNumber(field.value)}
-								{activatedErrors()}
-								<div class="card variant-ghost-error p-2 text-sm text-left">
-									{error.NotValidPhone}
-								</div>
+						{#if field.touched}
+							{#if field?.value?.length > 0}
+								{#if !error.validatePhoneNumber(field.value)}
+									<div class="card variant-ghost-error p-2 text-sm text-left">
+										{error.NotValidPhone}
+									</div>
+								{/if}
 							{:else}
-								{deactivatedErrors()}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.empyField}
+								</div>
 							{/if}
-						{:else}
-							{activatedErrors()}
-							<div class="card variant-ghost-error p-2 text-sm text-left">
-								Este campo no puede estar vacío.
-							</div>
 						{/if}
 						{#if errors?.phoneNumber?.length > 0}
 							<div class="card variant-ghost-error p-2 text-sm text-left">
@@ -247,26 +244,30 @@
 							</div>
 						{/if}
 					{:else}
-						<input class="input" type="text" bind:value={field.value} name={field.name} />
-						{#if field.value.length > 0}
-							{#if !error.validateText(field.value)}
-								{activatedErrors()}
-								<div class="card variant-ghost-error p-2 text-sm text-left">
-									{error.hasSpecials}
-								</div>
-							{:else if field.value.length > 70}
-								{activatedErrors()}
-								<div class="card variant-ghost-error p-2 text-sm text-left">
-									{error.tooLong}
-								</div>
+						<input
+							class="input"
+							type="text"
+							bind:value={field.value}
+							name={field.name}
+							on:input={validateFields}
+							on:focus={() => (field.touched = true)}
+						/>
+						{#if field.touched}
+							{#if field.value.length > 0}
+								{#if !error.validateText(field.value)}
+									<div class="card variant-ghost-error p-2 text-sm text-left">
+										{error.hasSpecials}
+									</div>
+								{:else if field.value.length > 70}
+									<div class="card variant-ghost-error p-2 text-sm text-left">
+										{error.tooLong}
+									</div>
+								{/if}
 							{:else}
-								{deactivatedErrors()}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.empyField}
+								</div>
 							{/if}
-						{:else}
-							{activatedErrors()}
-							<div class="card variant-ghost-error p-2 text-sm text-left">
-								Este campo no puede estar vacío.
-							</div>
 						{/if}
 					{/if}
 				{:else if field?.type === 'email'}
@@ -278,24 +279,22 @@
 						bind:value={field.value}
 						name={field.name}
 						on:input={validateFields}
+						on:focus={() => (field.touched = true)}
 					/>
 
-					{#if field?.value?.length > 0}
-						{#if !error.validateEmail(field.value)}
-							{activatedErrors()}
-							<div class="card variant-ghost-error p-2 text-sm text-left">
-								{error.NotValidEmail}
-							</div>
+					{#if field.touched}
+						{#if field?.value?.length > 0}
+							{#if !error.validateEmail(field.value)}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.NotValidEmail}
+								</div>
+							{/if}
 						{:else}
-							{deactivatedErrors()}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								{error.empyField}
+							</div>
 						{/if}
-					{:else}
-						{activatedErrors()}
-						<div class="card variant-ghost-error p-2 text-sm text-left">
-							Este campo no puede estar vacío.
-						</div>
 					{/if}
-
 					{#if errors?.field?.value.length > 0}
 						<div class="card variant-ghost-error p-2 text-sm text-left">
 							<ul>
@@ -312,18 +311,23 @@
 							type="password"
 							bind:value={field.value}
 							name={field?.name}
-							on:input={validatePassword}
+							on:input={() => {
+								validatePassword();
+								validateFields();
+							}}
+							on:focus={() => (showPasswordChecks = true)}
+							on:blur={() => (showPasswordChecks = false)}
 						/>
 						<button type="button" on:click={togglePassword}
 							><i class="fa-regular fa-eye-slash"></i></button
 						>
 					</div>
 
-					{#if field?.name === 'password'}
+					{#if field?.name === 'password' && (showPasswordChecks || !edit)}
 						<div
 							class="mt-3 card p-4 text-left text-sm"
 							class:variant-ghost-success={!passwordError}
-							class:variant-ghost-error={passwordError}
+							class:variant-ghost-error={passwordError || (getPassword(mappedFields).length === 0 && getConfirmPassword(mappedFields).length === 0)}
 						>
 							<ul>
 								<li>
@@ -342,7 +346,7 @@
 										<i class="fa-solid fa-xmark"></i>{/if}
 								</li>
 								<li>
-									Las contraseñas coinciden {#if field?.value === getConfirmPassword(fields)?.value && field?.value?.toString().length > 0}
+									Las contraseñas coinciden {#if field?.value === getConfirmPassword(fields) && field?.value?.toString().length > 0}
 										<i class="fa-solid fa-check"></i>{:else}
 										<i class="fa-solid fa-xmark"></i>{/if}
 								</li>
@@ -420,14 +424,14 @@
 		{#if !edit}
 			<button
 				type="button"
-				disabled={passwordError || hasErrors}
+				disabled={!valid}
 				class="btn variant-filled h-fit w-fit mx-auto btn-xl"
 				on:click={handleForm}>Guardar</button
 			>
 		{:else}
 			<button
 				type="button"
-				disabled={passwordError || hasErrors}
+				disabled={!valid}
 				class="btn variant-filled h-fit w-fit mx-auto btn-xl"
 				on:click={(e) => {
 					updateConfirmation(e);

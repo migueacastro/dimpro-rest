@@ -4,7 +4,7 @@ import { redirect, type Actions } from '@sveltejs/kit';
 
 export async function load({ fetch, locals, params }: any) {
     let response = await fetch(apiURL + `staff/${params.id}`);
-    let data = await response.json();
+    const data = await response.json();
     if (!checkPermission(locals.user, "change_staff_user")) {
         return permissionError();
     }

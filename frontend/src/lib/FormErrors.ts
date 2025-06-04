@@ -24,6 +24,7 @@ export class FormErrors {
 		return textRegex.test(text);
 	}
 	validatePhoneNumber(phone: string): boolean {
+		if (phone.length < 1) return false;
 		const phoneRegex = /^\+?58?\d{11,15}$/;
 		return phoneRegex.test(phone);
 	}
@@ -37,9 +38,20 @@ export class FormErrors {
 	}
 }
 
-export function getPassword(fields: any) {
-	return fields.find((field: any) => field.name === 'password');
+export function getPassword(fields: any): string  {
+	return fields.find((field: any) => field.name === 'password')?.value ?? '';
 }
-export function getConfirmPassword(fields: any) {
-	return fields.find((field: any) => field.name === 'confirmPassword');
+export function getConfirmPassword(fields: any): string  {
+	return fields.find((field: any) => field.name === 'confirmPassword')?.value ?? '';
+}
+
+export function getEmail(fields: any): string  {
+	return fields.find((field: any) => field.name === 'email')?.value ?? '';
+}
+
+export function getPhonenumber(fields: any): string {
+	return fields.find((field: any) => field.name === 'phonenumber')?.value ?? '';
+}
+export function getName(fields: any): string {
+	return fields.find((field: any) => field.name === 'name')?.value ?? '';
 }
