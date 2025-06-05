@@ -39,9 +39,7 @@ export class CustomDataHandler {
 	getPages(current: number, total: number) {
 		let start = current - 4; // try to center current page in array
 		let end = current + 5;
-		if (total === 0) {
-			return null;
-		}
+		if (total < 1) return [];
 		if (start < 1) {
 			start = 1;
 			end = Math.min(10, total);
