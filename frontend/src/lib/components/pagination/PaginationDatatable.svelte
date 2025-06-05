@@ -60,6 +60,18 @@
 		// The pathname is important to preserve the current location (for example, '/dashboard/logs')
 		return currentPage.url.pathname + '?' + params.toString();
 	}
+	function buildQueryWithKeys(paramsToSet: Record<string, string | number>) {
+		const currentPage = get(page);
+		const params = new URLSearchParams(currentPage.url.search);
+		for (const [key, value] of Object.entries(paramsToSet)) {
+			if (value.toString() === '') {
+				params.delete(key);
+				continue;
+			}
+			params.set(key, value.toString());
+		}
+		return currentPage.url.pathname + '?' + params.toString();
+	}
 
 	function deleteResult() {
 		return async ({ update, result }: any) => {
@@ -120,16 +132,20 @@
 			type="search"
 			placeholder="Buscar..."
 			bind:value={searchTerm}
-			on:input={goto('?search=' + searchTerm + '&page_size=' + handler.pages.size + '&page=1', {
-				keepFocus: true
-			})}
+			on:input={() => {
+				goto('?search=' + searchTerm + '&page_size=' + handler.pages.size + '&page=1', {
+					keepFocus: true
+				});
+			}}
 		/>
 		<aside class="flex place-items-center">
 			Mostrar
 			<select
 				class="select ml-2"
 				bind:value={handler.pages.size}
-				on:change={goto(buildQuery('page_size', handler.pages.size))}
+				on:change={(e) => {
+					goto(buildQueryWithKeys({ page_size: handler.pages.size, page: '' }));
+				}}
 			>
 				{#each handler.pages.sizes as option}
 					<option value={option}>
