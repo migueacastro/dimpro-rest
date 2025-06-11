@@ -192,8 +192,10 @@ class StaffOnlyLoginView(APIView):
             )
 
         user_instance = authenticate(email=email, password=password)
+        print(user_instance.groups.all())
         if (not user_instance) or not (
-            user_instance.groups.filter(name="staff").exists()
+            user_instance.groups.filter(name="staff").exists() or
+            user_instance.groups.filter(name="admin").exists()
         ):
             raise AuthenticationFailed(
                 {"password": ["Correo o contraseña incorrectos o invalidos."]}
