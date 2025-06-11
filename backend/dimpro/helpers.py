@@ -211,7 +211,7 @@ def partial_update_user(self, request, *args, **kwargs):
 
     validated_data.pop("confirmPassword", None)
     user_groups = validated_data.pop("groups", None)
-
+    password = validated_data.pop("password", None)
     # Obtén el usuario actual que deseas actualizar
     current_user = self.get_object()
 
@@ -235,8 +235,8 @@ def partial_update_user(self, request, *args, **kwargs):
         current_user.name = validated_data.get("name")
     if "email" in validated_data:
         current_user.email = email
-    if "password" in validated_data:
-        current_user.set_password(validated_data.get("password"))
+    if password:
+        current_user.set_password(password)
     if "phonenumber" in validated_data:
         current_user.phonenumber = validated_data.get("phonenumber")
     if user_groups is not None:
@@ -256,6 +256,7 @@ def create_user(self, request, *args, **kwargs):
     validated_data = serializer.validated_data.copy()
     validated_data.pop("confirmPassword")
     user_groups = validated_data.pop("groups", None)
+    password = validated_data.pop("password", None)
 
     if not email:
         return Response(
@@ -272,6 +273,8 @@ def create_user(self, request, *args, **kwargs):
     user_instance, created = User.objects.update_or_create(
         email=email, active=True, defaults=validated_data
     )
+    if password:
+        user_instance.set_password(password)
     if user_groups is not None:
         user_instance.groups.set(user_groups)
     user_instance.save()
