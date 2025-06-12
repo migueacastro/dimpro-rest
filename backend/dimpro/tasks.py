@@ -2,7 +2,12 @@ from .models import *
 from alegra.client import Client as c
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, connection
+from auditlog.models import LogEntry
+from django.utils import timezone
+from datetime import timedelta
 import base64
+from django.db import OperationalError
+import time
 
 
 EXCLUDED_PRICETYPE_NAMES = ["EPA"]
@@ -15,16 +20,36 @@ def encodeduser():
     encoded_string = encoded_bytes.decode("utf-8")
     return encoded_string
 
+def remove_one_month_logs():
+    one_month_ago = timezone.now() - timedelta(days=30)
+    deleted_count, _ = LogEntry.objects.filter(timestamp__lt=one_month_ago).delete()
+    print("Removed entries from more than a month ago")
 
 def updatedb():
-
     alegra_user = AlegraUser.objects.get(id=1)
     client = c(alegra_user.email, alegra_user.token)
 
-    with transaction.atomic():
-        update_products(client)
-        update_contacts(client)
+    update_products_atomic(client)
+    update_contacts_atomic(client)
 
+def update_products_atomic(client):
+    items = fetch_all_items(client)  # Fetch outside transaction
+    with transaction.atomic():
+        # Only DB operations here
+        deactivate_all_products()
+
+        # Collect product data for each item
+        product_data_list = []
+        for row in items:
+            data = extract_product_data(row)
+            product_data_list.append(data)
+
+        # Bulk update/create products
+        bulk_update_or_create_products(product_data_list)
+
+def update_contacts_atomic(client):
+    with transaction.atomic():
+        update_contacts(client)
 
 def update_products(client):
     items = fetch_all_items(client)
@@ -178,3 +203,15 @@ def update_price_types(price_list):
 def process_contact(row):
     name = row["name"]
     Contact.objects.update_or_create(name=name, defaults={"active": True})
+
+
+def safe_update_products(client, retries=3):
+    for attempt in range(retries):
+        try:
+            update_products_atomic(client)
+            break
+        except OperationalError as e:
+            if 'deadlock' in str(e).lower() and attempt < retries - 1:
+                time.sleep(1)
+                continue
+            raise
