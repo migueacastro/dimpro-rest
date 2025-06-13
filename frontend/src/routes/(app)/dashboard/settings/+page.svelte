@@ -15,13 +15,13 @@
 				toastStore.trigger({
 					message: 'La base de datos ha sido actualizada exitosamente',
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				});
 			} else {
 				toastStore.trigger({
 					message: 'Error al actualizar la base de datos',
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				});
 			}
 			loaded = true;
@@ -32,7 +32,7 @@
 		toastStore.trigger({
 			message: 'Iniciando actualizacion de la base de datos.',
 			background: 'variant-ghost-info',
-			timeout: 7000
+			timeout: 3500
 		});
 		updateDBForm.requestSubmit();
 	}

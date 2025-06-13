@@ -67,7 +67,7 @@
 			let toast: ToastSettings  = {
 					message: 'Token actualizado con exito.',
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				};
 			if (result?.type === 'success') {
 				toastStore.trigger(toast);
@@ -78,7 +78,7 @@
 				toast = {
 					message: `¡ERROR! No se pudo actualizar el Token.`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			}

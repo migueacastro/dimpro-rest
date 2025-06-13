@@ -84,7 +84,7 @@
 			let toast: ToastSettings = {
 				message: 'Permisos actualizados con exito.',
 				background: 'variant-ghost-success',
-				timeout: 7000
+				timeout: 3500
 			};
 			if (result?.type === 'success') {
 				window.location.reload();
@@ -93,7 +93,7 @@
 				toast = {
 					message: `¡ERROR! No se pudo actualizar los permisos.`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			}

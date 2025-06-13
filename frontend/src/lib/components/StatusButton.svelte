@@ -15,14 +15,14 @@
 				const toast: ToastSettings = {
 					message: 'Estatus cambiado con exito.',
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			} else if (result?.type == 'failure') {
 				const toast: ToastSettings = {
 					message: `¡ERROR! El estatus del pedido no se pudo cambiar.`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			}

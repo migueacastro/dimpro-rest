@@ -260,7 +260,7 @@
 				toast = {
 					message: 'El pedido se guardó con exito.',
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				};
 				loaded = true;
 				console.log('Successfully saved');
@@ -270,7 +270,7 @@
 					message: `¡ERROR! El pedido no se pudo guardar.
 							\nmensaje:${result.data}`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			}
@@ -298,7 +298,7 @@
 				toast = {
 					message: 'El pedido se eliminó con exito.',
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				};
 				console.log('Successfully deleted');
 				goto(`/dashboard/orders`);
@@ -308,7 +308,7 @@
 					message: `¡ERROR! El pedido no se pudo eliminar.
 							\nmensaje:${result.data}`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			}

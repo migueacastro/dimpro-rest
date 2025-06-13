@@ -110,7 +110,7 @@
 			const toast: ToastSettings = {
 				message: 'No es posible proceder si hay errores.',
 				background: 'variant-ghost-error',
-				timeout: 7000
+				timeout: 3500
 			};
 			toastStore.trigger(toast);
 		} else {
@@ -137,7 +137,7 @@
 				const toast: ToastSettings = {
 					message: `El ${table_name} se ${action}ó con exito.`,
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 				if (reload) {
@@ -154,7 +154,7 @@
 					message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
 							mensaje: ${result.data.error}`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			}
@@ -165,7 +165,7 @@
 			const toast: ToastSettings = {
 				message: 'No es posible proceder si hay errores.',
 				background: 'variant-ghost-error',
-				timeout: 7000
+				timeout: 3500
 			};
 			toastStore.trigger(toast);
 		} else {

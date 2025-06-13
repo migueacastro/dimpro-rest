@@ -63,7 +63,7 @@
 				const toast: ToastSettings = {
 					message: `El recordatorio se ${result.data.action}ó con exito.`,
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 
@@ -73,7 +73,7 @@
 					message: `¡ERROR! El recordatorio no se pudo ${result.data.action}ar.
 							mensaje:${result.data.error}`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast);
 			}

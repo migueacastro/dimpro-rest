@@ -10,10 +10,12 @@
 	export let data;
 	const toastStore = getToastStore();
 	const successSettings: ToastSettings = {
-		message: 'Pedido creado exitosamente'
+		message: 'Pedido creado exitosamente',
+		timeout: 3500
 	};
 	const errorSettings: ToastSettings = {
-		message: 'Error al crear pedido'
+		message: 'Error al crear pedido',
+		timeout: 3500,
 	};
 	let popupSettings: PopupSettings = {
 		event: 'focus-click',

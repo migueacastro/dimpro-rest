@@ -80,7 +80,7 @@
 				const t: ToastSettings = {
 					message: `El ${table_name} se eliminó con exito.`,
 					background: 'variant-ghost-success',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(t); // and then trigger whatever function you want
 			} else {
@@ -88,7 +88,7 @@
 					message: `¡ERROR! El ${table_name} no se pudo eliminar.
 							\nmensaje:${result.data.error}`,
 					background: 'variant-ghost-error',
-					timeout: 7000
+					timeout: 3500
 				};
 				toastStore.trigger(toast); // just an else, in case there was an error
 			}

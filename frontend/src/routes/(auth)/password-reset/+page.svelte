@@ -12,7 +12,7 @@
 		let toast: ToastSettings = {
 			message: 'Correo enviado exitosamente',
 			background: 'variant-ghost-success',
-			timeout: 7000
+			timeout: 3500
 		};
 		toastStore.trigger(toast);
 	}
@@ -20,7 +20,7 @@
 		let toast: ToastSettings = {
 			message: '¡ERROR! No se pudo enviar el correo.',
 			background: 'variant-ghost-error',
-			timeout: 7000
+			timeout: 3500
 		};
 		toastStore.trigger(toast);
 	}
