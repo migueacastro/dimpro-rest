@@ -43,13 +43,6 @@
 	$: loaded = false;
 	$: loading = true;
 
-	beforeNavigate(() => {
-		setTimeout(() => {
-			loaded = true;
-			loading = false;
-		}, 700);
-	});
-
 	// List to use inside each heading so that it can access the Title and the field name to access the object attribute
 	let combinedHeadingsList = headings.map((heading: any, index: any) => {
 		return { heading: heading, field: fields[index] };
@@ -118,17 +111,10 @@
 		setTimeout(() => {
 			loaded = true;
 			loading = false;
-		}, 200);
+		}, 100);
 	});
 </script>
 
-{#if loading}
-	<div class="flex justify-center mt-[8rem]">
-		<div class="my-auto">
-			<ProgressRadial />
-		</div>
-	</div>
-{/if}
 
 <div class=" overflow-x-auto space-y-4" class:hidden={!loaded}>
 	<!-- Header -->
