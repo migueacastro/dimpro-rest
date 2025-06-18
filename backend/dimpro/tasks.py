@@ -106,7 +106,7 @@ def bulk_update_or_create_products(product_data_list):
     to_update = []
 
     for data in product_data_list:
-        
+
         # Check if product with the same reference already exists
         if int(data["id"]) in existing_products_list:
             prod = existing_products_map[int(data["id"])]
@@ -154,6 +154,7 @@ def fetch_all_items(client):
             break
         items.extend(dictu)
         i += 1
+        time.sleep(1)
     return items
 
 
@@ -166,6 +167,7 @@ def fetch_all_contacts(client):
             break
         contacts.extend(dictu)
         i += 1
+        time.sleep(1)
     return contacts
 
 
@@ -201,8 +203,11 @@ def update_price_types(price_list):
 
 
 def process_contact(row):
+    contact_id = row.get("id")
     name = row["name"]
-    Contact.objects.update_or_create(name=name, defaults={"active": True})
+    Contact.objects.update_or_create(
+        id=contact_id, defaults={"name": name, "active": True}
+    )
 
 
 def safe_update_products(client, retries=3):
