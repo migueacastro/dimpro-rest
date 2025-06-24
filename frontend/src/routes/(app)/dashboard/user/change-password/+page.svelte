@@ -3,45 +3,41 @@
 	import { goto } from '$app/navigation';
 	import { FormErrors } from '$lib/FormErrors';
 	import { getToastStore, type ToastSettings } from '@skeletonlabs/skeleton';
-	export let data;
-	let {oldPassword} = data;
-	const fields = new FormErrors();
 
 	const toastStore = getToastStore();
-
-	interface FormErrors {
-		password: any;
-		oldPassword: any;
-		confirmPassword: any;
-	}
-
-	let errors: FormErrors = {
-		oldPassword: [],
-		password: [],
-		confirmPassword: []
-	};
+	
 
 	let password = '';
 	let confirmPassword = '';
-	
-	let validatedFields: boolean = false;
-	function validateFields() {
-		validatedFields = fields.validatePasswords(password, confirmPassword);
+	const error = new FormErrors();
+
+	function validatePassword() {
+		if (password.length < 8) {
+			passwordError = true;
+		} else if (!error.hasNumbers(password)) {
+			passwordError = true;
+		} else if (!error.hasUpperCase(password)) {
+			passwordError = true;
+		} else if (password != confirmPassword) {
+			passwordError = true;
+		} else {
+			passwordError = null;
+		}
 	}
+
+	let passwordError: any = true;
 
 	async function handleEnhance() {
 		return ({ update, result }: any) => {
-			let toast: ToastSettings  = {
-					message: 'Contraseña actualizada con exito.',
-					background: 'variant-ghost-success',
-					timeout: 7000
-				};
+			let toast: ToastSettings = {
+				message: 'Contraseña actualizada con exito.',
+				background: 'variant-ghost-success',
+				timeout: 7000
+			};
 			if (result?.type === 'success') {
 				toastStore.trigger(toast);
 				return goto('/dashboard/user');
-				
 			} else {
-				
 				toast = {
 					message: `¡ERROR! No se pudo actualizar la contraseña.`,
 					background: 'variant-ghost-error',
@@ -55,7 +51,8 @@
 
 	function togglePasswordInput(event: Event) {
 		let button = event.target as HTMLElement;
-		if (button.tagName !== 'BUTTON') { // just in case the event.target is the icon and not the button
+		if (button.tagName !== 'BUTTON') {
+			// just in case the event.target is the icon and not the button
 			button = button.closest('button') as HTMLElement;
 		}
 		const input = button.closest('.input-group')?.querySelector('input') as HTMLInputElement;
@@ -72,15 +69,6 @@
 	<form method="post" action="?/changepassword" use:enhance={handleEnhance}>
 		<h3 class="text-4xl mb-[2rem]">Cambiar contraseña</h3>
 
-		{#if errors?.oldPassword?.length > 0}
-			<div class="card mb-2 variant-ghost-error p-2 text-sm text-left">
-				<ul>
-					{#each errors?.oldPassword as error}
-						<li>{error}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
 		<div class="input-group mb-2 input-group-divider grid-cols-[1fr_auto] p-0">
 			<input
 				class="input"
@@ -90,32 +78,40 @@
 				name="password"
 				placeholder="Nueva Contraseña"
 				bind:value={password}
-				on:input={validateFields}
+				on:input={validatePassword}
 			/>
 			<button type="button" on:click={togglePasswordInput}
 				><i class="fa-regular fa-eye-slash"></i></button
 			>
 		</div>
-		
-		{#if password.length > 0}
-			{#if password.length <= 5}
-				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{fields.shortPass}
-				</div>
-			{:else if !fields.hasNumbers(password)}
-				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{fields.NotNumbers}
-				</div>
-			{:else if !fields.hasUpperCase(password)}
-				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{fields.NotUpperCase}
-				</div>
-			{:else if password == oldPassword}
-				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{fields.SamePassword}
-				</div>
-			{/if}
-		{/if}
+		<div
+			class="mt-3 card p-4 text-left text-sm"
+			class:variant-ghost-success={!passwordError}
+			class:variant-ghost-error={passwordError}
+		>
+			<ul>
+				<li>
+					Tiene 8 caractéres o más {#if password.toString()?.length >= 8}
+						<i class="fa-solid fa-check"></i>{:else}
+						<i class="fa-solid fa-xmark"></i>{/if}
+				</li>
+				<li>
+					Tiene números {#if error?.hasNumbers(password?.toString())}
+						<i class="fa-solid fa-check"></i>{:else}
+						<i class="fa-solid fa-xmark"></i>{/if}
+				</li>
+				<li>
+					Tiene mayúsculas {#if error?.hasUpperCase(password?.toString())}
+						<i class="fa-solid fa-check"></i>{:else}
+						<i class="fa-solid fa-xmark"></i>{/if}
+				</li>
+				<li>
+					Las contraseñas coinciden {#if password === confirmPassword && password?.toString().length > 0}
+						<i class="fa-solid fa-check"></i>{:else}
+						<i class="fa-solid fa-xmark"></i>{/if}
+				</li>
+			</ul>
+		</div>
 
 		<div class="input-group input-group-divider grid-cols-[1fr_auto] my-2">
 			<input
@@ -126,33 +122,18 @@
 				name="confirm_password"
 				placeholder="Confirmar Contraseña"
 				bind:value={confirmPassword}
-				on:input={validateFields}
+				on:input={validatePassword}
 			/>
 			<button type="button" on:click={togglePasswordInput}
 				><i class="fa-regular fa-eye-slash"></i></button
 			>
 		</div>
-		{#if confirmPassword.length > 0}
-			{#if password !== confirmPassword}
-				<div class="card variant-ghost-error p-2 text-sm text-left">
-					{fields.NotMatchingPass}
-				</div>
-			{/if}
-		{/if}
-		{#if errors?.confirmPassword?.length > 0}
-			<div class="card variant-ghost-error p-2 text-sm text-left">
-				<ul>
-					{#each errors?.confirmPassword as error}
-						<li>{error}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
+
 
 		<button
-		type="submit"
+			type="submit"
 			class="btn btn-xl variant-filled-primary my-2 w-fit shadow-xl"
-			disabled={!validatedFields}>Guardar</button
+			disabled={passwordError}>Guardar</button
 		>
 	</form>
 </div>

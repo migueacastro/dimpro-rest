@@ -1,7 +1,6 @@
 <script>
 	import { checkPermission } from '$lib/auth.ts';
 	import Datatable from '$lib/components/Datatable.svelte';
-	import { check } from '@vincjo/datatables';
 	export let data;
 	let {user} = data;
 </script>

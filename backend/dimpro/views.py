@@ -194,8 +194,8 @@ class StaffOnlyLoginView(APIView):
         user_instance = authenticate(email=email, password=password)
         print(user_instance.groups.all())
         if (not user_instance) or not (
-            user_instance.groups.filter(name="staff").exists() or
-            user_instance.groups.filter(name="admin").exists()
+            user_instance.groups.filter(name="staff").exists()
+            or user_instance.groups.filter(name="admin").exists()
         ):
             raise AuthenticationFailed(
                 {"password": ["Correo o contraseña incorrectos o invalidos."]}
@@ -297,9 +297,10 @@ class UserViewSet(SafeViewSet):
 
     def create(self, request, *args, **kwargs):
         return create_user(self, request, *args, **kwargs)
-        
+
     def partial_update(self, request, *args, **kwargs):
         return partial_update_user(self, request, *args, **kwargs)
+
 
 class RefreshCSRFTokenView(APIView):
     permission_classes = (AllowAny,)
@@ -320,9 +321,10 @@ class StaffViewSet(SafeViewSet):
 
     def create(self, request, *args, **kwargs):
         return create_user(self, request, *args, **kwargs)
-    
+
     def partial_update(self, request, *args, **kwargs):
         return partial_update_user(self, request, *args, **kwargs)
+
 
 class ProductViewSet(SafeViewSet):
     serializer_class = ProductSerializer
@@ -412,14 +414,29 @@ class LogViewSet(SafeViewSet):
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
-        filters.OrderingFilter
+        filters.OrderingFilter,
     ]
     filterset_class = LogEntryFilter
     search_fields = [
-        "actor__name", "actor__email",
-        "content_type__model", "changes_text", "timestamp", "remote_addr",
+        "actor__name",
+        "actor__email",
+        "content_type__model",
+        "changes_text",
+        "action",
+        "timestamp",
+        "remote_addr",
     ]
-    ordering_fields = ["actor_id","actor", "actor__name","actor__email", "content_type__model", "changes_text", "timestamp", "remote_addr"]
+    ordering_fields = [
+        "actor_id",
+        "actor",
+        "actor__name",
+        "actor__email",
+        "content_type__model",
+        "changes_text",
+        "timestamp",
+        "remote_addr",
+        "action",
+    ]
 
 
 class ExportOrderPDFView(APIView):
@@ -590,7 +607,7 @@ class ExportInventoryPDFView(APIView):
             else:
                 price_value = "Ninguno"
 
-            #price = Paragraph(price_value, small_style)
+            # price = Paragraph(price_value, small_style)
 
             lines.append((id, item, details, reference, quantity))
 
@@ -601,7 +618,7 @@ class ExportInventoryPDFView(APIView):
             available_width * 0.30,
             available_width * 0.2,
             available_width * 0.2,
-            #available_width * 0.10,
+            # available_width * 0.10,
         ]
 
         table = Table(lines, colWidths=col_widths)

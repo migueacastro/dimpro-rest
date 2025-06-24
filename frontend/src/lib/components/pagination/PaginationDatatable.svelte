@@ -2,7 +2,7 @@
 	//@ts-nocheck
 	//Import local datatable components
 	import { goto } from '$app/navigation';
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { ProgressRadial, SlideToggle } from '@skeletonlabs/skeleton';
 	//Load local data
 
 	import { onMount } from 'svelte';
@@ -28,6 +28,7 @@
 	export let headings: any = [];
 	export let table_name = '';
 	export let model_name = '';
+
 	export let user: any = null;
 
 	$: loaded = true;
@@ -45,10 +46,14 @@
 	});
 
 	export let handler: any;
+	export let not_system_toggle = false;
+	let not_system = not_system_toggle ? handler.not_system : false;
+	let system_logs = !not_system;
 
 	let searchTerm = handler.search || '';
 	$: handler.search = searchTerm;
 	loading = false;
+	let timeout: any;
 
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
@@ -71,6 +76,13 @@
 			params.set(key, value.toString());
 		}
 		return currentPage.url.pathname + '?' + params.toString();
+	}
+	function onInput(e) {
+		filterValue = e.target.value;
+		clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			goto(buildQuery(item.filter, filterValue), { keepFocus: true });
+		}, 400);
 	}
 
 	function deleteResult() {
@@ -138,8 +150,21 @@
 				});
 			}}
 		/>
-		<aside class="flex place-items-center">
-			Mostrar
+
+		<aside class="flex place-items-center space-x-2">
+			<p class="whitespace-nowrap mr-2">Registros del Sistema</p>
+			{#if not_system_toggle}
+				<SlideToggle
+				active="bg-primary-500"
+					name="slide"
+					bind:checked={system_logs}
+					on:change={() => {
+						goto(buildQueryWithKeys({ not_system: !system_logs, page: '' }));
+					}}
+				/>
+			{/if}
+			<p class="whitespace-nowrap ml-2">Mostrar</p>
+
 			<select
 				class="select ml-2"
 				bind:value={handler.pages.size}
@@ -201,8 +226,11 @@
 								class="input text-sm w-full capitalize"
 								type={item.field === 'timestamp' ? 'date' : 'text'}
 								placeholder={'Filtrar ' + item?.heading}
-								on:input={() => {
-									goto(buildQuery(item.filter, event.target.value), { keepFocus: true });
+								on:input={(event) => {
+									clearTimeout(timeout);
+									timeout = setTimeout(() => {
+										goto(buildQuery(item.filter, event.target.value), { keepFocus: true });
+									}, 1000);
 								}}
 							/>
 						</th>

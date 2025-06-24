@@ -379,8 +379,25 @@ class LogSerializer(serializers.ModelSerializer):
                 return "actualización"
             case 2:
                 return "eliminación"
+            case 3:
+                return "inicio / cierre de sesión"
             case _:
                 return "desconocido"
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        match instance.action:
+            case 0:
+                changes_text = "creación"
+            case 1:
+                changes_text = "actualización"
+            case 2:
+                changes_text = "eliminación"
+            case 3:
+                changes_text = "inicio / cierre de sesión"
+            case _:
+                changes_text = "desconocido"
+        data["changes_text"] = changes_text
+        return data
 
 
 class AlegraAPITokenSerializer(serializers.ModelSerializer):
