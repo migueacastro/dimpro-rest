@@ -14,7 +14,7 @@ export const load = async ({ fetch, locals }: RequestEvent) => {
 		return {
 			// not this one
 			list,
-			endpoint
+			endpoint,
 		};
 	}
 

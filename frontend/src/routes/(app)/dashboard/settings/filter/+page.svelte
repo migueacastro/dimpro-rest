@@ -11,7 +11,7 @@
 	const search = () => {
         loaded = false;
 		goto(
-			`/dashboard/logs?timestamp__date=${date}&action_name=${action}&not_system=${systemLogs}&actor_id=${selectedUser}`
+			`/dashboard/logs?timestamp__date=${date}&changes_text=${action}&not_system=${systemLogs}&actor_id=${selectedUser}`
 		);
 	};
 </script>
@@ -28,7 +28,7 @@
 		<option value="creación">creación</option>
 		<option value="actualización">actualización</option>
 		<option value="eliminación">eliminación</option>
-		<option value="pet">inicio/cierre de sesión</option>
+		<option value="inicio / cierre de sesión">inicio de sesión</option>
 	</select>
 	<p class="h2 my-5">Indique el usuario que desea buscar</p>
 

@@ -26,6 +26,7 @@ export class CustomDataHandler {
 	pages: any;
   search: string;
   ordering: string;
+	not_system: boolean;
 
 	removeDomainFromURL(urlStr: string) {
 		try {
@@ -68,7 +69,7 @@ export class CustomDataHandler {
 			pages: this.pages,
       search: this.search,
       ordering: this.ordering,
-
+			not_system: this.not_system,
 		};
 	}
 
@@ -91,5 +92,6 @@ export class CustomDataHandler {
 			this.rowCount.start + this.results.length - 1
 		);
     this.search = url.searchParams.get('search') || "";
+		this.not_system = url.searchParams.get('not_system') ?? false;
 	}
 }
