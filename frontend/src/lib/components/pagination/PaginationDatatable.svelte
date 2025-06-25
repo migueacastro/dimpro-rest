@@ -47,14 +47,11 @@
 
 	export let handler: any;
 	export let not_system_toggle = false;
-	let not_system = not_system_toggle ? handler.not_system : false;
-	let system_logs = !not_system;
-
 	let searchTerm = handler.search || '';
 	$: handler.search = searchTerm;
 	loading = false;
 	let timeout: any;
-
+	let notSystemChecked = handler.not_system ?? false;
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 
@@ -138,7 +135,9 @@
 
 <div class=" overflow-x-auto space-y-4" class:hidden={!loaded}>
 	<!-- Header -->
-	<header class="flex flex-row justify-between gap-4">
+	<header
+		class="flex flex-col flex-wrap lg:flex-nowrap w-screen lg:w-full lg:flex-row justify-between gap-4"
+	>
 		<input
 			class="input sm:w-64 w-36"
 			type="search"
@@ -151,22 +150,26 @@
 			}}
 		/>
 
-		<aside class="flex place-items-center space-x-2">
-			<p class="whitespace-nowrap mr-2">Registros del Sistema</p>
+		<aside class="flex-wrap w-fit lg:flex-row flex place-items-center space-x-2">
+			<p class="whitespace-nowrap mr-2 text-xs lg:text-md">Registros del Sistema</p>
 			{#if not_system_toggle}
 				<SlideToggle
-				active="bg-primary-500"
+					type="checkbox"
+					active="bg-primary-500"
 					name="slide"
-					bind:checked={system_logs}
-					on:change={() => {
-						goto(buildQueryWithKeys({ not_system: !system_logs, page: '' }));
+					size="sm"
+					bind:checked={notSystemChecked}
+					on:click={(e) => {
+						setTimeout(() =>goto(buildQueryWithKeys({ not_system: !notSystemChecked, page: '' }, 300)
+							)
+						);
 					}}
 				/>
 			{/if}
-			<p class="whitespace-nowrap ml-2">Mostrar</p>
+			<p class="whitespace-nowrap ml-2 text-xs lg:text-md">Mostrar</p>
 
 			<select
-				class="select ml-2"
+				class="select ml-2 text-xs lg:text-md w-fit"
 				bind:value={handler.pages.size}
 				on:change={(e) => {
 					goto(buildQueryWithKeys({ page_size: handler.pages.size, page: '' }));
