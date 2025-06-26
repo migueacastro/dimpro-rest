@@ -8,10 +8,11 @@ from datetime import timedelta
 import base64
 from django.db import OperationalError
 import time
+import requests
 
 
 EXCLUDED_PRICETYPE_NAMES = ["EPA"]
-
+ENDPOINT = "https://api.alegra.com/api/v1/"
 
 def encodeduser():
     alegra_user = AlegraUser.objects.get(id=1)
@@ -26,8 +27,7 @@ def remove_one_month_logs():
     print("Removed entries from more than a month ago")
 
 def updatedb():
-    alegra_user = AlegraUser.objects.get(id=1)
-    client = c(alegra_user.email, alegra_user.token)
+    client = {'accept': 'application/json', 'authorization': f'Basic {encodeduser()}'}
 
     update_products_atomic(client)
     update_contacts_atomic(client)
@@ -149,7 +149,8 @@ def fetch_all_items(client):
     items = []
     i = 0
     while True:
-        dictu = client.list_items(start=(30 * i), order="ASC")
+        response = requests.get(url=ENDPOINT+f"items?start={str(30*i)}&order_direction=ASC", headers=client)
+        dictu = response.json()
         if not dictu:
             break
         items.extend(dictu)
@@ -162,7 +163,8 @@ def fetch_all_contacts(client):
     contacts = []
     i = 0
     while True:
-        dictu = client.list_contacts(start=(30 * i), order="ASC")
+        response = requests.get(url=ENDPOINT+f"items?start={30*i}&order_direction=ASC", headers=client)
+        dictu = response.json()
         if not dictu:
             break
         contacts.extend(dictu)
