@@ -51,6 +51,7 @@
 			<input
 				class="input"
 				title="Contraseña"
+				autocomplete="off"
 				type="password"
 				id="password"
 				name="password"

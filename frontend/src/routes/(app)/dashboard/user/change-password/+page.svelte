@@ -74,6 +74,7 @@
 				class="input"
 				title="Contraseña"
 				type="password"
+				autocomplete="off"
 				id="password"
 				name="password"
 				placeholder="Nueva Contraseña"
@@ -116,6 +117,7 @@
 		<div class="input-group input-group-divider grid-cols-[1fr_auto] my-2">
 			<input
 				class="input"
+				autocomplete="off"
 				title="Confirmar Contraseña"
 				type="password"
 				id="confirm_password"

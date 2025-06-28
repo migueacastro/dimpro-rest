@@ -3,17 +3,27 @@
 	import Datatable from '$lib/components/Datatable.svelte';
 	export let data;
 	let { products, user } = data;
-
+	async function downloadPDF() {
+		const response = await fetch('/dashboard/inventory/exportpdf', {
+			method: 'GET'
+		});
+		if (response.ok) {
+			const blob = await response.blob();
+			const url = URL.createObjectURL(blob);
+			window.open(url, '_blank');
+			setTimeout(() => URL.revokeObjectURL(url), 10000);
+		} else {
+			console.log('Error al exportar PDF');
+		}
+	}
 </script>
 
 <div class="flex items-center gap-4 my-4">
 	<h1 class="h2">Inventario</h1>
 	{#if checkPermission(user, 'view_export_order')}
-		<form action="inventory/exportpdf" method="post">
-			<button class="btn variant-filled max-w-fit px-6 h-full" type="submit">
-				<i class="fa-solid fa-download"></i>
-			</button>
-		</form>
+		<button class="btn variant-filled max-w-fit px-6 h-full" type="button" on:click={downloadPDF}>
+			<i class="fa-solid fa-download"></i>
+		</button>
 	{/if}
 </div>
 

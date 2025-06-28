@@ -441,6 +441,7 @@ $: console.log(selectedContactId)
 											class="input autocomplete"
 											class:variant-ghost-error={row.search_error}
 											type="search"
+											autocomplete="off"
 											name="autocomplete-search"
 											bind:value={row.item_label}
 											placeholder="Buscar..."

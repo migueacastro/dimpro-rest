@@ -1,11 +1,9 @@
 import { apiURL } from "$lib/api_url.js";
-import { checkPermission, permissionError } from "$lib/auth";
 import type { RequestHandler } from "@sveltejs/kit";
 
-export const POST: RequestHandler = async ({ request, fetch, locals }) => {
+export const GET: RequestHandler = async ({ request, fetch, locals, url  }) => {
+  const order_id = url.searchParams.get('order_id');
   
-  const formData = await request.formData(); // Parse form data
-  const order_id = formData.get("order_id");
 
   // Forward the request to the actual API
   const response = await fetch(apiURL+'export_order_pdf', {

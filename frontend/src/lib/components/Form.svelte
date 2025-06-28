@@ -309,6 +309,7 @@
 						<input
 							class="input"
 							type="password"
+							autocomplete="off"
 							bind:value={field.value}
 							name={field?.name}
 							on:input={() => {
