@@ -163,7 +163,7 @@ def fetch_all_contacts(client):
     contacts = []
     i = 0
     while True:
-        response = requests.get(url=ENDPOINT+f"items?start={30*i}&order_direction=ASC", headers=client)
+        response = requests.get(url=ENDPOINT+f"contacts?start={str(30*i)}&order_direction=ASC", headers=client)
         dictu = response.json()
         if not dictu:
             break
