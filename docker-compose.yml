@@ -72,7 +72,7 @@ services:
     build: ./frontend
     volumes:
       - ./frontend:/frontend
-    command: sh -c "npm run build && npm run preview"
+    command: sh -c "npm run dev"
     ports:
       - 3000:3000
     env_file: .env

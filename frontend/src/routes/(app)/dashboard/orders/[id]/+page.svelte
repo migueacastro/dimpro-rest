@@ -17,6 +17,22 @@
 		};
 	});
 	let loaded = true;
+	async function downloadPDF() {
+		const response = await fetch(
+			'/dashboard/orders/exportpdf?order_id='+order?.id,
+			{
+				method: 'GET',
+			}
+		);
+		if (response.ok) {
+			const blob = await response.blob();
+			const url = URL.createObjectURL(blob);
+			window.open(url, '_blank');
+			setTimeout(() => URL.revokeObjectURL(url), 10000);
+		} else {
+			console.log('Error al exportar PDF');
+		}
+	}
 </script>
 
 <div class="flex flex-col">
@@ -55,12 +71,9 @@
 				</button>
 				{/if}
 				{#if checkPermission(data.user, 'view_export_order')}
-				<form action="/dashboard/orders/exportpdf" method="post">
-					<input type="hidden" name="order_id" value={order?.id} /> 
-					<button class="btn variant-filled max-w-fit px-[2rem] ml-2 h-full" type="submit">
+					<button class="btn variant-filled max-w-fit px-[2rem] ml-2 h-full" type="button" on:click={downloadPDF}>
 						<i class="fa-solid fa-download"></i>
 					</button>
-				</form>
 				{/if}
 			</div>
 		</div>

@@ -21,9 +21,9 @@ def encodeduser():
     encoded_string = encoded_bytes.decode("utf-8")
     return encoded_string
 
-def remove_one_month_logs():
-    one_month_ago = timezone.now() - timedelta(days=30)
-    deleted_count, _ = LogEntry.objects.filter(timestamp__lt=one_month_ago).delete()
+def remove_six_months_logs():
+    time_ago = timezone.now() - timedelta(days=30*6)
+    deleted_count, _ = LogEntry.objects.filter(timestamp__lt=time_ago).delete()
     print("Removed entries from more than a month ago")
 
 def updatedb():
@@ -163,7 +163,7 @@ def fetch_all_contacts(client):
     contacts = []
     i = 0
     while True:
-        response = requests.get(url=ENDPOINT+f"items?start={30*i}&order_direction=ASC", headers=client)
+        response = requests.get(url=ENDPOINT+f"contacts?start={str(30*i)}&order_direction=ASC", headers=client)
         dictu = response.json()
         if not dictu:
             break
