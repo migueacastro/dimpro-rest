@@ -14,7 +14,7 @@
 	let groupsObject: any = data.groupsObject;
 	let selectedGroupId = groupsObject[0]?.id || 0;
 	$: selectedGroup = groupsObject.find((group: any) => group.id === selectedGroupId);
-	
+
 	$: loaded = true;
 
 	$: JSONStringifiedGroupsObject = JSON.stringify(groupsObject);
@@ -24,8 +24,6 @@
 
 	let permissionChecked: { [id: number]: boolean } = {};
 
-
-
 	function togglePermission(event: any, permission: any) {
 		if (selectedGroup?.permissions.includes(permission.id)) {
 			selectedGroup.permissions = selectedGroup.permissions.filter(
@@ -33,19 +31,18 @@
 			);
 		} else {
 			selectedGroup.permissions.push(permission.id);
-			
 		}
 		groupsObject = groupsObject.map((group: any) => {
-				if (group.id === selectedGroupId) {
-					return { ...group, permissions: selectedGroup.permissions };
-				}
-				return group;
-			});
+			if (group.id === selectedGroupId) {
+				return { ...group, permissions: selectedGroup.permissions };
+			}
+			return group;
+		});
 		updatePermissionChecked();
 	}
 
 	function updatePermissionChecked() {
-		let updated: {[id: number]: boolean} = {};
+		let updated: { [id: number]: boolean } = {};
 		for (const name of listPermissionNames) {
 			(permissionsObject[name] || []).forEach((permission: any) => {
 				// Mark as checked if the selectedGroup's permissions include this permission id
@@ -88,7 +85,7 @@
 			};
 			if (result?.type === 'success') {
 				window.location.reload();
-				return
+				return;
 			} else {
 				toast = {
 					message: `¡ERROR! No se pudo actualizar los permisos.`,
@@ -116,15 +113,12 @@
 
 		<form action="?/save" method="post" use:enhance={handleEnhance} bind:this={form}>
 			<input type="hidden" name="groups" bind:value={JSONStringifiedGroupsObject} />
-			<select
-				class="select capitalize mb-4"
-				name="group-select"
-				id=""
-				bind:value={selectedGroupId}
-				
-			>
+			<select class="select capitalize mb-4" name="group-select" id="" bind:value={selectedGroupId}>
 				{#each groupsObject as group}
-					<option class="capitalize" value={group.id}>{group.name}</option>
+					<option class="capitalize" value={group.id}
+						>{#if group?.name == 'user'}Vendedor{:else if group?.name == 'staff'}Empleado{:else if group?.name == 'admin'}Administrador
+						{:else}{group?.name}{/if}</option
+					>
 				{/each}
 			</select>
 			<div class="mx-auto flex justify-center flex-col space-y-3">

@@ -415,7 +415,19 @@
 					>
 						{#each field?.options as option}
 							<option class="capitalize" value={option.value}>
-								{option.label}
+								{#if field?.name === 'groups'}
+									{#if option.label === 'admin'}
+										Administrador
+									{:else if option.label === 'staff'}
+										Vendedor
+									{:else if option.label === 'user'}
+										Cliente
+									{:else}
+										{option.label}
+									{/if}
+								{:else}
+									{option.label}
+								{/if}
 							</option>
 						{/each}
 					</select>
