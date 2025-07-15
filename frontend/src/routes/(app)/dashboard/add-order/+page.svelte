@@ -63,6 +63,7 @@
 		<p>
 			No encuentras a un cliente? <a
 				class="text-primary-500"
+				target="_blank"
 				href="mailto:dimproiluminacion@gmail.com ?subject=Solicitud de adición de cliente. &body=Nombre: %0D%0A Correo electrónico: %0D%0A RIF: %0D%0A Insertar imágen de documento RIF:"
 				>solicita la adición de uno.</a
 			>

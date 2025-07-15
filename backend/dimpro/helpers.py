@@ -5,6 +5,8 @@ from rest_framework.mixins import Response
 from rest_framework import permissions
 from django.core.mail import EmailMessage
 from rest_framework.exceptions import ValidationError
+from django.contrib.auth import authenticate, login
+
 from dimpro.models import *
 import threading
 
@@ -200,7 +202,7 @@ def translate_permission_name(name):
     return name
 
 
-def partial_update_user(self, request, *args, **kwargs):
+def partial_update_user(self, request, login=False, *args, **kwargs):
     from .serializers import UserSerializer
 
     serializer = self.get_serializer(data=request.data, partial=True)
@@ -248,11 +250,10 @@ def partial_update_user(self, request, *args, **kwargs):
 
 
 def create_user(self, request, *args, **kwargs):
-    from .serializers import UserSerializer
-
+    from dimpro.serializers import UserRegistrationSerializer, UserSerializer
     email = request.data.pop("email", None)
-    serializer = self.get_serializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+    serializer = UserRegistrationSerializer(data=request.data)
+    serializer.is_valid(raise_exception=False)
     validated_data = serializer.validated_data.copy()
     validated_data.pop("confirmPassword")
     user_groups = validated_data.pop("groups", None)
@@ -277,5 +278,12 @@ def create_user(self, request, *args, **kwargs):
         user_instance.set_password(password)
     if user_groups is not None:
         user_instance.groups.set(user_groups)
+    else:
+        # If no groups are provided, assign the default group (if any)
+        default_group = Group.objects.filter(name="user").first()
+        if default_group:
+            user_instance.groups.add(default_group)
     user_instance.save()
-    return Response(UserSerializer(user_instance).data, status=status.HTTP_201_CREATED)
+    data = UserSerializer(user_instance).data
+    data["password"] = password
+    return Response(data, status=status.HTTP_201_CREATED)

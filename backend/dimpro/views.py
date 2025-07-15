@@ -76,34 +76,9 @@ class UserRegistrationView(APIView):  # Aqui puedes retornar responses personali
     )  # Estos son las classes que indican quienes pueden meterse a este endpoint
 
     def post(
-        self, request
+        self, request, *args, **kwargs
     ):  # En registration solo manejaremos post, los demas quedaran como metodo no permitido
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            password = serializer.validated_data.get("password", None)
-            confirmPassword = serializer.validated_data.get("confirmPassword", None)
-
-            if password != confirmPassword:
-                raise AuthenticationFailed(
-                    {"confirmPassword": ["Las contraseñas no coinciden."]}
-                )
-
-            new_user = serializer.save()
-            if new_user:
-
-                LogEntry.objects.create(
-                    content_type=get_content_type_for_model(User),
-                    action=LogEntry.Action.CREATE,
-                    changes_text="User registered",
-                    object_pk=new_user.id,
-                    object_id=new_user.id,
-                )
-                user_instance = User.objects.get(
-                    email=serializer.validated_data.get("email")
-                )
-                return Response(status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return create_user(self, request, *args, **kwargs)
 
 
 class UserLoginView(APIView):

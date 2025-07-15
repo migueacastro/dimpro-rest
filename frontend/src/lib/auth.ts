@@ -51,7 +51,7 @@ export function checkAdminGroup(user: any) {
 export async function login({ fetch, locals, formData, isStaff, cookies }: any) {
 	let url = isStaff ? apiURL + 'login/staff' : apiURL + 'login';
 
-
+	console.log(JSON.stringify(Object.fromEntries(formData)));
 	const response = await fetch(url, {
 		method: 'POST',
 		body: JSON.stringify(Object.fromEntries(formData))
