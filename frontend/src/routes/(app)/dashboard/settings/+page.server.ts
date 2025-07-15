@@ -18,8 +18,9 @@ export const actions: Actions = {
         success: true
       }
     } else {
+      const error = await response.text();
       return fail(400, {
-        error: await response.text(),
+        error,
         success: false
       });
     }

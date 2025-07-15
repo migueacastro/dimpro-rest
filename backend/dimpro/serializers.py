@@ -29,7 +29,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ["email", "name", "password", "confirmPassword", "phonenumber"]
+        fields = ["email", "name", "password", "confirmPassword", "phonenumber", "groups"]
 
     def create(self, validated_data):
         validated_data.pop(

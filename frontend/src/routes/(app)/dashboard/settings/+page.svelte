@@ -15,13 +15,13 @@
 				toastStore.trigger({
 					message: 'La base de datos ha sido actualizada exitosamente',
 					background: 'variant-ghost-success',
-					timeout: 3500
+					autohide: false
 				});
 			} else {
 				toastStore.trigger({
 					message: 'Error al actualizar la base de datos',
 					background: 'variant-ghost-error',
-					timeout: 3500
+					autohide: false
 				});
 			}
 			loaded = true;

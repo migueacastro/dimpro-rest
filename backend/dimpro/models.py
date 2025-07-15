@@ -38,16 +38,16 @@ class CustomUserManager(UserManager):
         return user
 
 
-class ExchangeCurrency(models.Model):
-    iso_code = models.CharField(max_length=10)
-    name = models.CharField(max_length=32)
+#class ExchangeCurrency(models.Model):
+#   iso_code = models.CharField(max_length=10)
+#    name = models.CharField(max_length=32)
 
 
-class ExchangeRate(models.Model):
-    from_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_from_currency")
-    to_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_to_currency")
-    datetime = models.DateTimeField(auto_now_add=True)
-    rate = models.FloatField(null=False, blank= False)
+#class ExchangeRate(models.Model):
+#    from_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_from_currency")
+#    to_currency = models.ForeignKey(ExchangeCurrency, on_delete=models.DO_NOTHING, null=False, blank=False, related_name="exchange_rates_to_currency")
+#    datetime = models.DateTimeField(auto_now_add=True)
+#    rate = models.FloatField(null=False, blank= False)
 
 class User(AbstractBaseUser, PermissionsMixin): 
     id = models.AutoField(primary_key=True)
@@ -169,7 +169,7 @@ class Order(models.Model):
         ('preparado', 'Preparado'),
         ('pendiente', 'Pendiente')
     ])
-    exchange_rate = models.ForeignKey(ExchangeRate, on_delete=models.DO_NOTHING, null=True, blank=True)
+    #exchange_rate = models.ForeignKey(ExchangeRate, on_delete=models.DO_NOTHING, null=True, blank=True)
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name='orders', null=True)
     date = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)

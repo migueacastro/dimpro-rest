@@ -419,9 +419,9 @@
 									{#if option.label === 'admin'}
 										Administrador
 									{:else if option.label === 'staff'}
-										Vendedor
+										Empleado
 									{:else if option.label === 'user'}
-										Cliente
+										Vendedor
 									{:else}
 										{option.label}
 									{/if}
