@@ -13,14 +13,14 @@ export const load = async ({ fetch, locals }: RequestEvent) => {
 		response = await fetch(apiURL + endpoint);
 		list_all = await response.json();
 	}
-	else if (checkPermission(locals.user, 'view_own_order')) {
+	if (checkPermission(locals.user, 'view_own_order')) {
 		endpoint = 'user_orders';
 		response = await fetch(apiURL + endpoint);
 		list_user = await response.json();
 	} else {
 		return permissionError();
 	}
-
+	
 	return {
 		list_all,
 		list_user
