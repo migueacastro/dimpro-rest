@@ -205,7 +205,7 @@ def update_price_types(price_list):
 
 
 def process_contact(row):
-    contact_id = row.get("id")
+    contact_id = row.get("id", "")
     name = row["name"]
     Contact.objects.update_or_create(
         id=contact_id, defaults={"name": name, "active": True}
