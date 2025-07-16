@@ -5,6 +5,7 @@ from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from backend.settings import BASE_DIR, FRONTEND_URL
+from adrf.views import APIView as AsyncAPIView
 import os
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
@@ -341,7 +342,7 @@ class OrderViewSet(SafeViewSet):  # Te muestra de una vez sus propios OrderProdu
 
 class UserOrderViewSet(SafeViewSet):
     serializer_class = OrderSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         return Order.objects.filter(active=True, user=self.request.user.id).order_by(
@@ -351,7 +352,7 @@ class UserOrderViewSet(SafeViewSet):
 
 class AlegraUserViewSet(SafeViewSet):
     serializer_class = AlegraUserSerializer
-    permission_classes = (IsAuthenticated, GroupPermission)
+    permission_classes = (IsAuthenticated,)
     queryset = AlegraUser.objects.filter(active=True)
 
 
@@ -643,7 +644,7 @@ class ExportInventoryPDFView(APIView):
         )
 
 
-class UpdateDBView(APIView):
+class UpdateDBView(AsyncAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
