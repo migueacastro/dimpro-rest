@@ -34,6 +34,7 @@
 	let confirmPassword = '';
 	let phoneNumber = '';
 	let validatedFields: any = false;
+	let emailError: any = '';
 	function validateFields() {
 		let valid: any = false;
 		valid =
@@ -61,8 +62,10 @@
 			if (result?.type == 'success') {
 				goto('/dashboard/');
 			} else {
-				errors = result.data.error;
+				emailError = result.data.error.error;
+				console.log(result.data.error.error);
 				loaded = true;
+				
 				return update({ reset: false });
 			}
 		};
@@ -154,12 +157,10 @@
 				{/if}
 			{/if}
 
-			{#if errors?.email?.length > 0}
+			{#if String(emailError).length > 0}
 				<div class="card variant-ghost-error mb-2 p-2 text-sm text-left">
 					<ul>
-						{#each errors?.email as error}
-							<li>{error}</li>
-						{/each}
+						<li>{emailError}</li>
 					</ul>
 				</div>
 			{/if}
