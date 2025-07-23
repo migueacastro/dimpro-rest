@@ -443,3 +443,9 @@ class SetNewPasswordSerializer(serializers.Serializer):
             return user
         except Exception as e:
             raise AuthenticationFailed("The reset link is invalid", 401)
+
+
+class VerifyCardIDSerializer(serializers.Serializer): 
+    card_id = serializers.CharField(max_length=11, write_only=True)
+    class Meta:
+        fields = ["card_id"]

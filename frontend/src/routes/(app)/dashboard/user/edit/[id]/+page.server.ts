@@ -7,6 +7,9 @@ export async function load({ fetch, locals }: any) {
         return redirect(303, '/start');
     }
     let fields: any = [];
+    if (checkPermission(locals.user, 'change_own_cardid_user')) {
+        fields.push({ type: 'text', value: '', name: 'card_id', label: 'Cédula' });
+    }
     if (checkPermission(locals.user, 'change_own_email_user')) {
 		fields.push({ type: 'email', value: '', name: 'email', label: 'Email' });
 	}
@@ -16,6 +19,7 @@ export async function load({ fetch, locals }: any) {
 	if (checkPermission(locals.user, 'change_own_phonenumber_user')) {
 		fields.push({ type: 'text', value: '', name: 'phonenumber', label: 'Telefono' });
 	}
+    
 	if (fields.length < 1) {
 		return permissionError();
 	}

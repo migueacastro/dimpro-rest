@@ -10,7 +10,8 @@
 		getConfirmPassword,
 		getEmail,
 		getPhonenumber,
-		getName
+		getName,
+		getCardID
 	} from '$lib/FormErrors';
 	import {
 		getToastStore,
@@ -21,6 +22,7 @@
 	} from '@skeletonlabs/skeleton';
 	import { enhance } from '$app/forms';
 	import Datatable from './Datatable.svelte';
+	import { apiURL } from '$lib/api_url';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -37,7 +39,7 @@
 	let ogValue: any = null;
 	let id = page.params.id;
 	let action = '';
-
+	let cardIdError: boolean = false;
 	const error = new FormErrors();
 
 	interface FormErrors {
@@ -57,7 +59,7 @@
 	};
 
 	let passwordError: boolean = true;
-	function validatePassword() {
+	async function validatePassword() {
 		let password = getPassword(mappedFields)?.toString();
 		let confirm = getConfirmPassword(mappedFields)?.toString();
 		let isValid: boolean;
@@ -75,24 +77,16 @@
 		return isValid;
 	}
 
-	$: valid = fields.find((f: any) => f.type == 'email')
-		? error.validateEmail(getEmail(mappedFields))
-		: true && fields.find((f: any) => f.name == 'phonenumber')
-			? error.validatePhoneNumber(getPhonenumber(mappedFields))
-			: true && fields.find((f: any) => f.name == 'name')
-				? error.validateText(getName(mappedFields))
-				: true;
-	if (fields.find((f: any) => f.type == 'password')) {
-		validatePassword();
-	}
-	function validateFields() {
-		valid = fields.find((f: any) => f.type == 'email')
-			? error.validateEmail(getEmail(mappedFields))
-			: true && fields.find((f: any) => f.name == 'phonenumber')
-				? error.validatePhoneNumber(getPhonenumber(mappedFields))
-				: true && fields.find((f: any) => f.name == 'name')
-					? error.validateText(getName(mappedFields))
-					: true;
+	let valid =
+    (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
+	async function validateFields() {
+		valid =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
 		if (fields.find((f: any) => f.type == 'password')) {
 			validatePassword();
 		}
@@ -139,6 +133,25 @@
 			};
 			modalStore.trigger(modal);
 		}
+	}
+
+	async function verifyCardID(id: any) {
+		let validText = error.validateCardID(id);
+
+		if (!validText) {
+			return false;
+		}
+		let response = await fetch(apiURL + 'verify_card_id', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ card_id: id })
+		});
+		if (!response.ok) {
+			return false;
+		}
+		return true;
 	}
 
 	function sendData() {
@@ -252,6 +265,29 @@
 									{/each}
 								</ul>
 							</div>
+						{/if}
+					{:else if field.name === 'card_id'}
+						<input
+							class="input"
+							type="text"
+							bind:value={field.value}
+							placeholder="V10000000"
+							name={field.name}
+							on:input={validateFields}
+							on:focus={() => (field.touched = true)}
+						/>
+						{#if field.touched}
+							{#if String(field.value)?.length >= 8 && String(field.value)?.length <= 9}
+								{#if !field.value.match(/^[VvEe][0-9]{8,9}$/)}
+									<div class="card variant-ghost-error p-2 text-sm text-left">
+										{'La cédula no es válida'}
+									</div>
+								{/if}
+							{:else}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{'La cédula debe tener entre 8 y 9 caracteres'}
+								</div>
+							{/if}
 						{/if}
 					{:else}
 						<input

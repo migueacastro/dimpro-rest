@@ -3,6 +3,7 @@
 	export let data: any;
 	let {user} = data;
 	let fields = [
+		{ type: 'text', value: '', name: 'card_id', label: 'Cédula' },
 		{ type: 'email', value: '', name: 'email', label: 'email' },
 		{ type: 'text', value: '', name: 'name', label: 'Nombre' },
 		{ type: 'password', value: '', name: 'password', label: 'contraseña' },
