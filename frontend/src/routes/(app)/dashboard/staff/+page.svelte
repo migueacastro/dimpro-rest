@@ -12,8 +12,8 @@
 	endpoint={endpoint}
 	source_data={users}
 	table_name={'empleado/administrador'}
-	fields={['name', 'email', 'phonenumber']}
-	headings={['Nombre', 'Email', 'Teléfono']}
+	fields={['name', 'email', 'card_id','phonenumber']}
+	headings={['Nombre', 'Email', 'Cédula','Teléfono']}
 	model_name={'staff_user'}
 	user={user}
 />

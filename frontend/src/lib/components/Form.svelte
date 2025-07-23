@@ -86,7 +86,7 @@
 		valid =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
-    (!fields.find((f: any) => f.name == 'card_id') || verifyCardID(getCardID(mappedFields)));
+    (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
 		if (fields.find((f: any) => f.type == 'password')) {
 			validatePassword();
 		}
@@ -156,7 +156,7 @@
 			} else {
 				console.log(result.data);
 				const toast: ToastSettings = {
-					message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
+					message: `¡ERROR!.
 							mensaje: ${result.data.error}`,
 					background: 'variant-ghost-error',
 					timeout: 3500

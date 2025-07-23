@@ -192,15 +192,15 @@ def translate_permission_content_type(codename):
 
 
 def translate_permission_name(name):
-    name= str(name).lower()
+    name = str(name).lower()
     for key, value in PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS.items():
         if key in name:
             name = name.replace(key, value)
             break
     parts = name.split(" ")
-    for i,part in enumerate(parts):
+    for i, part in enumerate(parts):
         if part in PERMISSION_TRANSLATIONS:
-            parts[i] = PERMISSION_TRANSLATIONS[part] 
+            parts[i] = PERMISSION_TRANSLATIONS[part]
     name = " ".join(parts).replace("_", "")
 
     return name
@@ -212,6 +212,7 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
     serializer = self.get_serializer(data=request.data, partial=True)
 
     email = request.data.pop("email", None)
+    card_id = request.data.pop("card_id", None)
     serializer.is_valid(raise_exception=True)
     validated_data = serializer.validated_data.copy()
 
@@ -222,17 +223,31 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
     current_user = self.get_object()
 
     # Si no se envía un email en el request, usa el del usuario actual
-    if email is None:
-        raise ValidationError({"error": "El campo email es obligatorio."})
-
-    # Verifica si existe otro usuario activo (distinto al actual) con el mismo email
-    if (
-        User.objects.filter(email=email, active=True)
-        .exclude(id=current_user.id)
-        .exists()
-    ):
+    if not email:
         return Response(
-            {"error": "El correo ya existe."},
+            {"error": "El campo email es obligatorio."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    if not card_id:
+        return Response(
+            {"error": "El campo cédula de identidad es obligatorio."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Check if an active user already exists with that email
+    if User.objects.filter(email=email, active=True).exclude(id=current_user.id).exists() and User.objects.filter(card_id=card_id, active=True).exclude(id=current_user.id).exists():
+        return Response(
+            {"error": "El correo y y la cédula de identidad ya están en uso."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    elif User.objects.filter(email=email, active=True).exclude(id=current_user.id).exists():
+        return Response(
+            {"error": "El correo ya está en uso."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    elif User.objects.filter(card_id=card_id, active=True).exclude(id=current_user.id).exists():
+        return Response(
+            {"error": "La cédula de identidad ya está en uso."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -241,6 +256,8 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
         current_user.name = validated_data.get("name")
     if "email" in validated_data:
         current_user.email = email
+    if "card_id" in validated_data:
+        current_user.card_id = card_id
     if password:
         current_user.set_password(password)
     if "phonenumber" in validated_data:
@@ -255,7 +272,9 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
 
 def create_user(self, request, *args, **kwargs):
     from dimpro.serializers import UserRegistrationSerializer, UserSerializer
+
     email = request.data.pop("email", None)
+    card_id = request.data.pop("card_id", None)
     serializer = UserRegistrationSerializer(data=request.data)
     serializer.is_valid(raise_exception=False)
     validated_data = serializer.validated_data.copy()
@@ -268,15 +287,30 @@ def create_user(self, request, *args, **kwargs):
             {"error": "El campo email es obligatorio."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    if not card_id:
+        return Response(
+            {"error": "El campo cédula de identidad es obligatorio."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     # Check if an active user already exists with that email
-    if User.objects.filter(email=email, active=True).exists():
+    if User.objects.filter(email=email, active=True).exists() and User.objects.filter(card_id=card_id, active=True).exists(): 
         return Response(
-            {"error": "El correo ya existe."},
+            {"error": "El correo y y la cédula de identidad ya están en uso."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    elif User.objects.filter(email=email, active=True).exists():
+        return Response(
+            {"error": "El correo ya está en uso."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    elif User.objects.filter(card_id=card_id, active=True).exists():
+        return Response(
+            {"error": "La cédula de identidad ya está en uso."},
             status=status.HTTP_400_BAD_REQUEST,
         )
     user_instance, created = User.objects.update_or_create(
-        email=email, active=True, defaults=validated_data
+        email=email, card_id=card_id, active=True, defaults=validated_data
     )
     if password:
         user_instance.set_password(password)

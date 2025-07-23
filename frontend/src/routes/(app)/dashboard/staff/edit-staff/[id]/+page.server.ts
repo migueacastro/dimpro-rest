@@ -52,9 +52,10 @@ export const actions: Actions = {
             method: 'PATCH',
             body: JSON.stringify(body)
         });
-        return {
-            success: response.ok,
-            error: response.statusText
-        }
+        const data = await response.json()
+		return {
+			success: response.ok,
+			error: data.error
+		};
     }
 }

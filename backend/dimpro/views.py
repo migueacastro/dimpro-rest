@@ -777,27 +777,3 @@ class PermissionViewSet(SafeViewSet):
     queryset = Permission.objects.filter(
         content_type__app_label__in=["auditlog", "dimpro"]
     )
-
-class VerifyCardIDView(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request):
-        serializer = VerifyCardIDSerializer(data=request.data)
-        if serializer.is_valid():
-            card_id = serializer.validated_data.get("card_id", None)
-            if not card_id:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST,
-                    data={"error": "Card ID is required."},
-                )
-            try:
-                card = User.objects.get(card_id=card_id, active=True)
-                return Response(
-                    {"message": "Card ID is taken.", "card": VerifyCardIDSerializer(card).data},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            except User.DoesNotExist:
-                return Response(
-                    {"error": "Card ID is valid."}, status=status.HTTP_200_OK
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
