@@ -28,7 +28,7 @@ urlpatterns = [
     path("logout", UserLogoutView.as_view()),
     path("login/staff", StaffOnlyLoginView.as_view()),
     path("user", UserProfileView.as_view()),
-    path("register", UserRegistrationView.as_view()),
+    #path("register", UserRegistrationView.as_view()),
     path("csrf", RefreshCSRFTokenView.as_view()),
     path("user/change_password", UserChangePasswordView.as_view()),
     path("user/verify_password", UserVerifyPasswordView.as_view()),
