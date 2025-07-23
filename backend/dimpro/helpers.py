@@ -254,9 +254,9 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
     # Actualiza los campos del usuario actual
     if "name" in validated_data:
         current_user.name = validated_data.get("name")
-    if "email" in validated_data:
+    if email:
         current_user.email = email
-    if "card_id" in validated_data:
+    if card_id:
         current_user.card_id = card_id
     if password:
         current_user.set_password(password)
