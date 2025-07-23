@@ -70,22 +70,32 @@
 				error.hasUpperCase(password) &&
 				password === confirm;
 		}
-		
+
 		passwordError = !isValid;
 		return isValid;
 	}
 
-	$: valid =
-		error.validateEmail(getEmail(mappedFields)) &&
-		error.validatePhoneNumber(getPhonenumber(mappedFields)) &&
-		error.validateText(getName(mappedFields)) &&
+	$: valid = fields.find((f: any) => f.type == 'email')
+		? error.validateEmail(getEmail(mappedFields))
+		: true && fields.find((f: any) => f.name == 'phonenumber')
+			? error.validatePhoneNumber(getPhonenumber(mappedFields))
+			: true && fields.find((f: any) => f.name == 'name')
+				? error.validateText(getName(mappedFields))
+				: true;
+	if (fields.find((f: any) => f.type == 'password')) {
 		validatePassword();
+	}
 	function validateFields() {
-		valid =
-			error.validateEmail(getEmail(mappedFields)) &&
-			error.validatePhoneNumber(getPhonenumber(mappedFields)) &&
-			error.validateText(getName(mappedFields)) &&
+		valid = fields.find((f: any) => f.type == 'email')
+			? error.validateEmail(getEmail(mappedFields))
+			: true && fields.find((f: any) => f.name == 'phonenumber')
+				? error.validatePhoneNumber(getPhonenumber(mappedFields))
+				: true && fields.find((f: any) => f.name == 'name')
+					? error.validateText(getName(mappedFields))
+					: true;
+		if (fields.find((f: any) => f.type == 'password')) {
 			validatePassword();
+		}
 		return valid;
 	}
 
@@ -328,7 +338,9 @@
 						<div
 							class="mt-3 card p-4 text-left text-sm"
 							class:variant-ghost-success={!passwordError}
-							class:variant-ghost-error={passwordError || (getPassword(mappedFields).length === 0 && getConfirmPassword(mappedFields).length === 0)}
+							class:variant-ghost-error={passwordError ||
+								(getPassword(mappedFields).length === 0 &&
+									getConfirmPassword(mappedFields).length === 0)}
 						>
 							<ul>
 								<li>

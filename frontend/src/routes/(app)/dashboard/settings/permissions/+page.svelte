@@ -16,7 +16,7 @@
 	$: selectedGroup = groupsObject.find((group: any) => group.id === selectedGroupId);
 
 	$: loaded = true;
-
+	console.log(data.permissionsObject);
 	$: JSONStringifiedGroupsObject = JSON.stringify(groupsObject);
 
 	$: permissionsObject = data.permissionsObject ?? {};

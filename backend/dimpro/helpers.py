@@ -129,6 +129,9 @@ PERMISSION_TRANSLATIONS = {
     "image": "imagen",
     "session": "sesión",
     "settings": "configuración",
+    "phonenumber": "número de teléfono",
+    "name": "nombre",
+    "email": "correo electrónico",
 }
 
 PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
@@ -174,6 +177,7 @@ PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "passwordresettoken": "token de restablecimiento de contraseña",
     "pricetypetax": "impuesto de tipo de precio",
     "updatedb": "usuario",
+    "card id": "cédula de identidad",
 }
 
 

@@ -1,6 +1,6 @@
 import { apiURL } from "$lib/api_url";
 import { checkPermission, permissionError } from "$lib/auth";
-import type { PageServerLoad } from "../../inventory/$types";
+import type { PageServerLoad } from "../../catalog/$types";
 
 export const load: PageServerLoad = async ({fetch, params, locals}: any) => {
   if (!checkPermission(locals.user, 'view_product')) {
