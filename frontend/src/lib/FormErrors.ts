@@ -66,3 +66,7 @@ export function getName(fields: any): string {
 export function getCardID(fields: any): string {
 	return fields.find((field: any) => field.name === 'card_id')?.value ?? '';
 }
+
+export function getAddress(fields: any): string {
+	return fields.find((field: any) => field.name === 'address')?.value ?? '';
+}

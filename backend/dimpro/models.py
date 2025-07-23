@@ -54,6 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     card_id = models.CharField(max_length=11, blank=True, default='')
     email = models.EmailField(blank=True, default='', unique=True)
     name = models.CharField(max_length=255, blank=True, default='')
+    address = models.TextField(blank=True, default='')
     last_name = models.CharField(max_length=255, blank=True, default='')
     phoneregex = RegexValidator(regex=r"^\+?58?\d{11,15}$")
     phonenumber = models.CharField(
@@ -83,7 +84,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             ("change_own_name_user", "Can change its own name"),
             ("change_own_phonenumber_user", "Can change its own phonenumber"),
             ("change_own_cardid_user", "Can change its own card id"),
-            ("view_own_user", "Can view own user"),
+            ("change_own_address_user", "Can change its own address"),
             
         ]
 

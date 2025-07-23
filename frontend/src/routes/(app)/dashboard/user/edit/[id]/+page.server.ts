@@ -19,6 +19,9 @@ export async function load({ fetch, locals }: any) {
 	if (checkPermission(locals.user, 'change_own_phonenumber_user')) {
 		fields.push({ type: 'text', value: '', name: 'phonenumber', label: 'Telefono' });
 	}
+    if (checkPermission(locals.user, 'change_own_address_user')) {
+        fields.push({ type: 'longtext', value: '', name: 'address', label: 'Dirección' });
+    }
     
 	if (fields.length < 1) {
 		return permissionError();

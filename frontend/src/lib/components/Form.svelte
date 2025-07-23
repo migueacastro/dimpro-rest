@@ -81,11 +81,13 @@
     (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
+		(!fields.find((f: any) => f.address == 'address') || error.validateText(getAddress(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
 	async function validateFields() {
 		valid =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
+		(!fields.find((f: any) => f.address == 'address') || error.validateText(getAddress(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
 		if (fields.find((f: any) => f.type == 'password')) {
 			validatePassword();
@@ -296,6 +298,31 @@
 									{error.empyField}
 								</div>
 							{/if}
+						{/if}
+					{/if}
+				{:else if field?.type === 'longtext'}
+					<textarea
+						class="textarea"
+						bind:value={field.value}
+						name={field.name}
+						on:input={validateFields}
+						on:focus={() => (field.touched = true)}
+					/>
+					{#if field.touched}
+						{#if field.value.length > 0}
+							{#if !error.validateText(field.value)}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.hasSpecials}
+								</div>
+							{:else if field.value.length > 512}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.tooLong}
+								</div>
+							{/if}
+						{:else}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								{error.empyField}
+							</div>
 						{/if}
 					{/if}
 				{:else if field?.type === 'email'}

@@ -5,8 +5,6 @@ from rest_framework.mixins import Response
 from rest_framework import permissions
 from django.core.mail import EmailMessage
 from rest_framework.exceptions import ValidationError
-from django.contrib.auth import authenticate, login
-
 from dimpro.models import *
 import threading
 
@@ -129,9 +127,11 @@ PERMISSION_TRANSLATIONS = {
     "image": "imagen",
     "session": "sesión",
     "settings": "configuración",
+    "select": "seleccionar",
     "phonenumber": "número de teléfono",
     "name": "nombre",
     "email": "correo electrónico",
+    "its own address": "su propia dirección",
 }
 
 PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
@@ -141,6 +141,7 @@ PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
     "exchange rate": "tasa de cambio",
     "order status": "status de pedido",
     "order product": "producto de pedido",
+    "comission": "comisión",
     "order_ product": "producto de pedido",
     "password reset token": "token de restablecimiento de contraseña",
     "price type": "tipo de precio",
@@ -148,7 +149,12 @@ PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
     "update database": "actualizar base de datos",
     "receivable": "cuenta por cobrar",
     "staff user": "empleado",
+    "payment report": "reporte de pago",
+    "payment method": "método de pago",
+    "all contacts": "todos los contactos",
     "advanced homepage": "página de inicio avanzada",
+    "custom seller": "otro vendedor",
+    "its own address": "su propia dirección",
 }
 PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "user": "usuario",
@@ -177,7 +183,11 @@ PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "passwordresettoken": "token de restablecimiento de contraseña",
     "pricetypetax": "impuesto de tipo de precio",
     "updatedb": "usuario",
+    "paymentreport": "reporte de pago",
+    "paymentmethod": "método de pago",
+    "comission": "comisión",
     "card id": "cédula de identidad",
+    "its own address": "su propia dirección",
 }
 
 
@@ -254,6 +264,8 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
     # Actualiza los campos del usuario actual
     if "name" in validated_data:
         current_user.name = validated_data.get("name")
+    if "address" in validated_data:
+        current_user.address = validated_data.get("address")
     if email:
         current_user.email = email
     if card_id:
