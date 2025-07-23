@@ -86,7 +86,7 @@
 		valid =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
-    (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
+    (!fields.find((f: any) => f.name == 'card_id') || verifyCardID(getCardID(mappedFields)));
 		if (fields.find((f: any) => f.type == 'password')) {
 			validatePassword();
 		}
@@ -135,25 +135,7 @@
 		}
 	}
 
-	async function verifyCardID(id: any) {
-		let validText = error.validateCardID(id);
-
-		if (!validText) {
-			return false;
-		}
-		let response = await fetch(apiURL + 'verify_card_id', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ card_id: id })
-		});
-		if (!response.ok) {
-			return false;
-		}
-		return true;
-	}
-
+	
 	function sendData() {
 		return async ({ update, result }: any) => {
 			if (result.data.success) {
