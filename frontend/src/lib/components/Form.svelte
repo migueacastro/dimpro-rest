@@ -283,12 +283,12 @@
 							on:focus={() => (field.touched = true)}
 						/>
 						{#if field.touched}
-							{#if field.value.length > 0}
+							{#if field?.value?.length > 0}
 								{#if !error.validateText(field.value)}
 									<div class="card variant-ghost-error p-2 text-sm text-left">
 										{error.hasSpecials}
 									</div>
-								{:else if field.value.length > 70}
+								{:else if field?.value?.length > 70}
 									<div class="card variant-ghost-error p-2 text-sm text-left">
 										{error.tooLong}
 									</div>
@@ -309,12 +309,12 @@
 						on:focus={() => (field.touched = true)}
 					/>
 					{#if field.touched}
-						{#if field.value.length > 0}
+						{#if field?.value?.length > 0}
 							{#if !error.validateText(field.value)}
 								<div class="card variant-ghost-error p-2 text-sm text-left">
 									{error.hasSpecials}
 								</div>
-							{:else if field.value.length > 512}
+							{:else if field?.value?.length > 512}
 								<div class="card variant-ghost-error p-2 text-sm text-left">
 									{error.tooLong}
 								</div>
