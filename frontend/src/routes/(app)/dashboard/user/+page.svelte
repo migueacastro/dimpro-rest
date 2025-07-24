@@ -58,7 +58,7 @@
 				<h4 class="h3 font-bold capitalize">Contacto</h4>
 				<p class="p">Teléfono: {user?.phonenumber ?? 'No definido'}</p>
 				<p class="p">Cédula: {user?.card_id ?? 'No definido'}</p>
-				<p class="p">Dirección: {(String(user?.address).length > 0) ? user?.address.length : 'No definida'}</p>
+				<p class="p">Dirección: {(String(user?.address)?.length > 0 && user?.address?.length) ? user?.address?.length : 'No definida'}</p>
 			</div>
 			<i
 				class="w-fit text-5xl fa-solid ml-2 fa-address-book my-auto text-primary-500 dark:text-surface-50"
