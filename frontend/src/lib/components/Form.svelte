@@ -10,7 +10,8 @@
 		getConfirmPassword,
 		getEmail,
 		getPhonenumber,
-		getName
+		getName,
+		getCardID
 	} from '$lib/FormErrors';
 	import {
 		getToastStore,
@@ -21,6 +22,7 @@
 	} from '@skeletonlabs/skeleton';
 	import { enhance } from '$app/forms';
 	import Datatable from './Datatable.svelte';
+	import { apiURL } from '$lib/api_url';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -37,7 +39,7 @@
 	let ogValue: any = null;
 	let id = page.params.id;
 	let action = '';
-
+	let cardIdError: boolean = false;
 	const error = new FormErrors();
 
 	interface FormErrors {
@@ -57,7 +59,7 @@
 	};
 
 	let passwordError: boolean = true;
-	function validatePassword() {
+	async function validatePassword() {
 		let password = getPassword(mappedFields)?.toString();
 		let confirm = getConfirmPassword(mappedFields)?.toString();
 		let isValid: boolean;
@@ -70,22 +72,26 @@
 				error.hasUpperCase(password) &&
 				password === confirm;
 		}
-		
+
 		passwordError = !isValid;
 		return isValid;
 	}
 
-	$: valid =
-		error.validateEmail(getEmail(mappedFields)) &&
-		error.validatePhoneNumber(getPhonenumber(mappedFields)) &&
-		error.validateText(getName(mappedFields)) &&
-		validatePassword();
-	function validateFields() {
-		valid =
-			error.validateEmail(getEmail(mappedFields)) &&
-			error.validatePhoneNumber(getPhonenumber(mappedFields)) &&
-			error.validateText(getName(mappedFields)) &&
+	let valid =
+    (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
+		(!fields.find((f: any) => f.address == 'address') || error.validateText(getAddress(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
+	async function validateFields() {
+		valid =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
+		(!fields.find((f: any) => f.address == 'address') || error.validateText(getAddress(mappedFields))) &&
+    (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
+		if (fields.find((f: any) => f.type == 'password')) {
 			validatePassword();
+		}
 		return valid;
 	}
 
@@ -131,6 +137,7 @@
 		}
 	}
 
+	
 	function sendData() {
 		return async ({ update, result }: any) => {
 			if (result.data.success) {
@@ -151,7 +158,7 @@
 			} else {
 				console.log(result.data);
 				const toast: ToastSettings = {
-					message: `¡ERROR! El ${table_name} no se pudo ${action}ar.
+					message: `¡ERROR!.
 							mensaje: ${result.data.error}`,
 					background: 'variant-ghost-error',
 					timeout: 3500
@@ -243,6 +250,29 @@
 								</ul>
 							</div>
 						{/if}
+					{:else if field.name === 'card_id'}
+						<input
+							class="input"
+							type="text"
+							bind:value={field.value}
+							placeholder="V10000000"
+							name={field.name}
+							on:input={validateFields}
+							on:focus={() => (field.touched = true)}
+						/>
+						{#if field.touched}
+							{#if String(field.value)?.length >= 8 && String(field.value)?.length <= 9}
+								{#if !field.value.match(/^[VvEe][0-9]{8,9}$/)}
+									<div class="card variant-ghost-error p-2 text-sm text-left">
+										{'La cédula no es válida'}
+									</div>
+								{/if}
+							{:else}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{'La cédula debe tener entre 8 y 9 caracteres'}
+								</div>
+							{/if}
+						{/if}
 					{:else}
 						<input
 							class="input"
@@ -268,6 +298,31 @@
 									{error.empyField}
 								</div>
 							{/if}
+						{/if}
+					{/if}
+				{:else if field?.type === 'longtext'}
+					<textarea
+						class="textarea"
+						bind:value={field.value}
+						name={field.name}
+						on:input={validateFields}
+						on:focus={() => (field.touched = true)}
+					/>
+					{#if field.touched}
+						{#if field.value.length > 0}
+							{#if !error.validateText(field.value)}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.hasSpecials}
+								</div>
+							{:else if field.value.length > 512}
+								<div class="card variant-ghost-error p-2 text-sm text-left">
+									{error.tooLong}
+								</div>
+							{/if}
+						{:else}
+							<div class="card variant-ghost-error p-2 text-sm text-left">
+								{error.empyField}
+							</div>
 						{/if}
 					{/if}
 				{:else if field?.type === 'email'}
@@ -328,7 +383,9 @@
 						<div
 							class="mt-3 card p-4 text-left text-sm"
 							class:variant-ghost-success={!passwordError}
-							class:variant-ghost-error={passwordError || (getPassword(mappedFields).length === 0 && getConfirmPassword(mappedFields).length === 0)}
+							class:variant-ghost-error={passwordError ||
+								(getPassword(mappedFields).length === 0 &&
+									getConfirmPassword(mappedFields).length === 0)}
 						>
 							<ul>
 								<li>

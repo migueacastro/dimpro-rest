@@ -1,13 +1,34 @@
 import { apiURL } from '$lib/api_url.js';
-import { checkStaffGroup } from '$lib/auth';
+import { checkPermission, checkStaffGroup, permissionError } from '$lib/auth';
 import { redirect, type Actions } from '@sveltejs/kit';
 
 export async function load({ fetch, locals }: any) {
     if (!locals.user) {
         return redirect(303, '/start');
     }
+    let fields: any = [];
+    if (checkPermission(locals.user, 'change_own_cardid_user')) {
+        fields.push({ type: 'text', value: '', name: 'card_id', label: 'Cédula' });
+    }
+    if (checkPermission(locals.user, 'change_own_email_user')) {
+		fields.push({ type: 'email', value: '', name: 'email', label: 'Email' });
+	}
+	if (checkPermission(locals.user, 'change_own_name_user')) {
+		fields.push({ type: 'text', value: '', name: 'name', label: 'Nombre' });
+	}
+	if (checkPermission(locals.user, 'change_own_phonenumber_user')) {
+		fields.push({ type: 'text', value: '', name: 'phonenumber', label: 'Telefono' });
+	}
+    if (checkPermission(locals.user, 'change_own_address_user')) {
+        fields.push({ type: 'longtext', value: '', name: 'address', label: 'Dirección' });
+    }
+    
+	if (fields.length < 1) {
+		return permissionError();
+	}
     return {
-        user: locals.user
+        user: locals.user,
+        fields
     };
     
 }

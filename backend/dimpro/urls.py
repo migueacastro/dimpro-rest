@@ -28,7 +28,7 @@ urlpatterns = [
     path("logout", UserLogoutView.as_view()),
     path("login/staff", StaffOnlyLoginView.as_view()),
     path("user", UserProfileView.as_view()),
-    path("register", UserRegistrationView.as_view()),
+    #path("register", UserRegistrationView.as_view()),
     path("csrf", RefreshCSRFTokenView.as_view()),
     path("user/change_password", UserChangePasswordView.as_view()),
     path("user/verify_password", UserVerifyPasswordView.as_view()),
@@ -37,7 +37,7 @@ urlpatterns = [
     path('password-reset-complete', SetNewPasswordAPIView.as_view(), name='password-reset-complete'),
 
     path("export_order_pdf", ExportOrderPDFView.as_view()),
-    path("export_inventory_pdf", ExportInventoryPDFView.as_view()),
+    path("export_catalog_pdf", ExportCatalogPDFView.as_view()),
     path("updatedb", UpdateDBView.as_view()),
     path("alegratoken", AlegraTokenView.as_view())
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

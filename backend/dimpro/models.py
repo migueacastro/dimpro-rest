@@ -51,8 +51,10 @@ class CustomUserManager(UserManager):
 
 class User(AbstractBaseUser, PermissionsMixin): 
     id = models.AutoField(primary_key=True)
+    card_id = models.CharField(max_length=11, blank=True, default='')
     email = models.EmailField(blank=True, default='', unique=True)
     name = models.CharField(max_length=255, blank=True, default='')
+    address = models.TextField(blank=True, default='')
     last_name = models.CharField(max_length=255, blank=True, default='')
     phoneregex = RegexValidator(regex=r"^\+?58?\d{11,15}$")
     phonenumber = models.CharField(
@@ -78,6 +80,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             ("add_staff_user", "Can add staff user"),
             ("view_settings_user", "Can view settings"),
             ("view_advanced_homepage_user", "Can view advanced homepage"),
+            ("change_own_email_user", "Can change its own email"),
+            ("change_own_name_user", "Can change its own name"),
+            ("change_own_phonenumber_user", "Can change its own phonenumber"),
+            ("change_own_cardid_user", "Can change its own card id"),
+            ("change_own_address_user", "Can change its own address"),
+            
         ]
 
     def get_full_name(self):

@@ -36,6 +36,13 @@ export class FormErrors {
 			this.hasNumbers(password)
 		);
 	}
+	validateCardID(cardID: string): boolean {
+		if (cardID.length < 8 || cardID.length > 9) {
+			return false;
+		}
+		const cardIDRegex = /^[VvEe][0-9]{8,9}$/;
+		return cardIDRegex.test(cardID);
+	}
 }
 
 export function getPassword(fields: any): string  {
@@ -54,4 +61,12 @@ export function getPhonenumber(fields: any): string {
 }
 export function getName(fields: any): string {
 	return fields.find((field: any) => field.name === 'name')?.value ?? '';
+}
+
+export function getCardID(fields: any): string {
+	return fields.find((field: any) => field.name === 'card_id')?.value ?? '';
+}
+
+export function getAddress(fields: any): string {
+	return fields.find((field: any) => field.name === 'address')?.value ?? '';
 }

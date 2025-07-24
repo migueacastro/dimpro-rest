@@ -92,7 +92,7 @@
 					{#if checkPermission(user, 'view_product')}
 						<li>
 							<a
-								href="/dashboard/inventory"
+								href="/dashboard/catalog"
 								class="w-fit my-2 mx-auto h4 font-bold"
 								on:click={hideDrawer}
 							>
@@ -263,7 +263,7 @@
 				</a>
 			{/if}
 			{#if checkPermission(user, 'view_product')}
-				<a href="/dashboard/inventory">
+				<a href="/dashboard/catalog">
 					<div class="px-7 flex flex-row items-center bg-gradient-to-br hover:variant-soft-surface">
 						<i class="py-5 fa-solid fa-boxes-stacked h3 w-20"></i>
 						<p
@@ -273,7 +273,7 @@
 							class:hide-text={!expandedSideBar}
 							style:pointer-events={!expandedSideBar ? 'none' : 'auto'}
 						>
-							Inventario
+							Catálogo
 						</p>
 					</div>
 				</a>

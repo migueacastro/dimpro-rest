@@ -111,9 +111,6 @@
 		<button class="btn btn-xl variant-filled-primary my-2 w-full shadow-xl" type="submit"
 			>Iniciar Sesión</button
 		>
-		<p class="mt-4">
-			¿Es un nuevo vendedor? <a class="anchor no-underline" href="/register">Registrese</a>
-		</p>
 	</form>
 </div>
 {:else}

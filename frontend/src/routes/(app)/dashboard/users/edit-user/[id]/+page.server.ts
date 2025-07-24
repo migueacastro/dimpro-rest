@@ -59,11 +59,12 @@ export const actions: Actions = {
 			body: JSON.stringify(body)
 		});
 		if (!response.ok) {
-			console.log(await response.text());
+			console.log("Error");
 		}
+		const data = await response.json()
 		return {
 			success: response.ok,
-			error: response.statusText
+			error: data.error
 		};
 	}
 };

@@ -14,6 +14,6 @@
 	table_name={'vendedor'}
 	model_name={'user'}
 	user={user}
-	fields={['name', 'email', 'phonenumber']}
-	headings={['Nombre', 'Email', 'Teléfono']}
+	fields={['name', 'email', 'card_id','phonenumber']}
+	headings={['Nombre', 'Email', 'Cédula','Teléfono']}
 />

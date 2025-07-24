@@ -5,11 +5,13 @@
 	let {user} = data;
 	let {reqUser} = data;
 	let fields = [
+		{ type: 'text', value: '', name: 'card_id', label: 'Cédula' },
 		{ type: 'email', value: '', name: 'email', label: 'email' },
 		{ type: 'text', value: '', name: 'name', label: 'Nombre' },
 		{ type: 'password', value: '', name: 'password', label: 'contraseña' },
 		{ type: 'password', value: '', name: 'confirmPassword', label: 'confirmar contraseña' },
 		{ type: 'text', value: '', name: 'phonenumber', label: 'telefono' },
+		{ type: 'longtext', value: '', name: 'address', label: 'Dirección' },
 		{ type: 'select', value: data.reqUser.groups[0], name: 'groups', label: 'Tipo de usuario', options: data.groups},
 	];
 </script>

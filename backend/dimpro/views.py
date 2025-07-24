@@ -543,7 +543,7 @@ class ExportOrderPDFView(APIView):
         )
 
 
-class ExportInventoryPDFView(APIView):
+class ExportCatalogPDFView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -624,7 +624,7 @@ class ExportInventoryPDFView(APIView):
         spacer = Spacer(1, 12)
 
         information = Paragraph(
-            f"<p>Listado de productos presentes en el inventario actual</p>",
+            f"<p>Catálogo de productos actual</p>",
             styles["Normal"],
         )
         current_date = Paragraph(
@@ -640,7 +640,7 @@ class ExportInventoryPDFView(APIView):
         return FileResponse(
             buf,
             as_attachment=True,
-            filename=f"inventory-{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+            filename=f"catalog-{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
         )
 
 

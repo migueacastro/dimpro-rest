@@ -1,7 +1,11 @@
 import type { Actions } from '@sveltejs/kit';
 import { login, fetchRegister } from '$lib/auth';
 import { apiURL } from '$lib/api_url';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
+
+export const load = async () => {
+    return redirect(303, '/');
+}
 
 export const actions: Actions = {
 	register: async ({ request, locals, fetch, cookies }) => {
