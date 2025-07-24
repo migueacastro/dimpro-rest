@@ -18,7 +18,7 @@
 					<h4 class="h4 capitalize my-2">Email: {staff?.email ?? 'No definido'}</h4>
 					<h4 class="h4 capitalize my-2">Teléfono: {staff?.phonenumber ?? 'No definido'}</h4>
 					<h4 class="h4 capitalize my-2">Cédula: {staff?.card_id ?? 'No definido'}</h4>
-					<h4 class="h4 capitalize my-2">Dirección: {(String(staff?.address).length > 0) ? staff?.address.length : 'No definida'}</h4>
+					<h4 class="h4 capitalize my-2">Dirección: {(String(user?.address)?.length > 0 && user?.address?.length) ? user?.address?.length : 'No definida'}</h4>
 				</div>
 			</div>
 			<div class="card p-[3rem] w-full mb-[2rem]">
