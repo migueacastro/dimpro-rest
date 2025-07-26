@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { checkAdminGroup, checkStaffGroup } from '$lib/auth';
-
-	export let data;
-	export let { user } = data; // I imported user from data, but notice that, in this route there is no +page.server.ts
+	import { checkAdminGroup, checkPermission, checkStaffGroup } from '$lib/auth';
+	import InvoiceChart from '$lib/components/InvoiceChart.svelte';
+	export let data: any;
+	export let { user } = data;
+	// I imported user from data, but notice that, in this route there is no +page.server.ts
 	// So, why is the user being imported anyway? ???
 	// I was making this before this morning.
 	// The intersting very interesting thing i want you to see is this
@@ -20,6 +21,8 @@
 		};
 		return new Intl.DateTimeFormat('es-ES', opciones).format(date);
 	}
+
+	console.log(data?.invoices);
 </script>
 
 <div class="flex flex-col">
@@ -32,7 +35,11 @@
 						{!user?.name || user?.name.trim() == '' ? 'Usuario' : user.name}
 					</h4>
 					<h3 class="h3 font-bold capitalize my-2">
-						{checkStaffGroup(user) ? (checkAdminGroup(user) ? 'Administrador': 'Empleado') : 'Vendedor'}
+						{checkStaffGroup(user)
+							? checkAdminGroup(user)
+								? 'Administrador'
+								: 'Empleado'
+							: 'Vendedor'}
 					</h3>
 					<h4 class="h4 my-2">
 						<i class="fa-solid fa-envelope text-primary-500 dark:text-surface-50"></i>
@@ -58,7 +65,11 @@
 				<h4 class="h3 font-bold capitalize">Contacto</h4>
 				<p class="p">Teléfono: {user?.phonenumber ?? 'No definido'}</p>
 				<p class="p">Cédula: {user?.card_id ?? 'No definido'}</p>
-				<p class="p">Dirección: {(String(user?.address)?.length > 0 && user?.address?.length) ? user?.address : 'No definida'}</p>
+				<p class="p">
+					Dirección: {String(user?.address)?.length > 0 && user?.address?.length
+						? user?.address
+						: 'No definida'}
+				</p>
 			</div>
 			<i
 				class="w-fit text-5xl fa-solid ml-2 fa-address-book my-auto text-primary-500 dark:text-surface-50"
@@ -74,7 +85,7 @@
 				<a class="text-primary-500 dark:text-surface-50" href="/dashboard/user/change-password"
 					><i class="fa-solid fa-key mr-1"></i>Cambiar Contraseña</a
 				>
-				<a class="text-error-500" href="/salir" on:click|preventDefault={() => goto("/logout")}
+				<a class="text-error-500" href="/salir" on:click|preventDefault={() => goto('/logout')}
 					><i class="fa-solid fa-xmark mr-1"></i>Cerrar Sesión</a
 				>
 			</div>
@@ -82,4 +93,12 @@
 			></i>
 		</div>
 	</div>
+	{#if checkPermission(user, 'show_invoices_user') && checkPermission(user, 'view_invoice')}
+		<div class="card p-[3rem] mb-[2rem] flex flex-row justify-between shadow-md w-full">
+			<div class="flex flex-col w-full">
+				<h4 class="h2 font-bold capitalize my-2">Facturas de venta</h4>
+				<InvoiceChart invoices={data?.invoices} />
+			</div>
+		</div>
+	{/if}
 </div>

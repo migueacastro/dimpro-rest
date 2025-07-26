@@ -4,6 +4,9 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [sveltekit(), purgeCss()],
+  ssr: {
+			noExternal: process.env.NODE_ENV === 'production' ? ['@carbon/charts'] : []
+	},
   server: {
     allowedHosts:['castroworks.lat'],
     host: "0.0.0.0",

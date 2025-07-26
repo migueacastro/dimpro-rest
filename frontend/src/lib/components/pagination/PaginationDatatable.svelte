@@ -15,6 +15,7 @@
 	} from '@skeletonlabs/skeleton';
 	import { Result } from 'postcss';
 	import { enhance } from '$app/forms';
+	import { page } from '$app/stores';
 	import { checkPermission } from '$lib/auth';
 	//import { loading } from '../../stores/stores';
 
@@ -52,7 +53,6 @@
 	loading = false;
 	let timeout: any;
 	let notSystemChecked = handler.not_system ?? false;
-	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 
 	function buildQuery(parameter: string, newPage: number | string) {
@@ -62,6 +62,9 @@
 		// The pathname is important to preserve the current location (for example, '/dashboard/logs')
 		return currentPage.url.pathname + '?' + params.toString();
 	}
+
+	$: params = new URLSearchParams($page.url.search);
+
 	function buildQueryWithKeys(paramsToSet: Record<string, string | number>) {
 		const currentPage = get(page);
 		const params = new URLSearchParams(currentPage.url.search);
@@ -135,6 +138,19 @@
 
 <div class=" overflow-x-auto space-y-4" class:hidden={!loaded}>
 	<!-- Header -->
+	{#key params.size}
+		{#if params.size > 0}
+			<div class="w-full flex flex-row justify-end">
+				<button
+					on:click={() => goto('/dashboard/logs')}
+					class="flex flex-row text-primary-500 dark:text-primary-300"
+				>
+					<p class="whitespace-nowrap mr-2 text-xs lg:text-md">Quitar filtros</p>
+					<i class="fa-solid fa-xmark"></i>
+				</button>
+			</div>
+		{/if}
+	{/key}
 	<header
 		class="flex flex-col flex-wrap lg:flex-nowrap w-screen lg:w-full lg:flex-row justify-between gap-4"
 	>
@@ -160,8 +176,8 @@
 					size="sm"
 					bind:checked={notSystemChecked}
 					on:click={(e) => {
-						setTimeout(() =>goto(buildQueryWithKeys({ not_system: !notSystemChecked, page: '' }, 300)
-							)
+						setTimeout(() =>
+							goto(buildQueryWithKeys({ not_system: !notSystemChecked, page: '' }, 300))
 						);
 					}}
 				/>

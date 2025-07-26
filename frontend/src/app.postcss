@@ -105,3 +105,94 @@ body {
 .hide-navbar {
 	animation: hide-mobile-navbar 1000ms ease-in-out;
 }
+.cds--cc--chart-wrapper {
+  --cds-charts-font-family: Roboto;
+  --cds-charts-font-family-condensed: 'Roboto Condensed';
+}
+.cds--cc--chart-wrapper .background-1-1-1 {
+	@apply bg-primary-500 dark:bg-surface-50 !important ;
+}
+
+.cds--cc--chart-wrapper p,  .cds--cc--chart-wrapper text {
+  @apply text-primary-500 dark:text-surface-50 !important;
+}
+
+.cds--cc--axes g.axis g.tick text, .cds--cc--axes g.axis .axis-title {
+	@apply fill-primary-500 dark:fill-surface-50 !important;
+}
+
+.cds--cc--chart-wrapper .fill-1-1-1 {
+	@apply fill-primary-500 dark:fill-surface-50 !important;
+}
+.cds--cc--chart-wrapper .stroke-1-1-1 {
+	@apply stroke-primary-500 dark:stroke-surface-50 !important;
+}
+
+.cds--cc--grid rect.chart-grid-backdrop {
+	@apply stroke-surface-100 dark:stroke-surface-100 !important;
+}
+.cds--chart-holder .cds--cc--toolbar .cds--overflow-menu * {
+	@apply fill-primary-500 dark:fill-surface-50 !important;
+}
+
+.cds--cc--grid rect.chart-grid-backdrop {
+  @apply fill-surface-200 dark:fill-surface-900 !important;
+}
+
+.cds--chart-holder.filled, .cds--chart-holder.fullscreen, .cds--chart-holder.filled .cds--cc--chart-wrapper, .cds--chart-holder.fullscreen .cds--cc--chart-wrapper {
+	@apply bg-surface-200 dark:bg-surface-900 !important;
+}
+
+.cds--chart-holder .cds--modal .cds--modal-container {
+	@apply bg-surface-200 dark:bg-surface-900 !important;
+}
+ .cds--modal > p text {
+	@apply text-primary-500 dark:text-surface-50 !important;
+	@apply fill-primary-500 dark:fill-surface-50 !important;
+}
+.cds--chart-holder .cds--modal .cds--modal-container * {
+  @apply text-surface-900 dark:text-surface-50 !important;
+	@apply fill-surface-900 dark:fill-surface-50 !important;
+}
+
+.cds--chart-holder .cds--modal .cds--modal-container * {
+	@apply text-surface-900 dark:text-surface-50 !important;
+	@apply fill-surface-900 dark:fill-surface-50 !important;
+}
+
+.cds--chart-holder .cds--modal .cds--modal-container .cds--modal-footer .cds--btn--primary {
+	@apply bg-primary-500  !important;
+	@apply text-surface-50 !important;
+}
+.cds--chart-holder .cds--modal .cds--modal-container .cds--modal-content .cds--data-table thead tr th {
+	@apply bg-surface-300 dark:bg-surface-800 !important;
+	@apply text-surface-500 dark:text-surface-50 !important;
+}
+
+.cds--chart-holder .cds--modal .cds--modal-container .cds--modal-content .cds--data-table tbody tr td {
+	@apply bg-surface-200 dark:bg-surface-900 !important;
+	@apply text-surface-500 dark:text-surface-50 !important;
+}
+.cds--chart-holder .cds--cc--toolbar .cds--overflow-menu-options button {
+	@apply bg-surface-200 dark:bg-surface-900 hover:border-primary-500 !important;
+	@apply text-surface-500 dark:text-surface-50 !important;
+}
+
+.cds--cc--chart-wrapper .layout-child {
+	@apply hover:bg-surface-300 dark:hover:bg-surface-800 !important;
+}
+
+.cds--cc--tooltip, .cds--cc--tooltip * {
+	@apply bg-surface-200 dark:bg-surface-900 !important;
+	@apply text-surface-500 dark:text-surface-50 !important;
+}
+
+.cds--chart-holder .cds--cc--toolbar .cds--overflow-menu:hover, .cds--chart-holder .cds--cc--toolbar .cds--overflow-menu__trigger:hover {
+	@apply bg-surface-200 dark:bg-surface-900 !important;
+	@apply text-surface-500 dark:text-surface-50 !important;
+}
+
+
+.cds--chart-holder .cds--cc--toolbar .cds--overflow-menu:focus, .cds--chart-holder .cds--cc--toolbar .cds--overflow-menu__trigger:focus, .cds--chart-holder .cds--cc--toolbar .cds--overflow-menu-options .cds--overflow-menu-options__option .cds--overflow-menu-options__btn:focus {
+	@apply outline-primary-500 dark:outline-surface-50 !important;
+}

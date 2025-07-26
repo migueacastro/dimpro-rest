@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 import base64
 from django.db import OperationalError
+import pprint
 import time
 import requests
 
@@ -31,6 +32,7 @@ def updatedb():
 
     update_products_atomic(client)
     update_contacts_atomic(client)
+    update_invoices_atomic(client)
 
 def update_products_atomic(client):
     items = fetch_all_items(client)  # Fetch outside transaction
@@ -46,6 +48,48 @@ def update_products_atomic(client):
 
         # Bulk update/create products
         bulk_update_or_create_products(product_data_list)
+    
+def update_invoices_atomic(client):
+    items = fetch_all_invoices(client)
+    
+    with transaction.atomic():
+        invoice_data_list = []
+        for row in items:
+            data = extract_invoice_data(row)
+            invoice_data_list.append(data)
+        bulk_create_invoices(invoice_data_list)
+
+
+def extract_invoice_data(row):
+    id = row.get("id", "")
+    seller_name = row["seller"]["name"] if row["seller"] else ""
+    date = row.get("date", "")
+    total = row.get("total", 0)
+
+    return {
+        "id": id,
+        "seller_name": seller_name,
+        "date": date,
+        "total": total,
+        "active": True,
+    }
+
+
+def bulk_create_invoices(invoice_data_list):
+    to_create = []
+    for data in invoice_data_list:
+        new_invoice = Invoice(
+            id=data["id"],  # Optional, if id is provided
+            seller_name=data["seller_name"] if "seller_name" in data else "",
+            date=data["date"],
+            total=data["total"],
+            active=data["active"],
+        )
+        to_create.append(new_invoice)
+
+    if to_create:
+        Invoice.objects.bulk_create(to_create)
+    
 
 def update_contacts_atomic(client):
     with transaction.atomic():
@@ -70,17 +114,20 @@ def extract_product_data(row):
     """
     Extract structured product data from a row.
     """
-    product_id = row["id"]
-    item = row["name"]
+    product_id = row.get("id", "")
+    item = row.get("name", "")
     details = row.get("description", "")
     reference = row.get("reference", "")
     prices = extract_prices(row.get("price", []))
     available_quantity = extract_available_quantity(row.get("inventory", {}))
-    active = available_quantity > 0 and row["price"][0]["price"] > 0
+    try:
+        active = available_quantity > 0 and row["price"][0]["price"] > 0
+    except Exception:
+        active = False
 
     # You can also update price types if needed:
     if item == "BOMBILLO LED 12W":
-        update_price_types(row["price"])
+        update_price_types(row["price"]) if row.get("price") else None
 
     return {
         "id": product_id,
@@ -149,13 +196,36 @@ def fetch_all_items(client):
     items = []
     i = 0
     while True:
-        response = requests.get(url=ENDPOINT+f"items?start={str(30*i)}&order_direction=ASC", headers=client)
-        dictu = response.json()
-        if not dictu:
+        try:
+            response = requests.get(
+                url=ENDPOINT + f"items?start={str(30*i)}&order_direction=ASC",
+                headers=client
+            )
+            
+            # Handle rate limiting (429)
+            if response.status_code == 429:
+                time_remaining = int(response.headers.get("x-rate-limit-reset", 10))
+                print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
+                time.sleep(time_remaining)
+                continue  # Retry the same request
+                
+            # Handle other errors
+            if response.status_code != 200:
+                print(f"Error fetching items: {response.status_code} - {response.text}")
+                break
+                
+            # Process successful response
+            data = response.json()
+            if not data:
+                break  # No more items
+                
+            items.extend(data)
+            i += 1
+            
+        except Exception as e:
+            print(f"Request failed: {str(e)}")
             break
-        items.extend(dictu)
-        i += 1
-        time.sleep(1)
+            
     return items
 
 
@@ -164,13 +234,47 @@ def fetch_all_contacts(client):
     i = 0
     while True:
         response = requests.get(url=ENDPOINT+f"contacts?start={str(30*i)}&order_direction=ASC", headers=client)
-        dictu = response.json()
-        if not dictu:
-            break
-        contacts.extend(dictu)
-        i += 1
-        time.sleep(1)
+        if response.status_code != 200:
+                response = response.json()
+                response_headers = response.get("headers", {})
+                response_code = int(response.get("code", 500))
+                if response_code == 429:
+                    time_remaining = response_headers.get("x-rate-limit-reset", 0)
+                    print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
+                    time.sleep(time_remaining)
+                print(f"Error fetching items: {str(response.get('code', 'No code'))} - {response.get('message', 'No message provided')}")
+        else:
+            dictu = response.json()
+            if not dictu:
+                break
+            contacts.extend(dictu) if dictu and response.status_code == 200 else None
+            i += 1
+        
     return contacts
+
+def fetch_all_invoices(client):
+    start_id = Invoice.objects.order_by('id').last().id if Invoice.objects.exists() else 1
+    invoices = []
+    i = 0
+    while True:
+        response = requests.get(url=ENDPOINT+f"invoices?start={str(start_id + 30*i)}&order_direction=ASC", headers=client)
+        if response.status_code != 200:
+            response = response.json()
+            response_headers = response.get("headers", {})
+            response_code = int(response.get("code", 500))
+            if response_code == 429:
+                time_remaining = response_headers.get("x-rate-limit-reset", 0)
+                print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
+                time.sleep(time_remaining)
+            print(f"Error fetching invoices: {str(response.get('code', 'No code'))} - {response.get('message', 'No message provided')}")
+        else:
+            dictu = response.json()
+            if not dictu:
+                break
+            invoices.extend(dictu) if dictu and response.status_code == 200 else None
+            i += 1
+    return invoices
+
 
 
 def deactivate_all_products():
@@ -205,11 +309,16 @@ def update_price_types(price_list):
 
 
 def process_contact(row):
-    contact_id = row.get("id", "")
-    name = row["name"]
-    Contact.objects.update_or_create(
-        id=contact_id, defaults={"name": name, "active": True}
-    )
+    try:
+        contact_id = row.get("id", "")
+        name = row["name"]
+        Contact.objects.update_or_create(
+            id=contact_id, defaults={"name": name, "active": True}
+        )
+    except Exception as e:
+        print("KeyError processing contact row:")
+        pprint.pprint(row)
+        print(f"Error: {e}")
 
 
 def safe_update_products(client, retries=3):

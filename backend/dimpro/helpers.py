@@ -5,8 +5,11 @@ from rest_framework.mixins import Response
 from rest_framework import permissions
 from django.core.mail import EmailMessage
 from rest_framework.exceptions import ValidationError
+from django.db.models import Func
+
 from dimpro.models import *
 import threading
+
 
 
 class SafeViewSet(viewsets.ModelViewSet):
@@ -132,6 +135,9 @@ PERMISSION_TRANSLATIONS = {
     "name": "nombre",
     "email": "correo electrónico",
     "its own address": "su propia dirección",
+    "show": "mostrar",
+    "invoice": "factura de venta",
+    "invoices": "facturas de venta",
 }
 
 PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
@@ -155,6 +161,8 @@ PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
     "advanced homepage": "página de inicio avanzada",
     "custom seller": "otro vendedor",
     "its own address": "su propia dirección",
+    "invoice": "factura de venta",
+    "invoices": "facturas de venta",
 }
 PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "user": "usuario",
@@ -188,6 +196,9 @@ PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "comission": "comisión",
     "card id": "cédula de identidad",
     "its own address": "su propia dirección",
+    "bill": "factura",
+    "invoice": "factura de venta",
+    "invoices": "facturas de venta",
 }
 
 
@@ -337,3 +348,16 @@ def create_user(self, request, *args, **kwargs):
     data = UserSerializer(user_instance).data
     data["password"] = password
     return Response(data, status=status.HTTP_201_CREATED)
+
+
+
+class Levenshtein(Func):
+    template = "%(function)s(%(expressions)s, '%(search_term)s')"
+    function = "levenshtein"
+
+    def __init__(self, expression, search_term, **extras):
+        super(Levenshtein, self).__init__(
+            expression,
+            search_term=search_term,
+            **extras
+        )

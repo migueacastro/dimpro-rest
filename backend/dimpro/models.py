@@ -85,7 +85,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             ("change_own_phonenumber_user", "Can change its own phonenumber"),
             ("change_own_cardid_user", "Can change its own card id"),
             ("change_own_address_user", "Can change its own address"),
-            
+            ("show_invoices_user", "Can show invoices"),
         ]
 
     def get_full_name(self):
@@ -222,6 +222,14 @@ class Note(models.Model):
     active = models.BooleanField(default=True, blank=False, null=False)
 auditlog.register(Note)
 
+
+class Invoice(models.Model):
+    id = models.AutoField(primary_key=True)
+    total = models.DecimalField(max_digits=7, decimal_places=2, blank=True, default=0)
+    seller_name = models.CharField(max_length=128, blank=True, null=True)
+    date = models.DateTimeField(blank=True, null=True)
+    active = models.BooleanField(default=True, blank=False, null=False)
+auditlog.register(Invoice)
 
 #class PasswordResetToken(models.Model):
 #    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')

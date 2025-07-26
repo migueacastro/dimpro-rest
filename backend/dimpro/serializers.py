@@ -450,3 +450,9 @@ class VerifyCardIDSerializer(serializers.Serializer):
     card_id = serializers.CharField(max_length=11, write_only=True)
     class Meta:
         fields = ["card_id"]
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = ["id", "total", "seller_name", "date"]
