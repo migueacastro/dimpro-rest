@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "dimpro",
-    "corsheaders", # Agregue corsheaders
+    "corsheaders", 
     "auditlog",
     "django_q",
     'django_filters',

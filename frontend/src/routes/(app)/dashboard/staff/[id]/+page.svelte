@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { checkPermission } from '$lib/auth';
 	import Datatable from '$lib/components/Datatable.svelte';
+	import InvoiceChart from '$lib/components/InvoiceChart.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
 	let {user} = data;
@@ -29,6 +31,14 @@
 				</div>
 			</div>
 		</div>
+		{#if checkPermission(staff, 'show_invoices_user') && checkPermission(user, 'view_invoice')}
+			<div class="card p-[3rem] mb-[2rem] flex flex-row justify-between shadow-md w-full">
+				<div class="flex flex-col w-full">
+					<h4 class="h2 font-bold capitalize my-2">Facturas de venta</h4>
+					<InvoiceChart invoices={data?.invoices} />
+				</div>
+			</div>
+		{/if}
 		<div class="flex flex-row justify-between mb-[2rem]">
 			<h2 class="h2">Pedidos: {staff?.orders?.length}</h2>
 		</div>
