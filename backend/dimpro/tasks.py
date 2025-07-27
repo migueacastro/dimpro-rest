@@ -208,6 +208,9 @@ def fetch_all_items(client):
                 print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
                 time.sleep(time_remaining)
                 continue  # Retry the same request
+            elif response.status_code == 401:
+                print("Unauthorized access. Check your API credentials.")
+                raise Exception("Unauthorized access. Check your API credentials.")
                 
             # Handle other errors
             if response.status_code != 200:
@@ -242,6 +245,9 @@ def fetch_all_contacts(client):
                     time_remaining = response_headers.get("x-rate-limit-reset", 0)
                     print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
                     time.sleep(time_remaining)
+                elif response.status_code == 401:
+                    print("Unauthorized access. Check your API credentials.")
+                    raise Exception("Unauthorized access. Check your API credentials.")
                 print(f"Error fetching items: {str(response.get('code', 'No code'))} - {response.get('message', 'No message provided')}")
         else:
             dictu = response.json()
@@ -266,6 +272,9 @@ def fetch_all_invoices(client):
                 time_remaining = response_headers.get("x-rate-limit-reset", 0)
                 print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
                 time.sleep(time_remaining)
+            elif response.status_code == 401:
+                print("Unauthorized access. Check your API credentials.")
+                raise Exception("Unauthorized access. Check your API credentials.")
             print(f"Error fetching invoices: {str(response.get('code', 'No code'))} - {response.get('message', 'No message provided')}")
         else:
             dictu = response.json()
