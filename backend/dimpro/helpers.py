@@ -271,7 +271,18 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
             {"error": "La cédula de identidad ya está en uso."},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
+    
+    disabled_email_user = User.objects.filter(email=email, active=False)
+    if disabled_email_user.exists():
+        disabled_email_user = disabled_email_user.first()
+        disabled_email_user.email += "d"
+        disabled_email_user.save()
+    disabled_card_id_user = User.objects.filter(card_id=card_id, active=False)
+    if disabled_card_id_user.exists():
+        disabled_card_id_user = disabled_card_id_user.first()
+        disabled_card_id_user.card_id += "d"
+        disabled_card_id_user.save()
+        
     # Actualiza los campos del usuario actual
     if "name" in validated_data:
         current_user.name = validated_data.get("name")
@@ -333,8 +344,11 @@ def create_user(self, request, *args, **kwargs):
             status=status.HTTP_400_BAD_REQUEST,
         )
     user_instance, created = User.objects.update_or_create(
-        email=email, card_id=card_id, active=True, defaults=validated_data
+        email=email, defaults=validated_data
     )
+    
+    user_instance.active = True
+    user_instance.save()
     if password:
         user_instance.set_password(password)
     if user_groups is not None:
