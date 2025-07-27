@@ -275,13 +275,25 @@ def partial_update_user(self, request, login=False, *args, **kwargs):
     disabled_email_user = User.objects.filter(email=email, active=False)
     if disabled_email_user.exists():
         disabled_email_user = disabled_email_user.first()
-        disabled_email_user.email += "d"
-        disabled_email_user.save()
+        ds_to_add = "d"
+        while True:
+            try:
+                disabled_email_user.email += ds_to_add
+                disabled_email_user.save()
+                break
+            except Exception as e:
+                ds_to_add += "d"
     disabled_card_id_user = User.objects.filter(card_id=card_id, active=False)
     if disabled_card_id_user.exists():
         disabled_card_id_user = disabled_card_id_user.first()
-        disabled_card_id_user.card_id += "d"
-        disabled_card_id_user.save()
+        ds_to_add = "d"
+        while True:
+            try:
+                disabled_card_id_user.card_id += ds_to_add
+                disabled_card_id_user.save()
+                break
+            except Exception as e:
+                ds_to_add += "d"
         
     # Actualiza los campos del usuario actual
     if "name" in validated_data:
