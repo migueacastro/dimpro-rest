@@ -118,7 +118,9 @@
 
 <div class="mx-auto w-full lg:w-3/4 my-2">
 	<div class="flex flex-row space-x-2 items-center">
+		{#if reminders?.length > 1 || checkPermission(user, 'add_note')}
 		<h2 class="h2 my-4">Información</h2>
+		{/if}
 		{#if buttonAction !== 'create'}{#if checkPermission(user, 'add_note')}
 				<button
 					class="btn variant-filled px-6 h-[2rem]"
