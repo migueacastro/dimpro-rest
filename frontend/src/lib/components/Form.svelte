@@ -11,7 +11,8 @@
 		getEmail,
 		getPhonenumber,
 		getName,
-		getCardID
+		getCardID,
+		getAddress
 	} from '$lib/FormErrors';
 	import {
 		getToastStore,
@@ -77,20 +78,20 @@
 		return isValid;
 	}
 
-	let valid =
+	$: valid =
     (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
-		(!fields.find((f: any) => f.address == 'address') || error.validateText(getAddress(mappedFields))) &&
+		(!fields.find((f: any) => f.name == 'address') || error.validateText(getAddress(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
 	async function validateFields() {
 		valid =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
-		(!fields.find((f: any) => f.address == 'address') || error.validateText(getAddress(mappedFields))) &&
+		(!fields.find((f: any) => f.name == 'address') || error.validateText(getAddress(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
-		if (fields.find((f: any) => f.type == 'password')) {
-			validatePassword();
+		if (fields.find((f: any) => f?.type == 'password')) {
+			valid = await validatePassword();
 		}
 		return valid;
 	}
@@ -194,7 +195,6 @@
 		icon.classList.toggle('fa-eye');
 		icon.classList.toggle('fa-eye-slash');
 	}
-	$: console.log(valid);
 	$: isEditable();
 </script>
 

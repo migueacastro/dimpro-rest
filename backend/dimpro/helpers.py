@@ -359,7 +359,20 @@ def create_user(self, request, *args, **kwargs):
         email=email, defaults=validated_data
     )
     
+    
     user_instance.active = True
+    disabled_card_id_user = User.objects.filter(card_id=card_id, active=False)
+    if disabled_card_id_user.exists():
+        disabled_card_id_user = disabled_card_id_user.first()
+        ds_to_add = "d"
+        while True:
+            try:
+                disabled_card_id_user.card_id += ds_to_add
+                disabled_card_id_user.save()
+                break
+            except Exception as e:
+                ds_to_add += "d"
+    user_instance.card_id = card_id
     user_instance.save()
     if password:
         user_instance.set_password(password)

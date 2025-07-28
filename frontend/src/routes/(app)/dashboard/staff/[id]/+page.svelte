@@ -4,11 +4,10 @@
 	import InvoiceChart from '$lib/components/InvoiceChart.svelte';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	export let data: any;
-	let {user} = data;
-	let {reqUser} = data;
+	let { user } = data;
+	let { reqUser } = data;
 	let staff: any = reqUser;
 	$: loaded = true;
-
 </script>
 
 <div class="flex flex-col">
@@ -20,7 +19,11 @@
 					<h4 class="h4 capitalize my-2">Email: {staff?.email ?? 'No definido'}</h4>
 					<h4 class="h4 capitalize my-2">Teléfono: {staff?.phonenumber ?? 'No definido'}</h4>
 					<h4 class="h4 capitalize my-2">Cédula: {staff?.card_id ?? 'No definido'}</h4>
-					<h4 class="h4 capitalize my-2">Dirección: {(String(user?.address)?.length > 0 && user?.address?.length) ? user?.address : 'No definida'}</h4>
+					<h4 class="h4 capitalize my-2">
+						Dirección: {String(user?.address)?.length > 0 && user?.address?.length
+							? user?.address
+							: 'No definida'}
+					</h4>
 				</div>
 			</div>
 			<div class="card p-[3rem] w-full mb-[2rem]">
@@ -32,12 +35,7 @@
 			</div>
 		</div>
 		{#if checkPermission(staff, 'show_invoices_user') && checkPermission(user, 'view_invoice')}
-			<div class="card p-[3rem] mb-[2rem] flex flex-row justify-between shadow-md w-full">
-				<div class="flex flex-col w-full">
-					<h4 class="h2 font-bold capitalize my-2">Facturas de venta</h4>
-					<InvoiceChart invoices={data?.invoices} />
-				</div>
-			</div>
+			<InvoiceChart invoices={data?.invoices} />
 		{/if}
 		<div class="flex flex-row justify-between mb-[2rem]">
 			<h2 class="h2">Pedidos: {staff?.orders?.length}</h2>
