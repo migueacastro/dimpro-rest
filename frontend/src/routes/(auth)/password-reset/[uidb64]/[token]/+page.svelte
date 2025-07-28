@@ -16,6 +16,7 @@
 		password: [],
 		confirmPassword: []
 	};
+	let error = new FormErrors();
 	$: success = false;
 	$: loaded = true;
 	let password = '';
@@ -25,7 +26,7 @@
 	function validateFields() {
 		validatedFields = fields.validatePasswords(password, confirmPassword);
 	}
-
+	let passwordError: boolean = true;
 	function triggerSuccessToast() {
 		let toast: ToastSettings = {
 			message: 'Contraseña actualizada con exito.',
@@ -96,7 +97,7 @@
 				</div>
 
 				{#if password.length > 0}
-					{#if password.length <= 5}
+					{#if password.length <= 8}
 						<div class="card variant-ghost-error p-2 text-sm text-left">
 							{fields.shortPass}
 						</div>
@@ -142,6 +143,37 @@
 						</ul>
 					</div>
 				{/if}
+					
+						<div
+							class="mt-3 card p-4 text-left text-sm"
+							class:variant-ghost-success={validatedFields}
+							class:variant-ghost-error={!validatedFields ||
+								password.length === 0 &&
+									confirmPassword.length === 0}
+						>
+							<ul>
+								<li>
+									Tiene 8 caractéres o más {#if password?.toString()?.length >= 8}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
+								<li>
+									Tiene números {#if error.hasNumbers(password)}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
+								<li>
+									Tiene mayúsculas {#if error.hasUpperCase(password)}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
+								<li>
+									Las contraseñas coinciden {#if password === confirmPassword && password.toString().length > 0}
+										<i class="fa-solid fa-check"></i>{:else}
+										<i class="fa-solid fa-xmark"></i>{/if}
+								</li>
+							</ul>
+						</div>
 
 				<button
 					type="submit"
