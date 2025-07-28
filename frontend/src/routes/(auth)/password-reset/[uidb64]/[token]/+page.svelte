@@ -21,7 +21,7 @@
 	let password = '';
 	let confirmPassword = '';
 
-	let validatedFields: boolean = false;
+	$: validatedFields = false;
 	function validateFields() {
 		validatedFields = fields.validatePasswords(password, confirmPassword);
 	}
