@@ -31,7 +31,7 @@ export class FormErrors {
 	validatePasswords(password: string, confirmPassword: string): boolean {
 		return (
 			password === confirmPassword &&
-			password.length > 5 &&
+			password.length > 8 &&
 			this.hasUpperCase(password) &&
 			this.hasNumbers(password)
 		);
