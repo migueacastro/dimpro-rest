@@ -85,15 +85,17 @@
 		(!fields.find((f: any) => f.name == 'address') || error.validateText(getAddress(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
 	async function validateFields() {
-		if (fields.find((f: any) => f?.type == 'password')) {
-			valid = await validatePassword();
-		}
-		valid =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
+		
+		let validFields =  (!fields.find((f: any) => f.type == 'email') || error.validateEmail(getEmail(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'phonenumber') || error.validatePhoneNumber(getPhonenumber(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'name') || error.validateText(getName(mappedFields))) &&
 		(!fields.find((f: any) => f.name == 'address') || error.validateText(getAddress(mappedFields))) &&
     (!fields.find((f: any) => f.name == 'card_id') || error.validateCardID(getCardID(mappedFields)));
-		
+		if (fields.find((f: any) => f?.type == 'password')) {
+			valid = await validatePassword() && validFields;
+		} else {
+			valid = validFields;
+		}
 		return valid;
 	}
 
