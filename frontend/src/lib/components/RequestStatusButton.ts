@@ -1,4 +1,5 @@
 import { apiURL } from '$lib/api_url';
+import { fail } from '@sveltejs/kit';
 
 export async function approve({ fetch, request }: any) {
 	const formData: FormData = await request.formData();
@@ -20,8 +21,8 @@ export async function approve({ fetch, request }: any) {
 		};
 	}
 
-	console.error('PATCH request failed:', response.status, await response.text());
-	return {
-		success: false
-	};
+	return fail(400, {
+		error: await response.json(),
+		status: response.status
+	})
 }

@@ -37,12 +37,30 @@ export class FormErrors {
 		);
 	}
 	validateCardID(cardID: string): boolean {
-		if (cardID.length < 8 || cardID.length > 9) {
-			return false;
-		}
-		const cardIDRegex = /^[VvEe][0-9]{8,9}$/;
-		return cardIDRegex.test(cardID);
-	}
+    // Limpiar espacios y convertir a mayúsculas
+    const cleanedID = cardID.trim().toUpperCase();
+
+    // Verificar longitud total (7-11 caracteres)
+    if (cleanedID.length < 7 || cleanedID.length > 11) {
+        return false;
+    }
+
+    // Validar RIF (ej: J-1234567-1, J12345671, G1234567)
+    const rifRegex = /^[VEJGPCR](-?[0-9]{4,9}-?[0-9]?)$/;
+    if (rifRegex.test(cleanedID)) {
+        const digitsOnly = cleanedID.replace(/[^0-9]/g, "");
+        return digitsOnly.length >= 6 && digitsOnly.length <= 10;
+    }
+
+    // Validar cédula (ej: V12345678, E123456789, V-1234567)
+    const cedulaRegex = /^[VE](-?[0-9]{6,9})$/;
+    if (cedulaRegex.test(cleanedID)) {
+        const digitsOnly = cleanedID.replace(/[^0-9]/g, "");
+        return digitsOnly.length >= 7 && digitsOnly.length <= 9;
+    }
+
+    return false;
+}
 }
 
 export function getPassword(fields: any): string  {

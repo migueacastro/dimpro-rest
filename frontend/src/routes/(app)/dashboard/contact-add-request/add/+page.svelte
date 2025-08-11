@@ -42,12 +42,12 @@
 </script>
 
 <div class="w-3/4">
-	<h1 class="h2 my-4">Solicitar Crear Vendedor</h1>
+	<h1 class="h2 my-4">Solicitar Crear Cliente</h1>
 	<form action="?/add" method="post" use:enhance={handleSave}  class="flex flex-col">
 		<input type="hidden" name="user" value={user.id} />
 		<input type="hidden" name="status" value="pendiente" />
 		<div class="flex flex-col space-y-2">
-			<label for="identification">Cédula</label>
+			<label for="identification">Cédula o Rif</label>
 			<input
 				type="text"
 				bind:value={identification.value}
@@ -62,16 +62,10 @@
 				required
 			/>
 			{#if identification.touched}
-				{#if String(identification.value)?.length >= 8 && String(identification.value)?.length <= 9}
-					{#if !identification.value.match(/^[VvEe][0-9]{8,9}$/)}
+				{#if !errors.validateCardID(identification.value)}
 						<div class="card variant-ghost-error p-2 text-sm text-left">
 							{'La cédula no es válida'}
 						</div>
-					{/if}
-				{:else}
-					<div class="card variant-ghost-error p-2 text-sm text-left">
-						{'La cédula debe tener entre 8 y 9 caracteres'}
-					</div>
 				{/if}
 			{/if}
 			<label for="email">Email</label>

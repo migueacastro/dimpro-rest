@@ -125,7 +125,7 @@
 </script>
 
 <div class="w-3/4">
-	<h1 class="h2 my-4">Solicitar Crear Vendedor</h1>
+	<h1 class="h2 my-4">Solicitar Crear Cliente</h1>
 	<form action="?/edit" method="post" use:enhance={handleSave} class="flex flex-col">
 		<label for="user"> Usuario </label>
 		<input
