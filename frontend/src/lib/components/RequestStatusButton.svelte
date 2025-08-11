@@ -7,6 +7,7 @@
 	let modalStore = getModalStore();
 	let toastStore = getToastStore();
 	let body: any = {};
+	export let saved: boolean = true;
 
 	function handleSubmit() {
 		return async ({ update, result }: any) => {
@@ -49,13 +50,14 @@
 		modalStore.trigger(modal);
 	}
 </script>
-<form action="?/approve" method="post" use:enhance={handleSubmit} class="capitalize btn max-w-fit px-[2rem] h-fit p-4 my-4 ml-2" class:variant-filled={request?.status === 'pendiente'}
-		class:variant-filled-primary={request?.status === 'aprobado'}>
+<form action="?/approve" method="post" use:enhance={handleSubmit} class="capitalize btn max-w-fit px-[2rem] h-fit p-4 my-4 ml-2" class:variant-filled={request?.status === 'pendiente' && saved}
+		class:variant-filled-primary={request?.status === 'aprobado' && saved}
+		class:variant-glass-primary={!saved}>
 	<input type="hidden" name="requestId" value={request?.id} />
 	<button
 		type="button"
 		on:click={handleClick}
-		disabled={request?.status === 'aprobado'}
+		disabled={request?.status === 'aprobado' || !saved}
 		
 	>
 		{request?.status == 'pendiente' ? 'Aprobar' : 'Aprobado'}

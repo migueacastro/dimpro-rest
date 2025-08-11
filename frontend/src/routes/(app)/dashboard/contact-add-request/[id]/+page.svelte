@@ -48,12 +48,14 @@
 
 	let toastStore = getToastStore();
 	let modalStore = getModalStore();
+	let saved: boolean = true;
+
 
 	async function handleSave() {
 		return async ({ update, result }: any) => {
 			let toast: ToastSettings;
 			if (result?.type == 'success') {
-				goto(`/dashboard/contact-add-request/`);
+				saved = true;
 				toast = {
 					message: 'Se solicitó la creación del cliente con éxito.',
 					background: 'variant-ghost-success',
@@ -160,6 +162,7 @@
 				on:input={() => {
 					identification.valid = errors.validateCardID(identification.value);
 					identification.touched = true;
+					saved = false;
 				}}
 				id="identification"
 				required
@@ -189,6 +192,7 @@
 				on:input={() => {
 					email.valid = errors.validateEmail(email.value);
 					email.touched = true;
+					saved = false;
 				}}
 			/>
 			{#if email.touched}
@@ -210,6 +214,7 @@
 				on:input={() => {
 					name.valid = errors.validateText(name.value);
 					name.touched = true;
+					saved = false;
 				}}
 				required
 			/>
@@ -232,6 +237,7 @@
 				on:input={() => {
 					phonePrimary.valid = errors.validatePhoneNumber(phonePrimary.value);
 					phonePrimary.touched = true;
+					saved = false;
 				}}
 				required
 			/>
@@ -260,6 +266,7 @@
 				on:input={() => {
 					address.valid = errors.validateText(address.value);
 					address.touched = true;
+					saved = false;
 				}}
 			></textarea>
 			{#if address.touched}
@@ -283,7 +290,7 @@
 
 			>
 			{#if checkPermission(data.user, 'view_approve_contactaddrequest')}
-				<RequestStatusButton request={data?.request} />
+				<RequestStatusButton request={data?.request} saved={saved} />
 			{/if}
 			{#if checkPermission(data.user, 'delete_contactaddrequest')}
 			<form action="?/delete"
