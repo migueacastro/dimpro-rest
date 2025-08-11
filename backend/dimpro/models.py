@@ -231,6 +231,40 @@ class Invoice(models.Model):
     active = models.BooleanField(default=True, blank=False, null=False)
 auditlog.register(Invoice)
 
+
+class ContactAddRequest(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=256)
+    identification = models.CharField(max_length=256)
+    email = models.EmailField()
+    address = models.CharField(max_length=256)
+    city = models.CharField(max_length=64)
+    phonePrimary = models.CharField(max_length=64)
+    seller = models.IntegerField(blank=True, null=True)
+    active = models.BooleanField(default=True)
+    date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="contact_add_requests")
+    status = models.CharField(max_length=16,choices= [
+        ('pendiente', 'Pendiente'),
+        ('aprobado', 'Aprobado'),
+        ('rechazado', 'Rechazado')
+    ], default='pendiente')
+    class Meta:
+        verbose_name = 'ContactAddRequest'
+        verbose_name_plural = 'ContactAddRequests'
+        permissions = [
+            ("view_approve_contactaddrequest", "Can approve contact add request"),
+            
+        ]
+    
+
+class AlegraSeller(models.Model):
+    id = models.AutoField(primary_key=True)
+    identification = models.CharField(max_length=256, blank=True, null=True)
+    name = models.CharField(max_length=256)
+    active = models.BooleanField(default=True)
+
+
 #class PasswordResetToken(models.Model):
 #    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')
 #    token = models.CharField(max_length=256)

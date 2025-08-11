@@ -21,6 +21,7 @@ router.register(r'logs', LogViewSet)
 router.register(r'groups', GroupViewSet)
 router.register(r'invoices', UserInvoiceViewSet, basename="invoices")
 router.register(r'permissions', PermissionViewSet)
+router.register(r'contact_add_requests', ContactAddRequestViewSet)
 
 
 urlpatterns = [
@@ -40,7 +41,8 @@ urlpatterns = [
     path("export_order_pdf", ExportOrderPDFView.as_view()),
     path("export_catalog_pdf", ExportCatalogPDFView.as_view()),
     path("updatedb", UpdateDBView.as_view()),
-    path("alegratoken", AlegraTokenView.as_view())
+    path("alegratoken", AlegraTokenView.as_view()),
+    path("contact_add_request_approval", ContactAddRequestApproval.as_view()),
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

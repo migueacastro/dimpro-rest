@@ -6,6 +6,7 @@
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 	import { enhance } from '$app/forms';
+	import { checkPermission } from '$lib/auth';
 
 	export let data;
 	const toastStore = getToastStore();
@@ -41,6 +42,7 @@
 <div class="flex flex-col w-1/2 max-w-md">
 	<form action="?/create" method="post" use:enhance={handleSubmit}>
 		<label for="select-contact" class="text-md my-2">Cliente</label>
+		<input type="hidden" name="user" value={data.user.id}/>
 		<input
 			class="input autocomplete my-2"
 			type="search"
@@ -60,6 +62,16 @@
 				}}
 			/>
 		</div>
+		{#if checkPermission(data.user, 'add_contactaddrequest')}
+		<p>
+			No encuentras a un cliente? <a
+				class="text-primary-500"
+				target="_blank"
+				href="/dashboard/contact-add-request/add"
+				>solicita la adición de uno.</a
+			>
+		</p>
+		{:else}
 		<p>
 			No encuentras a un cliente? <a
 				class="text-primary-500"
@@ -68,7 +80,7 @@
 				>solicita la adición de uno.</a
 			>
 		</p>
-
+		{/if}
 		<div class="flex flex-row justify-end">
 			<input type="hidden" name="contact" bind:value={selectedContactId}/>
 			<button

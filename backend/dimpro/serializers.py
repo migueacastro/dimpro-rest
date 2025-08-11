@@ -456,3 +456,29 @@ class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invoice
         fields = ["id", "total", "seller_name", "date"]
+
+
+class ContactAddRequestSerializer(serializers.ModelSerializer):
+    date_format = serializers.SerializerMethodField(read_only=True)
+    seller_name = serializers.SerializerMethodField(read_only=True)
+    user_name = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = ContactAddRequest
+        fields = ["id", "name", "identification", "email", "address", "phonePrimary", "seller", "date", "date_format", "seller_name", "status", "user", "user_name"]
+    def get_date_format(self, obj):
+        return obj.date.strftime("%Y/%m/%d %H:%M")
+    def get_seller_name(self, obj):
+        if obj.seller:
+            return obj.seller.name
+        return "Ninguno"
+    def get_user_name(self, obj):
+        if obj.user:
+            return obj.user.name
+        return "Ninguno"
+
+
+class ContactAddRequestAprovalSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    class Meta:
+        model = ContactAddRequest
+        fields = ["id"]
