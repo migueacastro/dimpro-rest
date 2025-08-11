@@ -69,6 +69,8 @@ from reportlab.platypus import (
 )
 from svglib.svglib import svg2rlg
 from reportlab.lib.styles import getSampleStyleSheet
+from dimpro.tasks import encodeduser, ENDPOINT
+import requests
 
 styles = getSampleStyleSheet()
 
@@ -792,3 +794,74 @@ class UserInvoiceViewSet(SafeViewSet):
         ).filter(
             similarity__gte=0.5
         ).order_by("-date")
+    
+
+class ContactAddRequestViewSet(SafeViewSet):
+    serializer_class = ContactAddRequestSerializer
+    permission_classes = (IsAuthenticated, )
+    queryset = ContactAddRequest.objects.filter(active=True).order_by("-date")
+
+
+class ContactAddRequestApproval(APIView):
+    serializer_class = ContactAddRequestAprovalSerializer
+    permission_classes = (IsAuthenticated, )
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            id = serializer.validated_data.get("id", None)
+            if not id:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST, data={"Error": "Invalid ID, non present"}
+                )
+            elif not ContactAddRequest.objects.filter(id=id, active=True).exists():
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST, data={"Error": "Invalid ID or Request"}
+                )
+        serializer_data = serializer.validated_data
+        contact_add_request = ContactAddRequest.objects.get(id=serializer_data.get("id", ""))
+        alegra_seller = AlegraSeller.objects.annotate(
+            similarity=TrigramSimilarity('name', contact_add_request.user.name)
+        ).filter(
+            similarity__gte=0.5
+        ).first()
+
+        client = {'accept': 'application/json',  "content-type": "application/json",'authorization': f'Basic {encodeduser()}'}
+        url = f"{ENDPOINT}contacts"
+        payload = {
+            "address": {
+                "city": contact_add_request.city,
+                "address": contact_add_request.address
+            },
+            "name": contact_add_request.name,
+            "identification": contact_add_request.identification,
+            "phonePrimary": contact_add_request.phonePrimary,
+            "seller": alegra_seller.id if alegra_seller else None,
+            "term": "1",
+            "email": contact_add_request.email,
+            "type": "client",
+            "status": "active"
+        }
+        response = requests.post(url, json=payload, headers=client)
+        if response.ok:
+            data = response.json()
+            Contact.objects.create(id=data.get("id",None), name=contact_add_request.name, active=True)
+            contact = ContactAddRequest.objects.get(id=id)
+            contact.status = "aprobado"
+            contact.save()
+            return Response(
+                status=status.HTTP_200_OK, 
+                data={"message": "Cliente agregado exitosamente"}
+            ) 
+        else:
+            try:
+                error_data = response.json()
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST, 
+                    data=error_data
+                )
+            except ValueError:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST, 
+                    data={"Error": "Unknown error occurred"}
+                )
+        

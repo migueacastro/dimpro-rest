@@ -75,6 +75,17 @@
 				</div>
 			</a>
 			{/if}
+			{#if checkPermission(user, 'view_contactaddrequest')}
+			<a
+				class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"
+				href="/dashboard/contact-add-request"
+			>
+				<div class="flex flex-row justify-center h-[2rem] lg:h-auto items-center">
+					<p class="font-bold h4">Solicitudes de agregar clientes</p>
+					<i class="fa-solid fa-book h3 ml-5" />
+				</div>
+			</a>
+			{/if}
 			{#if checkAdminGroup(user)}
 			<a
 				class="block card card-hover lg:p-[3.75rem] p-[1.5rem] lg:w-[30%] my-2 lg:mx-2 dark:variant-filled-surface variant-filled-tertiary"

@@ -138,6 +138,8 @@ PERMISSION_TRANSLATIONS = {
     "show": "mostrar",
     "invoice": "factura de venta",
     "invoices": "facturas de venta",
+    "approve": "aprobar",
+    "contact add request": "solicitud de agregar cliente",
 }
 
 PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
@@ -163,6 +165,9 @@ PERMISSION_CONTENT_TYPE_NAME_TRANSLATIONS = {
     "its own address": "su propia dirección",
     "invoice": "factura de venta",
     "invoices": "facturas de venta",
+    "contactaddrequest": "solicitud de agregar cliente",
+    "alegraseller": "vendedor de alegra",
+    "contact add request": "solicitud de agregar cliente",
 }
 PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "user": "usuario",
@@ -199,6 +204,9 @@ PERMISSION_CONTENT_TYPE_TRANSLATIONS = {
     "bill": "factura",
     "invoice": "factura de venta",
     "invoices": "facturas de venta",
+    "contactaddrequest": "solicitud de agregar cliente",
+    "alegraseller": "vendedor de alegra",
+    "contact add request": "solicitud de agregar cliente",
 }
 
 

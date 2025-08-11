@@ -33,6 +33,7 @@ def updatedb():
     update_products_atomic(client)
     update_contacts_atomic(client)
     update_invoices_atomic(client)
+    update_sellers_atomic(client)
 
 def update_products_atomic(client):
     items = fetch_all_items(client)  # Fetch outside transaction
@@ -48,6 +49,16 @@ def update_products_atomic(client):
 
         # Bulk update/create products
         bulk_update_or_create_products(product_data_list)
+
+def update_sellers_atomic(client):
+    items = fetch_all_sellers(client)
+    
+    with transaction.atomic():
+        seller_data_list = []
+        for row in items:
+            data = extract_seller_data(row)
+            seller_data_list.append(data)
+        bulk_update_or_create_sellers(seller_data_list)
     
 def update_invoices_atomic(client):
     items = fetch_all_invoices(client)
@@ -75,12 +86,28 @@ def extract_invoice_data(row):
     }
 
 
+def extract_seller_data(row):
+    id = row.get("id", "")
+    identification = row.get("identification", "")
+    name = row.get("name", "")
+    active = False
+    if row.get("status", "") == "active":
+        active = True
+
+    return {
+        "id": id,
+        "identification": identification,
+        "name": name,
+        "active": active
+    }
+
+
 def bulk_create_invoices(invoice_data_list):
     to_create = []
     for data in invoice_data_list:
         new_invoice = Invoice(
-            id=data["id"],  # Optional, if id is provided
-            seller_name=data["seller_name"] if "seller_name" in data else "",
+            id=data["id"],
+            seller_name=data.get("seller_name", ""),
             date=data["date"],
             total=data["total"],
             active=data["active"],
@@ -88,7 +115,7 @@ def bulk_create_invoices(invoice_data_list):
         to_create.append(new_invoice)
 
     if to_create:
-        Invoice.objects.bulk_create(to_create)
+        Invoice.objects.bulk_create(to_create, ignore_conflicts=True)
     
 
 def update_contacts_atomic(client):
@@ -185,6 +212,46 @@ def bulk_update_or_create_products(product_data_list):
         )
 
 
+def bulk_update_or_create_sellers(seller_data_list):
+    # Get the list of references for incoming products
+    list_ids = [data["id"] for data in seller_data_list]
+
+    # Query existing products that match any of those references
+    existing_sellers = AlegraSeller.objects.filter(id__in=list_ids)
+    existing_sellers_list = [seller.id for seller in existing_sellers]
+    existing_sellers_map = {seller.id: seller for seller in existing_sellers}
+
+    to_create = []
+    to_update = []
+
+    for data in seller_data_list:
+
+        # Check if product with the same reference already exists
+        if int(data["id"]) in existing_sellers_list:
+            seller = existing_sellers_map[int(data["id"])]
+            seller.name = data["name"]
+            seller.identification = data["identification"]
+            seller.active = data["active"]
+            to_update.append(seller)
+        else:
+            new_seller = AlegraSeller(
+                id=data["id"],  # Optional, if id is provided
+                name=data["name"],
+                identification=data["identification"],
+                active=data["active"],
+            )
+            to_create.append(new_seller)
+
+    if to_create:
+        AlegraSeller.objects.bulk_create(to_create)
+    if to_update:
+        # Specify the fields you want to update
+        AlegraSeller.objects.bulk_update(
+            to_update,
+            fields=["name", "identification", "active"],
+        )
+
+
 def update_contacts(client):
     contacts = fetch_all_contacts(client)
 
@@ -196,39 +263,11 @@ def fetch_all_items(client):
     items = []
     i = 0
     while True:
-        try:
-            response = requests.get(
-                url=ENDPOINT + f"items?start={str(30*i)}&order_direction=ASC",
-                headers=client
-            )
-            
-            # Handle rate limiting (429)
-            if response.status_code == 429:
-                time_remaining = int(response.headers.get("x-rate-limit-reset", 10))
-                print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
-                time.sleep(time_remaining)
-                continue  # Retry the same request
-            elif response.status_code == 401:
-                print("Unauthorized access. Check your API credentials.")
-                raise Exception("Unauthorized access. Check your API credentials.")
-                
-            # Handle other errors
-            if response.status_code != 200:
-                print(f"Error fetching items: {response.status_code} - {response.text}")
-                break
-                
-            # Process successful response
-            data = response.json()
-            if not data:
-                break  # No more items
-                
-            items.extend(data)
-            i += 1
-            
-        except Exception as e:
-            print(f"Request failed: {str(e)}")
+        data = make_alegra_request(client, "items", {"start": str(30*i), "order_direction": "ASC"})
+        if not data:
             break
-            
+        items.extend(data)
+        i += 1
     return items
 
 
@@ -236,55 +275,36 @@ def fetch_all_contacts(client):
     contacts = []
     i = 0
     while True:
-        response = requests.get(url=ENDPOINT+f"contacts?start={str(30*i)}&order_direction=ASC", headers=client)
-        if response.status_code != 200:
-                response = response.json()
-                response_headers = response.get("headers", {})
-                response_code = int(response.get("code", 500))
-                if response_code == 429:
-                    time_remaining = response_headers.get("x-rate-limit-reset", 0)
-                    print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
-                    time.sleep(time_remaining)
-                elif response.status_code == 401:
-                    print("Unauthorized access. Check your API credentials.")
-                    raise Exception("Unauthorized access. Check your API credentials.")
-                print(f"Error fetching items: {str(response.get('code', 'No code'))} - {response.get('message', 'No message provided')}")
-        else:
-            dictu = response.json()
-            if not dictu:
-                break
-            contacts.extend(dictu) if dictu and response.status_code == 200 else None
-            i += 1
+        data = make_alegra_request(client, "contacts", {"start": str(30*i), "order_direction": "ASC"})
+        if not data:
+            break
+        contacts.extend(data)
+        i += 1
         
     return contacts
 
 def fetch_all_invoices(client):
     start_id = Invoice.objects.order_by('id').last().id if Invoice.objects.exists() else 1
     invoices = []
-    i = 0
+    i = start_id
     while True:
-        response = requests.get(url=ENDPOINT+f"invoices?start={str(start_id + 30*i)}&order_direction=ASC", headers=client)
-        if response.status_code != 200:
-            response = response.json()
-            response_headers = response.get("headers", {})
-            response_code = int(response.get("code", 500))
-            if response_code == 429:
-                time_remaining = response_headers.get("x-rate-limit-reset", 0)
-                print(f"Rate limit exceeded. Waiting for {time_remaining} seconds.")
-                time.sleep(time_remaining)
-            elif response.status_code == 401:
-                print("Unauthorized access. Check your API credentials.")
-                raise Exception("Unauthorized access. Check your API credentials.")
-            print(f"Error fetching invoices: {str(response.get('code', 'No code'))} - {response.get('message', 'No message provided')}")
-        else:
-            dictu = response.json()
-            if not dictu:
-                break
-            invoices.extend(dictu) if dictu and response.status_code == 200 else None
-            i += 1
+        data = make_alegra_request(client, "invoices", {"start": str(30*i), "order_direction": "ASC"})
+        if not data:
+            break
+        invoices.extend(data)
+        i += 1
     return invoices
 
-
+def fetch_all_sellers(client):
+    sellers = []
+    i = 0
+    while True:
+        data = make_alegra_request(client, "sellers", {"start": str(30*i), "order_direction": "ASC"})
+        if not data or data == sellers:
+            break
+        sellers.extend(data)
+        i += 1
+    return sellers
 
 def deactivate_all_products():
     with connection.cursor() as cursor:
@@ -329,6 +349,20 @@ def process_contact(row):
         pprint.pprint(row)
         print(f"Error: {e}")
 
+def process_seller(row):
+    try:
+        seller_id = row.get("id", "")
+        name = row.get("name", "")
+        identification = row.get("identification", "")
+        active = row.get("active", False)
+        Contact.objects.update_or_create(
+            id=id, defaults={"name": name, "active": active, "identification": identification}
+        )
+    except Exception as e:
+        print("KeyError processing contact row:")
+        pprint.pprint(row)
+        print(f"Error: {e}")
+
 
 def safe_update_products(client, retries=3):
     for attempt in range(retries):
@@ -340,3 +374,28 @@ def safe_update_products(client, retries=3):
                 time.sleep(1)
                 continue
             raise
+
+def make_alegra_request(client, endpoint, params=None):
+    retries = 3
+    for attempt in range(retries):
+        try:
+            response = requests.get(
+                url=ENDPOINT + endpoint,
+                headers=client,
+                params=params
+            )
+            
+            if response.status_code == 400 or response.status_code == 429:
+                time_remaining = int(response.headers.get("x-rate-limit-reset", 10))
+                print(f"Rate limited. Waiting {time_remaining}s")
+                time.sleep(time_remaining + 5)
+                continue
+            elif response.status_code != 200:
+                raise Exception(f"API error {response.status_code}: {response.text}")
+                
+            return response.json()
+            
+        except Exception as e:
+            if attempt == retries - 1:
+                raise
+            time.sleep(1)
