@@ -264,16 +264,10 @@
 							on:focus={() => (field.touched = true)}
 						/>
 						{#if field.touched}
-							{#if String(field.value)?.length >= 8 && String(field.value)?.length <= 9}
-								{#if !field.value.match(/^[VvEe][0-9]{8,9}$/)}
+							{#if !error.validateCardID(field.value)}
 									<div class="card variant-ghost-error p-2 text-sm text-left">
 										{'La cédula no es válida'}
 									</div>
-								{/if}
-							{:else}
-								<div class="card variant-ghost-error p-2 text-sm text-left">
-									{'La cédula debe tener entre 8 y 9 caracteres'}
-								</div>
 							{/if}
 						{/if}
 					{:else}

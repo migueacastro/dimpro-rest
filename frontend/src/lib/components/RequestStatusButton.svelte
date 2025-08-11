@@ -20,7 +20,7 @@
 				toastStore.trigger(toast);
 			} else {
 				const toast: ToastSettings = {
-					message: `¡ERROR! El estatus no se pudo cambiar.`,
+					message: `¡ERROR! El estatus no se pudo cambiar. `+result.data?.error?.message,
 					background: 'variant-ghost-error',
 					timeout: 3500
 				};
