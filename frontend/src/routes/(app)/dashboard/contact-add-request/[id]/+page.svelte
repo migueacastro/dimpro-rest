@@ -57,7 +57,7 @@
 			if (result?.type == 'success') {
 				saved = true;
 				toast = {
-					message: 'Se solicitó la creación del cliente con éxito.',
+					message: 'Se guardó la solicitud con éxito.',
 					background: 'variant-ghost-success',
 					timeout: 3500
 				};
@@ -65,7 +65,7 @@
 				toastStore.trigger(toast);
 			} else {
 				toast = {
-					message: `¡ERROR! No se pudo solicitar la creación del cliente.
+					message: `¡ERROR! No se pudo guardar la solicitud.
 							\nmensaje:${result.data}`,
 					background: 'variant-ghost-error',
 					timeout: 3500

@@ -35,6 +35,14 @@
 
 	function handleClick(event: Event) {
 		// Find the form element
+		if (!saved) {
+				toastStore.trigger({
+					message: 'Por favor, guarde los cambios antes de aprobar.',
+					background: 'variant-ghost-warning',
+					timeout: 1500
+				});
+				return;
+			} 
 		const form = (event.target as HTMLElement).closest('form') as HTMLFormElement;
 
 		const modal: ModalSettings = {
@@ -57,7 +65,7 @@
 	<button
 		type="button"
 		on:click={handleClick}
-		disabled={request?.status === 'aprobado' || !saved}
+		disabled={request?.status === 'aprobado'}
 		
 	>
 		{request?.status == 'pendiente' ? 'Aprobar' : 'Aprobado'}
