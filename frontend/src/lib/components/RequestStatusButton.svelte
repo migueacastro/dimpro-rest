@@ -38,7 +38,7 @@
 		if (!saved) {
 				toastStore.trigger({
 					message: 'Por favor, guarde los cambios antes de aprobar.',
-					background: 'variant-ghost-warning',
+					background: 'variant-ghost-info',
 					timeout: 1500
 				});
 				return;
