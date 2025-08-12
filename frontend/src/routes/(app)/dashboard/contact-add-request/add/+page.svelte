@@ -64,7 +64,7 @@
 			{#if identification.touched}
 				{#if !errors.validateCardID(identification.value)}
 						<div class="card variant-ghost-error p-2 text-sm text-left">
-							{'La cédula no es válida'}
+							{'La cédula o el rif no es válido'}
 						</div>
 				{/if}
 			{/if}
