@@ -8,6 +8,10 @@
 
 	export let options: any = {
 		title: 'Ventas facturadas (en USD)',
+		fileDownload: {
+			
+				fileName: `ventas_facturadas_${selectedYear}.csv`
+		},
 		axes: {
 			bottom: {
 				title: 'Fecha',
