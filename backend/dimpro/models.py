@@ -243,7 +243,7 @@ class ContactAddRequest(models.Model):
     seller = models.IntegerField(blank=True, null=True)
     active = models.BooleanField(default=True)
     date = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="contact_add_requests")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contact_add_requests")
     status = models.CharField(max_length=16,choices= [
         ('pendiente', 'Pendiente'),
         ('aprobado', 'Aprobado'),

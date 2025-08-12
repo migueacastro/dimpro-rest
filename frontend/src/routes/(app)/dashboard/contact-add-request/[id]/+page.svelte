@@ -146,6 +146,7 @@
 				on:selection={(e) => {
 					inputUser = e.detail.label;
 					selectedUserId = e.detail.value;
+					saved = false;
 				}}
 			/>
 		</div>
@@ -168,16 +169,10 @@
 				required
 			/>
 			{#if identification.touched}
-				{#if String(identification.value)?.length >= 8 && String(identification.value)?.length <= 9}
-					{#if !identification.value.match(/^[VvEe][0-9]{8,9}$/)}
+				{#if !errors.validateCardID(identification.value)}
 						<div class="card variant-ghost-error p-2 text-sm text-left">
-							{'La cédula no es válida'}
+							{'La cédula o el rif no es válido'}
 						</div>
-					{/if}
-				{:else}
-					<div class="card variant-ghost-error p-2 text-sm text-left">
-						{'La cédula debe tener entre 8 y 9 caracteres'}
-					</div>
 				{/if}
 			{/if}
 			<label for="email">Email</label>
